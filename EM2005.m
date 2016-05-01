@@ -2,6 +2,10 @@ function [data, extra] = EM2005( params, exp_id, debug_mode )
 % run a simulation of the E&M with certain parameters and spit out the data
 % for all subjects
 
+% parallel execution hell yeah
+
+poolobj = parpool;
+
 % parse parameters
 
 params
@@ -192,6 +196,8 @@ for OG_ONLY = og_range
                     inter_target = repmat(inter_is_target, blocks_per_condition, 1);
                     og_correct = correct;
                     is_target = zeros(blocks_per_condition * trials_per_block, 1);    
+                else
+                    inter_target = zeros(); % hack to make parfor work
                 end
 
                 % randomize order
@@ -240,12 +246,13 @@ for OG_ONLY = og_range
                 curpar(2) = curpar(2) + normrnd(0, param_noise_sigma_1, 1, 1);
                 curpar(4) = curpar(4) + normrnd(0, param_noise_sigma_2, 1, 1);
 
-                % initialize simulator
                 if exp_id == 5
                     have_third_task = true;
                 else
                     have_third_task = false;
                 end
+                
+                % initialize simulator             
                 sim = Simulator(FOCAL, curpar, have_third_task);
                 
                 % PM instruction
@@ -265,7 +272,7 @@ for OG_ONLY = og_range
                 end
 
                 % simulate subjects in parallel
-                for subject_id = 1:subjects_per_condition
+                parfor subject_id = 1:subjects_per_condition
                     [responses, RTs, act, acc, onsets, offsets, nets] = sim.trial(stimuli, false);
 
                     if exp_id == 1 || exp_id == 3 || exp_id == 4 || exp_id == 5
@@ -274,7 +281,6 @@ for OG_ONLY = og_range
                             responses, RTs, act, acc, onsets, offsets, ...
                             is_target, correct, og_correct, ...
                             false);
-
                         if exp_id == 5
                             % extra analysis for experiment 5
                             IT_TAR_RT = mean(RTs(logical(inter_target)));
@@ -335,13 +341,15 @@ for OG_ONLY = og_range
                                 is_target, correct, og_correct, ...
                                 true);
                         end
-                    end
+                    end 
                 end
             
                 
                 
                 
-            end
-        end
-    end
-end
+            end % TARGETS
+        end % EMPHASIS 
+    end % FOCAL
+end % OG_ONLY
+
+delete(poolobj);

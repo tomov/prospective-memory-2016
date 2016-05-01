@@ -31,8 +31,9 @@ where
 debug_mode = false;
 experiment = 1;
 
-
+tic
 [data, extra] = EM2005(startpar, experiment, debug_mode);
+toc
 data
 
 if debug_mode

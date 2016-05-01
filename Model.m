@@ -25,6 +25,8 @@ classdef Model < handle
         MINIMUM_ACTIVATION = 0;
         
         INPUT_ACTIVATION = 1;
+        
+        LAMBDA = 0; % regularization constant for backprop TODO set to 1 or 0.1 or something
     end
 
     

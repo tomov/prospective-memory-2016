@@ -85,7 +85,16 @@ for OG_ONLY = og_range
                     {'math,a subject'}, 1;
                 ];
                 og_correct = {'Yes'; 'No'; 'No'; 'Yes'; 'No'; 'Yes'};
-
+                
+                % TODO remove
+                %{
+                og_stimuli = [
+                    {'crocodile,an animal'}, 1;
+                    {'physics,an animal'}, 1
+                ];
+                og_correct = {'Yes'; 'No'};
+                %}
+                
                 % init PM trial pool
                 pm_targets = [
                     {'tortoise,an animal'}, 1;

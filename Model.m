@@ -8,7 +8,7 @@ classdef Model < handle
         NOISE_SIGMA = 0.1; % TODO -- ??
         STEP_SIZE = 0.05;
         DECAY = 0.01;
-        CYCLES_PER_SEC = 200; % was 500 but could be lower than 200
+        CYCLES_PER_SEC = 500; % CANNOT be lower, e.g. 200...
         SETTLE_MEAN_EPS = 1e-3; % adjust these when you add noise to the model
         SETTLE_STD_EPS = 1e-4; % ...this too
         TAU = 0.1; % rate constant from Jon's paper
@@ -140,8 +140,8 @@ classdef Model < handle
         context_ids
         hippo_ids
         
-        wm_ids
-        ffwd_ids
+        wm_ids   % nodes in the WM part of the mode (the top-down attentional modulation)
+        ffwd_ids % nodes in the feed-forward part of the model (the bottom-up stimulus-response pathway)
         
         connections
         weights

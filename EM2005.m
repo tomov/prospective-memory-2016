@@ -2,7 +2,7 @@ function [data, extra] = EM2005( params, exp_id, debug_mode )
 % run a simulation of the E&M with certain parameters and spit out the data
 % for all subjects
 
-% parallel execution hell yeah
+% parallel execution
 
 poolobj = parpool;
 

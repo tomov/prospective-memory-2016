@@ -131,20 +131,20 @@ classdef Model < handle
         context_units
         hippo_units
         
-        input_ids
-        perception_ids
-        response_ids
-        output_ids
-        task_ids
-        attention_ids
-        context_ids
-        hippo_ids
+        input_ids      % layer 0 -- input layer: the raw stimulus input
+        perception_ids % layer 1 -- feature perception layer: the perceived input = raw input + feature attention
+        response_ids   % layer 2 -- associative layer: the response = perceived input + task attention
+        output_ids     % layer 3 -- output layer: the motor action
+        task_ids       % task representation WM units
+        attention_ids  % feature attention WM units
+        context_ids    % context WM units
+        hippo_ids      % hippocampus units encoding three-way associations from features (layer 1) and context units to task units
         
-        wm_ids   % nodes in the WM part of the mode (the top-down attentional modulation)
-        ffwd_ids % nodes in the feed-forward part of the model (the bottom-up stimulus-response pathway)
+        wm_ids         % units in the WM part of the model (the top-down attentional modulation)
+        ffwd_ids       % units in the feed-forward part of the model (the bottom-up stimulus-response pathway)
         
         connections
-        weights
+        weights        % the weights of the network
         bias
         init_wm
         target_init

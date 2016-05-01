@@ -16,7 +16,9 @@ classdef Simulator < Model
         wm_net;
         Nout;
         
-        del;          % error used for backprop
+        del;             % error used for backprop
+        weightsGradient; % gradient of the weights, used for backprop
+        biasGradient;    % gradient for biases, used for backprop
     end
     
     methods
@@ -34,9 +36,14 @@ classdef Simulator < Model
             end
         end
         
-        % from Jon's 1990 Stroop paper
+        % from Jon's 1990 Stroop paper -- the sigmoid function
         function act = logistic(self, net)
             act = 1 ./ (1 + exp(-net));
+        end
+        
+        % gradient of the sigmoid function
+        function actGradient = logisticGradient(self, net)
+            actGradient = self.logistic(net) .* (1 - self.logistic(net));
         end
         
         function threewayEM(self, stimulus, context, response)
@@ -125,7 +132,7 @@ classdef Simulator < Model
             % TODO
         end
 
-        function [responses, RTs, activation_log, accumulators_log, onsets, offsets, net_log] = trial(self, stimuli, train)
+        function [responses, RTs, activation_log, accumulators_log, onsets, offsets, net_log] = trial(self, stimuli, correct, train)
             % initialize activations and outputs
             trial_duration = sum(cat(2, stimuli{:, 2})) * self.CYCLES_PER_SEC;
             self.accumulators = zeros(1, self.Nout);
@@ -146,13 +153,22 @@ classdef Simulator < Model
             cycles = 0;
             switched_to_PM_task = false;
             
-            self.del = zeros(1, self.N);
-
-            
             if train
-                % TODO initialize random weights -- small randomness as in
-                % ML notes
+                self.del = zeros(1, self.N);
+                self.weightsGradient = zeros(size(self.weights));
+                self.biasGradient = zeros(size(self.bias));
+                
+                epsilon_init = 0.12; % from ML course TODO move to self.
+                %self.weights(self.input_ids, self.perception_ids) = rand(length(self.input_ids), length(self.perception_ids)) * 2 * epsilon_init - epsilon_init;
+                %self.weights(self.perception_ids, self.response_ids) = rand(length(self.perception_ids), length(self.response_ids)) * 2 * epsilon_init - epsilon_init;
+                self.weights(self.response_ids, self.output_ids) = rand(length(self.response_ids), length(self.output_ids)) * 2 * epsilon_init - epsilon_init;
+                %self.bias(self.perception_ids) = rand(1, length(self.perception_ids)) * 2 * epsilon_init - epsilon_init;
+                %self.bias(self.response_ids) = rand(1, length(self.response_ids)) * 2 * epsilon_init - epsilon_init;
+                self.bias(self.output_ids) = rand(1, length(self.output_ids)) * 2 * epsilon_init - epsilon_init;
             end
+            
+            hits = 0;
+            misses = 0;
             
             % for each input from the time series
             for ord=1:size(stimuli, 1)
@@ -299,8 +315,73 @@ classdef Simulator < Model
                 RTs = [RTs; RT];
                 cycles = cycles + cycle;
                 
+                if strcmp(output, correct{ord}) == 1
+                    hits = hits + 1;
+                else
+                    misses = misses + 1;
+                end
+                fprintf('hits = %d, misses = %d, hit ratio = %f\n', hits, misses, hits / (hits + misses));
+                
                 if train
-                    % TODO backprop -- same as ML #WATUUP
+                    expected = zeros(1, self.N); % TODO optimize -- no need to initialize every time
+                    expected(self.unit_id(correct{ord})) = 1;
+                    
+                    % errors
+                    self.del(self.output_ids) = self.activation(self.output_ids) - expected(self.output_ids);
+                    %self.del(self.response_ids) = (self.del(self.output_ids) * self.weights(self.response_ids, self.output_ids)') .* self.logisticGradient(self.net_input_avg(self.response_ids)); % TODO net_input_avg or net_input? make sure math is right
+                    %self.del(self.perception_ids) = (self.del(self.response_ids) * self.weights(self.perception_ids, self.response_ids)') .* self.logisticGradient(self.net_input_avg(self.perception_ids)); % TODO same here
+                
+                    m = size(self.input_ids, 2);
+                    % TODO symmetry...
+                    % weight gradients
+                    %self.weightsGradient(self.input_ids, self.perception_ids) = 1.0 / m * self.activation(self.input_ids)' * self.del(self.perception_ids);
+                    %self.weightsGradient(self.perception_ids, self.response_ids) = 1.0 / m * self.activation(self.perception_ids)' * self.del(self.response_ids);
+                    self.weightsGradient(self.response_ids, self.output_ids) = 1.0 / m * self.activation(self.response_ids)' * self.del(self.output_ids);
+                    
+                    % bias gradients
+                    %self.biasGradient(self.perception_ids) = 1.0 / m * self.del(self.perception_ids);
+                    %self.biasGradient(self.response_ids) = 1.0 / m * self.del(self.response_ids);
+                    self.biasGradient(self.output_ids) = 1.0 / m * self.del(self.output_ids);
+
+                    % regularization
+                    lambda = 1; % TODO param
+                    %self.weightsGradient(self.input_ids, self.perception_ids) = lambda / m * self.weights(self.input_ids, self.perception_ids) + self.weightsGradient(self.input_ids, self.perception_ids);
+                    %self.weightsGradient(self.perception_ids, self.response_ids) = lambda / m * self.weights(self.perception_ids, self.response_ids) + self.weightsGradient(self.perception_ids, self.response_ids);
+                    %self.weightsGradient(self.response_ids, self.output_ids) = lambda / m * self.weights(self.response_ids, self.output_ids) + self.weightsGradient(self.response_ids, self.output_ids);
+                    %self.biasGradient(self.perception_ids) = lambda / m * self.bias(self.perception_ids) + self.biasGradient(self.perception_ids);
+                    %self.biasGradient(self.response_ids) = lambda / m * self.bias(self.response_ids) + self.biasGradient(self.response_ids);
+                    %self.biasGradient(self.output_ids) = lambda / m * self.bias(self.output_ids) + self.biasGradient(self.output_ids);
+                    
+                    % TODO maybe use fmincg or something?
+                    % gradient descent
+                    eps = 1e-1; % TODO move to self.
+                    self.weights = self.weights - self.weightsGradient * eps;
+                    self.bias = self.bias - self.biasGradient * eps;
+                    
+                    % debugging
+                    %{
+                    fprintf('debug output');
+                    self.activation(self.output_ids)
+                    expected(self.output_ids)
+                    output
+                    correct{ord}                    
+                    
+                    fprintf('dels');
+                    self.del(self.output_ids)
+                    %self.del(self.response_ids)
+                    %self.del(self.perception_ids)
+                    
+                    fprintf('weights');
+                    self.weightsGradient(self.response_ids, self.output_ids)
+                    %self.weights(self.perception_ids, self.response_ids)
+                    %self.weights(self.input_ids, self.perception_ids)
+                    
+                    fprintf('biases');
+                    self.biasGradient(self.output_ids)
+                    %self.bias(self.response_ids)
+                    %self.bias(self.perception_ids)
+                    k = waitforbuttonpress;
+                    %}
                 end
             end
             

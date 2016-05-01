@@ -34,6 +34,8 @@ experiment = 1;
 tic
 [data, extra] = EM2005(startpar, experiment, debug_mode);
 toc
+
+%{
 data
 
 if debug_mode
@@ -55,7 +57,7 @@ else
         EM2005_with_stats_exp3
     end
 end
-
+%}
 
         
 %{

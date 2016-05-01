@@ -4,7 +4,7 @@ function [data, extra] = EM2005( params, exp_id, debug_mode )
 
 % parallel execution
 
-poolobj = parpool;
+% TODO restore poolobj = parpool;
 
 % parse parameters
 
@@ -32,8 +32,8 @@ pm_trials_exp3 = [26 52 78 104];
 
 % since we're doing only 1 experiment at a time
 blocks_per_condition = blocks_per_condition(exp_id);
-trials_per_block = trials_per_block(exp_id);
-subjects_per_condition = subjects_per_condition(exp_id);
+trials_per_block = 1000; % trials_per_block(exp_id); TODO restore
+subjects_per_condition = 1; % subjects_per_condition(exp_id); TODO restore
 
 data = [];
 extra = [];
@@ -45,6 +45,7 @@ target_range = [1, 6];
 
 if exp_id == 1
     target_range = 1;
+    og_range = 1; % TODO remove
 elseif exp_id == 2
     emphasis_range = 0;
     target_range = 1;
@@ -272,8 +273,8 @@ for OG_ONLY = og_range
                 end
 
                 % simulate subjects in parallel
-                parfor subject_id = 1:subjects_per_condition
-                    [responses, RTs, act, acc, onsets, offsets, nets] = sim.trial(stimuli, false);
+                for subject_id = 1:subjects_per_condition % TODO parfor
+                    [responses, RTs, act, acc, onsets, offsets, nets] = sim.trial(stimuli, correct, true);
 
                     if exp_id == 1 || exp_id == 3 || exp_id == 4 || exp_id == 5
                         % for experiment 1, each subject = 1 sample
@@ -352,4 +353,4 @@ for OG_ONLY = og_range
     end % FOCAL
 end % OG_ONLY
 
-delete(poolobj);
+% delete(poolobj); TODO restore

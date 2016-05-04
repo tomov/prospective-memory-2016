@@ -19,7 +19,7 @@ where
 %}
 
 
-
+    % experiment 1
     startpar = [1  0.35   1    0.3, ...      % focal, low emph     % exp1_v16, exp2_v19
                 1  0.6    1    0.4, ...    % focal, high emph      % exp1_v16
                 1  0.8    1    0.75, ...    % nonfocal, low emph   % exp2_v11
@@ -27,13 +27,15 @@ where
                 4 4 4, ... % biases
 		0 0];      % noise -- no noise...
  
-
 debug_mode = false;
 experiment = 1;
 
 tic
 [data, extra] = EM2005(startpar, experiment, debug_mode);
 toc
+
+save('exp1-data-newww.mat');
+
 
 %{
 data

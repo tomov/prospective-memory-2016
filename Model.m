@@ -8,10 +8,10 @@ classdef Model < handle
         NOISE_SIGMA = 0.1; % TODO -- ??
         STEP_SIZE = 0.05;
         DECAY = 0.01;
-        CYCLES_PER_SEC = 500; % CANNOT be lower, e.g. 200...
+        CYCLES_PER_SEC = 500; % 500 ; CANNOT be lower, e.g. 200...
         SETTLE_MEAN_EPS = 1e-3; % adjust these when you add noise to the model
         SETTLE_STD_EPS = 1e-4; % ...this too
-        TAU = 0.1; % rate constant from Jon's paper
+        TAU = 0.1; % rate constant from Jon's paper = 0.1
         INSTRUCTION_CYLCES = 2/Model.TAU;
         RESET_CYCLES = Model.INSTRUCTION_CYLCES;
         SETTLE_LEEWAY = 2*Model.INSTRUCTION_CYLCES;
@@ -321,6 +321,7 @@ classdef Model < handle
                 self.unit_id('see monkey')                 , self.unit_id('An Animal')         , self.PERCEPTION_TO_RESPONSE;
                 
                 % -- default response is No Match
+                %{
                 self.unit_id('see physics')                , self.unit_id('No Match 2')         , self.PERCEPTION_TO_RESPONSE;
                 self.unit_id('see math')                   , self.unit_id('No Match 2')         , self.PERCEPTION_TO_RESPONSE;
                 self.unit_id('see tortoise')               , self.unit_id('No Match 1')         , self.PERCEPTION_TO_RESPONSE;
@@ -330,6 +331,7 @@ classdef Model < handle
                 self.unit_id('see panda')                  , self.unit_id('No Match 1')         , self.PERCEPTION_TO_RESPONSE;
                 self.unit_id('see kiwi')                   , self.unit_id('No Match 1')         , self.PERCEPTION_TO_RESPONSE;
                 self.unit_id('see monkey')                 , self.unit_id('No Match 1')         , self.PERCEPTION_TO_RESPONSE;
+                %}
                 
                 % perception to response mapping (Interleaved task)
                 % notice all is *2 b/c there's only 1 input per response =>

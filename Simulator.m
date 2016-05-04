@@ -130,20 +130,20 @@ classdef Simulator < Model
 
         % cost function to minimize for backprop
         function J = cost(self, expected)
-            m = size(self.input_ids, 2);
-            %self.weights(self.response_ids, self.output_ids)
-            
+            m = size(self.input_ids, 2); % TODO const        
+            %expected(self.output_ids)
+            %self.activation(self.output_ids)
             J = 1.0 / m * sum(sum(-expected(self.output_ids) .* log(self.activation(self.output_ids)) - (1 - expected(self.output_ids)) .* log(1 - self.activation(self.output_ids))));
             
             % regularize
             reg = 0;
             reg = reg + 0.5 * self.LAMBDA / m * sum(sum(self.weights(self.response_ids, self.output_ids) .* self.weights(self.response_ids, self.output_ids)));
             reg = reg + 0.5 * self.LAMBDA / m * sum(sum(self.weights(self.perception_ids, self.response_ids) .* self.weights(self.perception_ids, self.response_ids)));
-            %reg = reg + 0.5 * self.LAMBDA / m * sum(sum(self.weights(self.input_ids, self.perception_ids) .* self.weights(self.input_ids, self.perception_ids)));
+            reg = reg + 0.5 * self.LAMBDA / m * sum(sum(self.weights(self.input_ids, self.perception_ids) .* self.weights(self.input_ids, self.perception_ids)));
             
             reg = 0.5 * self.LAMBDA / m * sum(self.bias(self.output_ids) .* self.bias(self.output_ids));
             reg = reg + 0.5 * self.LAMBDA / m * sum(self.bias(self.response_ids) .* self.bias(self.response_ids));
-            %reg = 0.5 * self.LAMBDA / m * sum(self.bias(self.perception_ids) .* self.bias(self.perception_ids));
+            reg = 0.5 * self.LAMBDA / m * sum(self.bias(self.perception_ids) .* self.bias(self.perception_ids));
             
             J = J + reg;
         end
@@ -186,6 +186,9 @@ classdef Simulator < Model
                 self.bias(self.output_ids) = rand(1, length(self.output_ids)) * 2 * epsilon_init - epsilon_init;
                 self.bias(self.response_ids) = rand(1, length(self.response_ids)) * 2 * epsilon_init - epsilon_init;
                 %self.bias(self.perception_ids) = rand(1, length(self.perception_ids)) * 2 * epsilon_init - epsilon_init;
+                
+                %self.weights = rand(size(self.weights)) * 2 * epsilon_init - epsilon_init;
+                %self.bias = rand(1, length(self.bias)) * 2 * epsilon_init - epsilon_init;
             end
             
             hits = 0;
@@ -326,8 +329,8 @@ classdef Simulator < Model
                 %switched_to_PM_task = (self.activation(self.unit_id('PM Task')) > self.activation(self.unit_id('OG Task')));
                 % TODO hacky...
                 assert(length(self.resting_wm) == length(self.wm_act));
-                %switched_to_PM_task = (self.wm_act(2) > self.wm_act(1) - 0.1);
                 switched_to_PM_task = (self.wm_act(2) > self.resting_wm(2) + 0.01);
+                %switched_to_PM_task = (self.wm_act(2) > self.wm_act(1) - 0.1);
 
                 % record response and response time
                 output = self.units{output_id};

@@ -24,34 +24,31 @@ if isempty(poolobj)
 end
 % delete(poolobj); -- destroys the parpool; no need to though, just FYI
 
-    % exp 1
-
-    startpar = [1  0.35   1    0.3, ...      % focal, low emph     % exp1_v16, exp2_v19
-                1  0.6    1    0.4, ...    % focal, high emph      % exp1_v16
-                1  0.8    1    0.75, ...    % nonfocal, low emph   % exp2_v11
-                1  0.9    1    0.83, ...    % nonfocal, high emph  % exp1_v16 -- sorta
-                4 4 4, ... % biases
-		0 0];      % noise -- no noise...
- 
-    
-    % exp 4
-    
-    % OG task, PM task, OG features, target(s)
-    startpar = [1  0.1   1    0.1, ...      % focal, low emph     % exp1_v16, exp2_v19
-                1  0.6    1    0.4, ...    % focal, high emph      % exp1_v16
-                1  0.8    1    0.75, ...    % nonfocal, low emph   % exp2_v11
-                1  0.9    1    0.83, ...    % nonfocal, high emph  % exp1_v16 -- sorta
-                4 4 4, ... % biases
-		1 0.8];      % uniform noise ; 0.8 0.6 last best
- 
-
 debug_mode = false;
-experiment = 4;
+experiment = 1;
+
+    % exp 1
+if experiment == 1
+    % OG task, PM task, OG features, target(s)
+    startpar = [1  0.35   1    0.3, ...     % focal, low emph     % exp1_v16, exp2_v19
+                1  0.6    1    0.4, ...     % focal, high emph      % exp1_v16
+                1  0.8    1    0.75, ...    % nonfocal, low emph   % exp2_v11
+                1  0.9    1    0.83, ...    % nonfocal, high emph  % exp1_v16 -- sorta
+                4 4 4, ... % biases
+		        0 0];      % no noise...
+elseif experiment == 4  
+    % OG task, PM task, OG features, target(s)
+    startpar = [1  0.1    1    0.1, ...     % focal, low emph     % exp1_v16, exp2_v19
+                1  0.6    1    0.4, ...     % focal, high emph      % exp1_v16
+                1  0.8    1    0.75, ...    % nonfocal, low emph   % exp2_v11
+                1  0.9    1    0.83, ...    % nonfocal, high emph  % exp1_v16 -- sorta
+                4 4 4, ...   % biases
+         		1 0.8];      % uniform noise
+end
 
 tic
 [data, extra] = EM2005(startpar, experiment, debug_mode);
 toc
-data
 
 if debug_mode
 	m = Model(startpar, false);
@@ -62,15 +59,7 @@ if debug_mode
    % figure;
    % plot([act(1:100, context_ids), nets(1:100, context_ids)]);
 else
-    filename = sprintf('/mnt/cd/people/mtomov/data/exp1-data.mat');
     save('exp4-data-newww.mat');
-    if experiment == 1
-        EM2005_with_stats_exp1
-    elseif experiment == 2
-        EM2005_with_stats_exp2
-    elseif experiment == 3
-        EM2005_with_stats_exp3
-    end
 end
 
 

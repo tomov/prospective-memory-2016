@@ -57,6 +57,16 @@ empirical_stats = [
 empirical_stats(:, SD_cols) = empirical_stats(:, SD_cols) / sqrt(subjects_per_condition);
 
 
+subjects_per_condition = 16; % TODO FIXME rm -rf
+
+% -------------- change meaning of EMPHASIS column !!!
+% now it means whether it's "low cost" (0) or "high cost" (1) group
+
+for OG_ONLY = 1:-1:0
+    which = subjects(:, 1) == OG_ONLY;
+    m = median(subjects(which, 4));
+    subjects(which, 3) = (subjects(which, 4) > m);
+end
 
 % ------------- calculate simulation stats
 

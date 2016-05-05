@@ -2,10 +2,6 @@ function [data, extra] = EM2005( params, exp_id, debug_mode )
 % run a simulation of the E&M with certain parameters and spit out the data
 % for all subjects
 
-% parallel execution
-
-poolobj = parpool;
-
 % parse parameters
 
 params
@@ -23,7 +19,7 @@ assert(exp_id == 1 || exp_id == 2 || exp_id == 3 || exp_id == 4 || exp_id == 5);
 fprintf('\n\n--------========= RUNNING E&M EXPERIMENT %d ======-------\n\n', exp_id);
 
 % from E&M Experiment 1 & 2 methods
-subjects_per_condition = [24 24 32 104 72]; % [24 24 32 104 72]; % TODO FIXME restore
+subjects_per_condition = [24 24 32 16 72]; % [24 24 32 104 72]; % TODO FIXME restore
 blocks_per_condition = [8 4 1 1 10];
 trials_per_block = [24 40 110 110 18];
 pm_blocks_exp1 = [1 3 6 7];
@@ -53,6 +49,7 @@ elseif exp_id == 3
 elseif exp_id == 4
     focal_range = 1;
     target_range = 1;
+    %emphasis_range = 0;
 elseif exp_id == 5
     focal_range = 1;
     emphasis_range = 0;
@@ -243,8 +240,6 @@ for OG_ONLY = og_range
                         end
                     end
                 end
-                curpar(2) = curpar(2) + normrnd(0, param_noise_sigma_1, 1, 1);
-                curpar(4) = curpar(4) + normrnd(0, param_noise_sigma_2, 1, 1);
 
                 if exp_id == 5
                     have_third_task = true;
@@ -252,29 +247,41 @@ for OG_ONLY = og_range
                     have_third_task = false;
                 end
                 
-                % initialize simulator             
-                sim = Simulator(FOCAL, curpar, have_third_task);
-                
-                % PM instruction
-                if FOCAL
-                    if TARGETS == 6
-                        sim.instruction({'tortoise', 'dog', 'cat', 'kiwi', 'panda', 'monkey'}, true);
-                    else
-                        assert(TARGETS == 1);
-                        if exp_id == 5
-                            sim.instruction({'tortoise'}, false);
-                        else
-                            sim.instruction({'tortoise'}, true);
-                        end
-                    end
-                else
-                    sim.instruction({'tor'}, true);
-                end
-
                 % simulate subjects in parallel
+                
                 parfor subject_id = 1:subjects_per_condition
+                    % optionally add cross-subject variability
+                    subjpar = curpar;
+                    if ~OG_ONLY
+                        subjpar(2) = subjpar(2) + unifrnd(-param_noise_sigma_1, param_noise_sigma_1);
+                        subjpar(4) = subjpar(4) + unifrnd(-param_noise_sigma_1, param_noise_sigma_2);
+                    end
+                    
+                    % initialize simulator             
+                    sim = Simulator(FOCAL, subjpar, have_third_task);
+                
+                    fprintf('\nsubject %d: curpar(2,4) = %.2f %.2f\n', subject_id, subjpar(2), subjpar(4));
+                    
+                    % PM instruction
+                    if FOCAL
+                        if TARGETS == 6
+                            sim.instruction({'tortoise', 'dog', 'cat', 'kiwi', 'panda', 'monkey'}, true);
+                        else
+                            assert(TARGETS == 1);
+                            if exp_id == 5
+                                sim.instruction({'tortoise'}, false);
+                            else
+                                sim.instruction({'tortoise'}, true);
+                            end
+                        end
+                    else
+                        sim.instruction({'tor'}, true);
+                    end
+                    
+                    % run the actual simulation
                     [responses, RTs, act, acc, onsets, offsets, nets] = sim.trial(stimuli, false);
 
+                    % collect the relevant data
                     if exp_id == 1 || exp_id == 3 || exp_id == 4 || exp_id == 5
                         % for experiment 1, each subject = 1 sample
                         [OG_RT, ~, OG_Hit, PM_RT, ~, PM_Hit, PM_miss_OG_hit] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, ...
@@ -299,10 +306,10 @@ for OG_ONLY = og_range
                         subject = [OG_ONLY, FOCAL, EMPHASIS, OG_RT, OG_Hit, PM_RT, PM_Hit, PM_miss_OG_hit, TARGETS];
                         data = [data; subject];
                         if debug_mode
-                            subject_extra = {sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses, RTs, act, acc, onsets, offsets, nets, curpar};
+                            subject_extra = {sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses, RTs, act, acc, onsets, offsets, nets, subjpar};
                             extra = [extra; subject_extra];
                         else
-                            extra = [extra; curpar];
+                            extra = [extra; subjpar];
                         end
 
                     elseif exp_id == 2
@@ -324,17 +331,17 @@ for OG_ONLY = og_range
                             block = [OG_ONLY, FOCAL, EMPHASIS, OG_RT, OG_Hit, PM_RT, PM_Hit, PM_miss_OG_hit, subject_id, block_id];
                             data = [data; block];
                             if debug_mode
-                                subject_extra = {sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses, RTs, act, acc, onsets, offsets, nets, subject_id, block, curpar};
+                                subject_extra = {sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses, RTs, act, acc, onsets, offsets, nets, subject_id, block, subjpar};
                                 extra = [extra; subject_extra];
                             else
-                                extra = [extra; curpar];
+                                extra = [extra; subjpar];
                             end
                         end
                     end
                     
                     % show picture of whole thing (for debugging)
                     if debug_mode
-                        fprintf('   curpar(1:4) = %.3f %.3f %.3f %.3f', curpar(1), curpar(2), curpar(3), curpar(4));
+                        fprintf('   curpar(1:4) = %.3f %.3f %.3f %.3f', subjpar(1), subjpar(2), subjpar(3), subjpar(4));
                         if ~OG_ONLY
                             getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, ...
                                 responses, RTs, act, acc, onsets, offsets, ...
@@ -351,5 +358,3 @@ for OG_ONLY = og_range
         end % EMPHASIS 
     end % FOCAL
 end % OG_ONLY
-
-delete(poolobj);

@@ -42,7 +42,7 @@ end
                 1  0.8    1    0.75, ...    % nonfocal, low emph   % exp2_v11
                 1  0.9    1    0.83, ...    % nonfocal, high emph  % exp1_v16 -- sorta
                 4 4 4, ... % biases
-		0.5 0.5];      % uniform noise
+		1 0.8];      % uniform noise ; 0.8 0.6 last best
  
 
 debug_mode = false;

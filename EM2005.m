@@ -19,7 +19,7 @@ assert(exp_id == 1 || exp_id == 2 || exp_id == 3 || exp_id == 4 || exp_id == 5);
 fprintf('\n\n--------========= RUNNING E&M EXPERIMENT %d ======-------\n\n', exp_id);
 
 % from E&M Experiment 1 & 2 methods
-subjects_per_condition = [24 24 32 16 72]; % [24 24 32 104 72]; % TODO FIXME restore
+subjects_per_condition = [24 24 32 104 72];
 blocks_per_condition = [8 4 1 1 10];
 trials_per_block = [24 40 110 110 18];
 pm_blocks_exp1 = [1 3 6 7];
@@ -49,7 +49,7 @@ elseif exp_id == 3
 elseif exp_id == 4
     focal_range = 1;
     target_range = 1;
-    %emphasis_range = 0;
+    emphasis_range = 0;
 elseif exp_id == 5
     focal_range = 1;
     emphasis_range = 0;

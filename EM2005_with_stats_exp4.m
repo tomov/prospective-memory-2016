@@ -40,7 +40,7 @@ subjects = data;
 %}
 SD_cols = [5 7 9 11];
 
-subjects_per_condition = 104;
+subjects_per_condition = 104 / 2; % divide by 2! b/c "EMPHASIS" == "high cost / low cost" is not a real condition => samples will be in half
 
 empirical_stats = [
     % low emphasis = no cost participants (no monitoring)
@@ -57,13 +57,15 @@ empirical_stats = [
 empirical_stats(:, SD_cols) = empirical_stats(:, SD_cols) / sqrt(subjects_per_condition);
 
 
-subjects_per_condition = 16; % TODO FIXME rm -rf
-
 % -------------- change meaning of EMPHASIS column !!!
 % now it means whether it's "low cost" (0) or "high cost" (1) group
 
+% first step -- clear the nan's
+assert(sum(isnan(subjects(:, 4))) < 6); % don't want too many nan's
+subjects = subjects(~isnan(subjects(:, 4)), :);
+
 for OG_ONLY = 1:-1:0
-    which = subjects(:, 1) == OG_ONLY;
+    which = subjects(:, 1) == OG_ONLY & ~isnan(subjects(:, 4));
     m = median(subjects(which, 4));
     subjects(which, 3) = (subjects(which, 4) > m);
 end
@@ -84,7 +86,11 @@ for EMPHASIS = 0:1
             M = mean(samples);
             SD = std(samples);
             SEM = SD / sqrt(length(samples));
-            assert(length(samples) == subjects_per_condition);
+            % this assert blows b/c we get one or two NaN's... ndb
+            % instead, assert we're within a reasonable range
+            %assert(length(samples) == subjects_per_condition);
+            assert(length(samples) >= subjects_per_condition - 4)
+            
             %if col == 4
             %    fprintf('OG RT: emphasis = %d, og only = %d: $%.2f \\pm %.2f$\n', EMPHASIS, OG_ONLY,  M * RT_slope + RT_intercept, SEM * RT_slope);
             %elseif col == 7

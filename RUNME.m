@@ -25,9 +25,8 @@ end
 % delete(poolobj); -- destroys the parpool; no need to though, just FYI
 
 debug_mode = false;
-experiment = 1;
+experiment = 4;
 
-    % exp 1
 if experiment == 1
     % OG task, PM task, OG features, target(s)
     startpar = [1  0.35   1    0.3, ...     % focal, low emph     % exp1_v16, exp2_v19
@@ -36,6 +35,22 @@ if experiment == 1
                 1  0.9    1    0.83, ...    % nonfocal, high emph  % exp1_v16 -- sorta
                 4 4 4, ... % biases
 		        0 0];      % no noise...
+elseif experiment == 2
+    % OG task, PM task, OG features, target(s)
+    startpar = [1  0.35   1    0.3, ...     % focal, low emph     % exp1_v16, exp2_v19
+                1  0.6    1    0.4, ...     % focal, high emph      % exp1_v16
+                1  0.8    1    0.78, ...    % nonfocal, low emph   % exp2_v11
+                1  0.9    1    0.83, ...    % nonfocal, high emph  % exp1_v16 -- sorta
+                4 4 4, ... % biases
+		        0 0];      % no noise...
+elseif experiment == 3  
+    % OG task, PM task, OG features, target(s)
+    startpar = [1  0.0    1    0.6, ...     % focal, low emph     % exp1_v16, exp2_v19
+                1  0.0    1    0.7, ...     % focal, high emph      % exp1_v16
+                1  0.3    1    0.5, ...    % nonfocal, low emph   % exp2_v11
+                1  0.6    1    0.5, ...    % nonfocal, high emph  % exp1_v16 -- sorta
+                4 4 4, ...   % biases
+         		1 0];        % no noise
 elseif experiment == 4  
     % OG task, PM task, OG features, target(s)
     startpar = [1  0.1    1    0.1, ...     % focal, low emph     % exp1_v16, exp2_v19

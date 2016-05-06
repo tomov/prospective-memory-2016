@@ -19,7 +19,7 @@ assert(exp_id == 1 || exp_id == 2 || exp_id == 3 || exp_id == 4 || exp_id == 5);
 fprintf('\n\n--------========= RUNNING E&M EXPERIMENT %d ======-------\n\n', exp_id);
 
 % from E&M Experiment 1 & 2 methods
-subjects_per_condition = [24 24 32 104 72];
+subjects_per_condition = [24 24 32 104 72];  % [24 24 32 104 72];
 blocks_per_condition = [8 4 1 1 10];
 trials_per_block = [24 40 110 110 18];
 pm_blocks_exp1 = [1 3 6 7];
@@ -279,7 +279,7 @@ for OG_ONLY = og_range
                     end
                     
                     % run the actual simulation
-                    [responses, RTs, act, acc, onsets, offsets, nets] = sim.trial(stimuli, false);
+                    [responses, RTs, act, acc, onsets, offsets, nets] = sim.trial(stimuli);
 
                     % collect the relevant data
                     if exp_id == 1 || exp_id == 3 || exp_id == 4 || exp_id == 5

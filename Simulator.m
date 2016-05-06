@@ -15,8 +15,6 @@ classdef Simulator < Model
         wm_act;
         wm_net;
         Nout;
-        
-        del;          % error used for backprop
     end
     
     methods
@@ -121,11 +119,7 @@ classdef Simulator < Model
             %self.activation(self.wm_ids) = self.logistic(self.wm_act * 12 - 6);
         end
         
-        function costForBackprop(self)
-            % TODO
-        end
-
-        function [responses, RTs, activation_log, accumulators_log, onsets, offsets, net_log] = trial(self, stimuli, train)
+        function [responses, RTs, activation_log, accumulators_log, onsets, offsets, net_log] = trial(self, stimuli)
             % initialize activations and outputs
             trial_duration = sum(cat(2, stimuli{:, 2})) * self.CYCLES_PER_SEC;
             self.accumulators = zeros(1, self.Nout);
@@ -145,14 +139,6 @@ classdef Simulator < Model
             offsets = [];
             cycles = 0;
             switched_to_PM_task = false;
-            
-            self.del = zeros(1, self.N);
-
-            
-            if train
-                % TODO initialize random weights -- small randomness as in
-                % ML notes
-            end
             
             % for each input from the time series
             for ord=1:size(stimuli, 1)
@@ -297,11 +283,7 @@ classdef Simulator < Model
                 offsets = [offsets; cycles + cycle];
                 responses = [responses; {output}];
                 RTs = [RTs; RT];
-                cycles = cycles + cycle;
-                
-                if train
-                    % TODO backprop -- same as ML #WATUUP
-                end
+                cycles = cycles + cycle;                
             end
             
             activation_log(cycles:end,:) = [];

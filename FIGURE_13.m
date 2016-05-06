@@ -1,4 +1,4 @@
-load('exp1-data.mat')
+% load('exp1-data.mat')
 
 EM2005_with_stats_exp1
 

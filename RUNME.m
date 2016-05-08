@@ -24,7 +24,8 @@ if isempty(poolobj)
 end
 % delete(poolobj); -- destroys the parpool; no need to though, just FYI
 
-debug_mode = false;
+debug_mode = false; % only run 1 subject per condition and show progress ; must change parfor to for in EM2005
+fitting_mode = true; % used when fitting the parameters ; uses a more efficient setup that produces similar results
 experiment = 1;
 
 if experiment == 1
@@ -73,11 +74,11 @@ elseif experiment == 4
 end
 
 tic
-[data, extra] = EM2005(startpar, experiment, debug_mode, true);
+[data, extra] = EM2005(startpar, experiment, fitting_mode, debug_mode, true);
 toc
 
 if debug_mode
-	m = Model(startpar, false);
+	m = Model(true, startpar([1 2 3 4 17 18 19 20 21]), false);
     wm_ids = m.wm_ids;
     context_ids = m.context_ids;
     act = extra{1, 8};

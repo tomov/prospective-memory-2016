@@ -15,12 +15,15 @@ classdef Simulator < Model
         wm_act;
         wm_net;
         Nout;
+        
+        fitting_mode; % are we just fitting parameters? use more efficient setup
     end
     
     methods
-        function self = Simulator(FOCAL, params, have_third_task)
+        function self = Simulator(FOCAL, params, have_third_task, fitting_mode)
             self = self@Model(FOCAL, params, have_third_task);
             self.Nout = size(self.output_ids, 2);
+            self.fitting_mode = fitting_mode;
         end
         
         function ids = string_to_ids(self, stimulus)
@@ -216,11 +219,20 @@ classdef Simulator < Model
                     end
                     
                     % calculate net inputs for all units
+                    %
                     self.net_input(self.ffwd_ids) = self.activation * self.weights(:, self.ffwd_ids) ...
-                        + self.bias(self.ffwd_ids) + normrnd(0, 0.1, size(self.ffwd_ids));
+                        + self.bias(self.ffwd_ids);
                     self.net_input(self.wm_ids) = self.activation(self.ffwd_ids) * self.weights(self.ffwd_ids, self.wm_ids) ...
                         + self.wm_act * self.weights(self.wm_ids, self.wm_ids) ...
-                        + self.bias(self.wm_ids) + normrnd(0, 0.01, size(self.wm_ids));
+                        + self.bias(self.wm_ids);
+                    % unless we're fitting (i.e. when doing regular
+                    % simulations), add noise to the net inputs
+                    %
+                    if ~self.fitting_mode
+                        % TODO parametrize the noise
+                        self.net_input(self.ffwd_ids) = self.net_input(self.ffwd_ids) + normrnd(0, 0.1, size(self.ffwd_ids));
+                        self.net_input(self.wm_ids) = self.net_input(self.wm_ids) + normrnd(0, 0.01, size(self.wm_ids));
+                    end
                     
                     % on instruction, oscillate around initial WM
                     % activations -- WTF bro

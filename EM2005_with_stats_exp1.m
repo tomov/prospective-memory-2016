@@ -55,12 +55,8 @@ empirical_stats = [
 ];
 
 
-
 % convert SD's to SEM's in empirical data
 empirical_stats(:, SD_cols) = empirical_stats(:, SD_cols) / sqrt(subjects_per_condition);
-
-
-subjects_per_condition = 4; % TODO RM -RF
 
 
 % ------------- calculate simulation stats (Table 1 from E&M 2005)

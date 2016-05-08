@@ -7,6 +7,7 @@ fprintf('%8.5f', free_params);
 fprintf(']......\n');
 
 debug_mode = false;
+fitting_mode = true;
 experiment = 1;
 
 startpar = [1  0.35   1    0.3, ...     % focal, low emph     % exp1_v16, exp2_v19
@@ -18,7 +19,7 @@ startpar = [1  0.35   1    0.3, ...     % focal, low emph     % exp1_v16, exp2_v
 
 startpar([2 4 6 8 10 12 14 16]) = free_params; % set the params we're fitting
 
-[data, extra] = EM2005(startpar, experiment, debug_mode, false);
+[data, extra] = EM2005(startpar, experiment, fitting_mode, debug_mode, false);
 
 error = compute_err(data, extra);
 

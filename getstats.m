@@ -117,7 +117,7 @@ PM_miss_OG_hit = size(PM_miss_correct_OG_RTs, 1) / size(PM_miss_RTs, 1) * 100;
 if show_pics
     figure;
 
-    t_range = 1:5000;
+    t_range = 1:min(5000, length(act));
     %t_range = 1:2000;
     y_lim = [sim.MINIMUM_ACTIVATION - 0.1 sim.MAXIMUM_ACTIVATION + 0.1];
     bar_names = {'OG correct', 'PM hit', 'false alarm', 'OG wrong', 'PM miss', 'PM OG' 'OG timeout', 'PM timeout'};
@@ -188,7 +188,7 @@ if show_pics
     ylim(y_lim);
     line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
     line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
-%{
+
     figure;
 
     subplot(1, 2, 1);
@@ -209,6 +209,6 @@ if show_pics
     ylim([0 100]);
     title('Fraction of responses (%)', 'FontWeight','bold');
     ylim([0 100]);
-%}
+
     
 end

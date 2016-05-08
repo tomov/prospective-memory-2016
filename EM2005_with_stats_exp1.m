@@ -39,9 +39,10 @@ subjects = data;
     10 - PM_Hit_M,
     11 - PM_Hit_SEM
 %}
-SD_cols = [5 7 9 11];
 
+SD_cols = [5,7,9,11]; % SDs. we convert those to SEM by dividing by subjects_per_condition
 subjects_per_condition = 24;
+
 empirical_stats = [
     1 1 0, 1073.25, 112.04, 97, 2, NaN, NaN, NaN, NaN;  % no-PM, focal,    low emph
     0 1 0, 1120.87, 116.48, 97, 2, NaN, NaN, 88, 16;    % PM,    focal,    low emph
@@ -59,7 +60,7 @@ empirical_stats = [
 empirical_stats(:, SD_cols) = empirical_stats(:, SD_cols) / sqrt(subjects_per_condition);
 
 
-subjects_per_condition = 24; % TODO RM -RF
+subjects_per_condition = 4; % TODO RM -RF
 
 
 % ------------- calculate simulation stats (Table 1 from E&M 2005)

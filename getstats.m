@@ -1,4 +1,4 @@
-function [OG_RT, OG_RT_SD, OG_Hit, PM_RT, PM_RT_SD, PM_Hit, PM_miss_OG_hit] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses, RTs, act, acc, onsets, offsets, is_target, correct, og_correct, show_pics)
+function [OG_RT, OG_RT_SD, OG_Hit, PM_RT, PM_RT_SD, PM_Hit, PM_miss_OG_hit] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses, RTs, act, acc, onsets, offsets, is_target, correct, og_correct, show_pics, do_print)
 
 OG_count = 0;
 PM_count = 0;
@@ -65,7 +65,7 @@ PM_count
 %}
 
 
-if ~show_pics
+if ~show_pics && do_print
     if OG_ONLY
         og_string = 'No PM task';
     else
@@ -86,7 +86,7 @@ if ~show_pics
     end
 end
 
-if ~OG_ONLY && ~show_pics
+if ~OG_ONLY && ~show_pics && do_print
     fprintf('mean OG correct RTs = %.4f (%.4f)\n', mean(OG_correct_RTs), std(OG_correct_RTs));
     fprintf('mean PM hit RTs = %.4f (%.4f)\n', mean(PM_hit_RTs), std(PM_hit_RTs));
     fprintf('OG accuracy = %.4f%%\n', size(OG_correct_RTs, 1) / OG_count * 100);

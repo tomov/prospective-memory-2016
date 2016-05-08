@@ -25,9 +25,12 @@ end
 % delete(poolobj); -- destroys the parpool; no need to though, just FYI
 
 debug_mode = false;
-experiment = 4;
+experiment = 1;
 
 if experiment == 1
+    % all 4 conditions; RT's and hit rates.
+    % free params = startpar
+    %
     % OG task, PM task, OG features, target(s)
     startpar = [1  0.35   1    0.3, ...     % focal, low emph     % exp1_v16, exp2_v19
                 1  0.6    1    0.4, ...     % focal, high emph      % exp1_v16
@@ -36,6 +39,9 @@ if experiment == 1
                 4 4 4, ... % biases
 		        0 0];      % no noise...
 elseif experiment == 2
+    % decay of monitoring => PM hit rate lowers over time in nonfocal
+    % free param -- gamma = 0.0004
+    %
     % OG task, PM task, OG features, target(s)
     startpar = [1  0.35   1    0.3, ...     % focal, low emph     % exp1_v16, exp2_v19
                 1  0.6    1    0.4, ...     % focal, high emph      % exp1_v16
@@ -43,7 +49,9 @@ elseif experiment == 2
                 1  0.9    1    0.83, ...    % nonfocal, high emph  % exp1_v16 -- sorta
                 4 4 4, ... % biases
 		        0 0];      % no noise...
-elseif experiment == 3  
+elseif experiment == 3 
+    % 6 targets => slower OG in 6 vs. 1 target
+    %
     % OG task, PM task, OG features, target(s)
     startpar = [1  0.0    1    0.6, ...     % focal, low emph     % exp1_v16, exp2_v19
                 1  0.0    1    0.7, ...     % focal, high emph      % exp1_v16
@@ -52,6 +60,9 @@ elseif experiment == 3
                 4 4 4, ...   % biases
          		1 0];        % no noise
 elseif experiment == 4  
+    % cross-subject monitoring strategies => half of subjects slower OG than
+    % other half
+    %
     % OG task, PM task, OG features, target(s)
     startpar = [1  0.1    1    0.1, ...     % focal, low emph     % exp1_v16, exp2_v19
                 1  0.6    1    0.4, ...     % focal, high emph      % exp1_v16
@@ -62,7 +73,7 @@ elseif experiment == 4
 end
 
 tic
-[data, extra] = EM2005(startpar, experiment, debug_mode);
+[data, extra] = EM2005(startpar, experiment, debug_mode, true);
 toc
 
 if debug_mode

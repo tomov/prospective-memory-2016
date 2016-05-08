@@ -1,10 +1,21 @@
-function [data, extra] = EM2005( params, exp_id, debug_mode )
+function [data, extra] = EM2005( params, exp_id, debug_mode, do_print)
 % run a simulation of the E&M with certain parameters and spit out the data
 % for all subjects
 
+
+% create a parpool if none exists
+poolobj = gcp('nocreate');
+if isempty(poolobj)
+    poolobj = parpool;
+end
+% delete(poolobj); -- destroys the parpool; no need to though, just FYI
+
+
 % parse parameters
 
-params
+if do_print, params
+end
+
 focal_low_init_wm = params(1:4);
 focal_high_init_wm = params(5:8);
 nonfocal_low_init_wm = params(9:12);
@@ -16,10 +27,11 @@ param_noise_sigma_1 = params(20);
 param_noise_sigma_2 = params(21);
 
 assert(exp_id == 1 || exp_id == 2 || exp_id == 3 || exp_id == 4 || exp_id == 5);
-fprintf('\n\n--------========= RUNNING E&M EXPERIMENT %d ======-------\n\n', exp_id);
+
+if do_print, fprintf('\n\n--------========= RUNNING E&M EXPERIMENT %d ======-------\n\n', exp_id); end
 
 % from E&M Experiment 1 & 2 methods
-subjects_per_condition = [24 24 32 104 72];  % [24 24 32 104 72];
+subjects_per_condition = [4 24 32 104 72];  % [24 24 32 104 72]; TODO restore
 blocks_per_condition = [8 4 1 1 10];
 trials_per_block = [24 40 110 110 18];
 pm_blocks_exp1 = [1 3 6 7];
@@ -260,7 +272,7 @@ for OG_ONLY = og_range
                     % initialize simulator             
                     sim = Simulator(FOCAL, subjpar, have_third_task);
                 
-                    fprintf('\nsubject %d: curpar(2,4) = %.2f %.2f\n', subject_id, subjpar(2), subjpar(4));
+                    if do_print, fprintf('\nsubject %d: curpar(2,4) = %.2f %.2f\n', subject_id, subjpar(2), subjpar(4)); end
                     
                     % PM instruction
                     if FOCAL
@@ -287,20 +299,20 @@ for OG_ONLY = og_range
                         [OG_RT, ~, OG_Hit, PM_RT, ~, PM_Hit, PM_miss_OG_hit] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, ...
                             responses, RTs, act, acc, onsets, offsets, ...
                             is_target, correct, og_correct, ...
-                            false);
+                            false, do_print);
                         if exp_id == 5
                             % extra analysis for experiment 5
                             IT_TAR_RT = mean(RTs(logical(inter_target)));
                             IT_TAR_SEM = std(RTs(logical(inter_target))) / sqrt(length(RTs(logical(inter_target))));
                             IT_NONTAR_RT = mean(RTs(logical(~inter_target)));
                             IT_NONTAR_SEM = std(RTs(logical(~inter_target))) / sqrt(length(RTs(logical(~inter_target))));
-                            fprintf(' bonus Exp 5: target RT = %.2f (%.2f), nontarget RT = %.2f (%.2f)\n', ...
-                                IT_TAR_RT, IT_TAR_SEM, IT_NONTAR_RT, IT_NONTAR_SEM);
+                            if do_print, fprintf(' bonus Exp 5: target RT = %.2f (%.2f), nontarget RT = %.2f (%.2f)\n', ...
+                                IT_TAR_RT, IT_TAR_SEM, IT_NONTAR_RT, IT_NONTAR_SEM); end
                             
                             tar_resp = responses(logical(inter_target));
                             tar_correct = correct(logical(inter_target));
                             IT_tar_hit = sum(strcmp(tar_resp, tar_correct)) / length(tar_correct) * 100;
-                            fprintf('            : accuracy on targets = %.2f\n', IT_tar_hit);
+                            if do_print, fprintf('            : accuracy on targets = %.2f\n', IT_tar_hit); end
                         end
                      
                         subject = [OG_ONLY, FOCAL, EMPHASIS, OG_RT, OG_Hit, PM_RT, PM_Hit, PM_miss_OG_hit, TARGETS];
@@ -324,7 +336,7 @@ for OG_ONLY = og_range
                                 is_target(block_start:block_end), ...
                                 correct(block_start:block_end), ...
                                 og_correct(block_start:block_end), ...
-                                false);
+                                false, do_print);
 
                             % put subject and block id's at the end to make it
                             % compatible with the data from experiment 1
@@ -346,7 +358,7 @@ for OG_ONLY = og_range
                             getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, ...
                                 responses, RTs, act, acc, onsets, offsets, ...
                                 is_target, correct, og_correct, ...
-                                true);
+                                true, true);
                         end
                     end 
                 end

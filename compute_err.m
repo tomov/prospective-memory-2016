@@ -47,6 +47,7 @@ subjects_per_condition = 24;
 
 % comes from E&M 2005 paper
 empirical_stats = [
+   %       OG RT's          OG hit PM RT     PM hit
     1 1 0, 1073.25, 112.04, 97, 2, NaN, NaN, NaN, NaN;  % no-PM, focal,    low emph
     0 1 0, 1120.87, 116.48, 97, 2, NaN, NaN, 88, 16;    % PM,    focal,    low emph
     1 1 1, 1149.25, 137.58, 97, 2, NaN, NaN, NaN, NaN;  % no-PM, focal,    high emph
@@ -62,6 +63,7 @@ empirical_stats(:, SD_cols) = empirical_stats(:, SD_cols) / sqrt(subjects_per_co
 
 % resize weights of errors to # of conditions
 err_scalers = repmat(err_weights, size(empirical_stats, 1), 1);
+diff_err_scalers = [3; 3];
 
 
 % ------------- calculate simulation stats (Table 1 from E&M 2005)
@@ -113,4 +115,11 @@ simulation_stats(:,RT_mean_cols) = polyval(p, simulation_stats(:,RT_mean_cols));
 %
 deviations = (abs(simulation_stats(:,use_cols) - empirical_stats(:,use_cols))) ./ empirical_stats(:,use_cols) .* 100;
 deviations(isnan(deviations)) = 0; % ignore NaN's
-error = sum(sum((deviations.^2) .* err_scalers));
+
+% this is an extra error term for differences between RT's in conditions
+% -- makes figure 9 look prettier; kind of cheating but oh well
+%
+%diff_deviations = (empirical_stats([4 8],4) - empirical_stats([2 6],4)) - (simulation_stats([4 8],4) - simulation_stats([2 6],4));
+%diff_deviations = diff_deviations ./ empirical_stats([4 8], 4) .* 100;
+
+error = sum(sum((deviations.^2) .* err_scalers)); % + sum((diff_deviations.^2) .* diff_err_scalers);

@@ -125,7 +125,7 @@ for OG_ONLY = og_range
                         % when fitting, have PM task more often and less
                         % trials overall
                         %
-                        reps = 30;
+                        reps = blocks_per_condition * trials_per_block / length(og_stimuli_pattern);
                         stimuli_pattern = og_stimuli_pattern;
                         correct_pattern = og_correct_pattern;
                         is_target_pattern = zeros(length(og_stimuli_pattern), 1);
@@ -138,6 +138,7 @@ for OG_ONLY = og_range
                         correct = repmat(correct_pattern, reps, 1);
                         og_correct = repmat(og_correct_pattern, reps, 1);
                         is_target = repmat(is_target_pattern, reps, 1);
+                        inter_target = zeros(); % hack to make parfor work
                 else % if not fitting_mode i.e. regular simulations
                     % insert the PM targets
                     %
@@ -286,7 +287,7 @@ for OG_ONLY = og_range
                 % simulate subjects in parallel; must be serial in
                 % debug_mode (i.e. regular for)
                 %
-                for subject_id = 1:subjects_per_condition
+                parfor subject_id = 1:subjects_per_condition
                     % optionally add cross-subject variability
                     %
                     subjpar = curpar;

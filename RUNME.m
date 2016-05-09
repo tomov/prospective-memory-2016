@@ -25,7 +25,7 @@ end
 % delete(poolobj); -- destroys the parpool; no need to though, just FYI
 
 debug_mode = false; % only run 1 subject per condition and show progress ; must change parfor to for in EM2005
-fitting_mode = true; % used when fitting the parameters ; uses a more efficient setup that produces similar results
+fitting_mode = false; % used when fitting the parameters ; uses a more efficient setup that produces similar results
 experiment = 1;
 
 if experiment == 1
@@ -39,6 +39,9 @@ if experiment == 1
                 1  0.9    1    0.83, ...    % nonfocal, high emph  % exp1_v16 -- sorta
                 4 4 4, ... % biases
 		        0 0];      % no noise...
+            
+            
+    startpar([2 4 6 8 10 12 14 16])  = [0.2453    0.3713    0.5446    0.4261    0.8402    0.7132    0.7766    0.8729]; % best par from solve.m
 elseif experiment == 2
     % decay of monitoring => PM hit rate lowers over time in nonfocal
     % free param -- gamma = 0.0004

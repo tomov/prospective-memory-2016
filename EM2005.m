@@ -6,7 +6,9 @@ function [data, extra] = EM2005( params, exp_id, fitting_mode, debug_mode, do_pr
 % create parallel pool
 %
 if (strfind(version('-date'), '2013')) % rondo lives in 2013
-    matlabpool;
+    if matlabpool('size') == 0
+        matlabpool;
+    end
     fprintf('num of 2013 parallel workers = %d\n', matlabpool('size'));
 else
     poolobj = gcp;

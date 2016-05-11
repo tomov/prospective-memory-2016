@@ -1,8 +1,13 @@
-poolobj = gcp;
-poolobj = gcp;
+% create parallel pool
+%
+if (strfind(version('-date'), '2013')) % rondo lives in 2013
+    matlabpool;
+    fprintf('num of 2013 parallel workers = %d\n', matlabpool('size'));
+else
+    poolobj = gcp;
+    fprintf('num of parallel workers = %d\n', poolobj.NumWorkers);
+end
 
-poolobj.NumWorkers
-fprintf('num of workers = %d\n', poolobj.NumWorkers);
 
 a = 1:100;
 

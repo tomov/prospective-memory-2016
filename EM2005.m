@@ -3,8 +3,15 @@ function [data, extra] = EM2005( params, exp_id, fitting_mode, debug_mode, do_pr
 % for all subjects
 
 
-% create a parpool if none exists
-poolobj = gcp;
+% create parallel pool
+%
+if (strfind(version('-date'), '2013')) % rondo lives in 2013
+    matlabpool;
+    fprintf('num of 2013 parallel workers = %d\n', matlabpool('size'));
+else
+    poolobj = gcp;
+    fprintf('num of parallel workers = %d\n', poolobj.NumWorkers);
+end
 
 
 % parse parameters

@@ -38,10 +38,13 @@ if experiment == 1
                 1  0.8    1    0.75, ...    % nonfocal, low emph   % exp2_v11
                 1  0.9    1    0.83, ...    % nonfocal, high emph  % exp1_v16 -- sorta
                 4 4 4, ... % biases
-		        0 0];      % no noise...
+		        0 0, ...   % no noise...
+                0.0004];   % gamma
             
             
-    startpar([2 4 6 8 10 12 14 16])  = [0.2453    0.3713    0.5446    0.4261    0.8402    0.7132    0.7766    0.8729]; % best par from solve.m
+    startpar([2 4 6 8 10 12 14 16 22])  =  [ 0.3728    0.2708    0.5854    0.4157    0.7403    0.7339    0.8124    0.8061    0.4180 / 1000];
+         % [0.2453    0.3713    0.5446    0.4261    0.8402    0.7132
+         % 0.7766    0.8729]; % best par from solve.m for experiment 1
 elseif experiment == 2
     % decay of monitoring => PM hit rate lowers over time in nonfocal
     % free param -- gamma = 0.0004
@@ -52,7 +55,10 @@ elseif experiment == 2
                 1  0.8    1    0.78, ...    % nonfocal, low emph   % exp2_v11
                 1  0.9    1    0.83, ...    % nonfocal, high emph  % exp1_v16 -- sorta
                 4 4 4, ... % biases
-		        0 0];      % no noise...
+		        0 0, ...   % no noise...
+                0.0004];   % gamma
+    startpar([2 4 6 8 10 12 14 16 22])  =  [ 0.3728    0.2708    0.5854    0.4157    0.7403    0.7339    0.8124    0.8061    0.4180 / 1000];
+            
 elseif experiment == 3 
     % 6 targets => slower OG in 6 vs. 1 target
     %

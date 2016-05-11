@@ -25,6 +25,7 @@ bias_for_attention = params(18);
 bias_for_context = params(19);
 param_noise_sigma_1 = params(20);
 param_noise_sigma_2 = params(21);
+gamma = params(22);
 
 assert(exp_id == 1 || exp_id == 2 || exp_id == 3 || exp_id == 4 || exp_id == 5);
 
@@ -122,23 +123,33 @@ for OG_ONLY = og_range
 
                 
                 if fitting_mode
-                        % when fitting, have PM task more often and less
-                        % trials overall
-                        %
-                        reps = blocks_per_condition * trials_per_block / length(og_stimuli_pattern);
-                        stimuli_pattern = og_stimuli_pattern;
-                        correct_pattern = og_correct_pattern;
-                        is_target_pattern = zeros(length(og_stimuli_pattern), 1);
-                        if ~OG_ONLY
-                            stimuli_pattern([3 6], :) = pm_targets_pattern;
-                            correct_pattern([3 6]) = pm_correct_pattern;
-                            is_target_pattern([3 6]) = 1;
-                        end
-                        stimuli = repmat(stimuli_pattern, reps, 1);
-                        correct = repmat(correct_pattern, reps, 1);
-                        og_correct = repmat(og_correct_pattern, reps, 1);
-                        is_target = repmat(is_target_pattern, reps, 1);
-                        inter_target = zeros(); % hack to make parfor work
+                    % when fitting, have PM task more often and less
+                    % trials overall
+                    %
+                    reps = blocks_per_condition * trials_per_block;
+                    
+                    stimuli_pattern = og_stimuli_pattern;
+                    correct_pattern = og_correct_pattern;
+                    is_target_pattern = zeros(length(og_stimuli_pattern), 1);
+                    if ~OG_ONLY
+                        stimuli_pattern([3 6], :) = pm_targets_pattern;
+                        correct_pattern([3 6]) = pm_correct_pattern;
+                        is_target_pattern([3 6]) = 1;
+                    end
+                    
+                    % repeat patterns
+                    stimuli = repmat(stimuli_pattern, reps, 1);
+                    correct = repmat(correct_pattern, reps, 1);
+                    og_correct = repmat(og_correct_pattern, reps, 1);
+                    is_target = repmat(is_target_pattern, reps, 1);
+                    
+                    % truncate
+                    stimuli = stimuli(1:reps, :);
+                    correct = correct(1:reps, :);
+                    og_correct = og_correct(1:reps, :);
+                    is_target = is_target(1:reps, :);
+                    
+                    inter_target = zeros(); % hack to make parfor work
                 else % if not fitting_mode i.e. regular simulations
                     % insert the PM targets
                     %
@@ -256,6 +267,7 @@ for OG_ONLY = og_range
                     curpar(8) = 0;
                 end
                 curpar(9) = bias_for_context;
+                curpar(10) = gamma;
                 if OG_ONLY
                     curpar(1:4) = [1 0 1 0];
                 else       

@@ -91,7 +91,7 @@ for BLOCK = 1:4
                 samples = blocks(blocks(:, 1) == OG_ONLY & blocks(:, 2) == FOCAL & blocks(:, 10) == BLOCK, col);
                 M = mean(samples);
                 SD = std(samples);
-                assert(length(samples) == subjects_per_condition);
+               % assert(length(samples) == subjects_per_condition);
                 stat = [stat, M, SD];
             end
             stat = [stat, BLOCK];
@@ -120,9 +120,9 @@ SSresid = sum(yresid.^2);
 SStotal = (length(empirical_RTs)-1) * var(empirical_RTs);
 rsq = 1 - SSresid/SStotal;
 
-%TODO FIXME use slope and intercept from experiment 1
-%RT_slope = 10;
-%RT_intercept = 100;
+%TODO FIXME use slope and intercept from experiment 1 UGH or not...
+%RT_slope = 8;
+%RT_intercept = 263;
 
 OG_RT_label_cycles_to_msec = sprintf('OG RT (msec = cycles * %.1f + %.1f)', RT_slope, RT_intercept);
 

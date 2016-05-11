@@ -72,7 +72,8 @@ classdef Model < handle
         
         BIAS_FOR_TASK = 3;
         TASK_INHIBITION = -2;
-        TASK_SELF = -2 + 0.0004;
+        GAMMA = 0.0004; % for the kWTA dynamics in the LCA's
+        TASK_SELF = -2; % + GAMMA; -- we add it later b/c it's a free param
         
         ATTENTION_TO_TASK = -1;
         
@@ -84,7 +85,7 @@ classdef Model < handle
         
         BIAS_FOR_ATTENTION = 3;
         ATTENTION_INHIBITION = -2;
-        ATTENTION_SELF = -2 + 0.0004;
+        ATTENTION_SELF = -2; % + GAMMA; -- we add it later b/c it's a free param
         
         TASK_TO_ATTENTION = -1;
         
@@ -92,7 +93,7 @@ classdef Model < handle
         
         BIAS_FOR_CONTEXT = 3;
         CONTEXT_INHIBITION = -2;
-        CONTEXT_SELF = -2 + 0.0004;
+        CONTEXT_SELF = -2; % + GAMMA; -- we add it later b/c it's a free param
         
         TASK_TO_CONTEXT = -1;
         ATTENTION_TO_CONTEXT = -1;
@@ -284,6 +285,7 @@ classdef Model < handle
             self.init_wm(self.wm_ids == self.unit_id('PM Context')) = params(7);
             self.init_wm(self.wm_ids == self.unit_id('Other Context')) = params(8);
             self.BIAS_FOR_CONTEXT = params(9);
+            self.GAMMA = params(10);
 
             % ---==== specify connections between units ====---
             
@@ -424,6 +426,9 @@ classdef Model < handle
             self.lateral_inhibition(self.context_ids, self.CONTEXT_INHIBITION);
 
             % self excitations
+            self.TASK_SELF = self.TASK_SELF + self.GAMMA;
+            self.ATTENTION_SELF = self.ATTENTION_SELF + self.GAMMA;
+            self.CONTEXT_SELF = self.CONTEXT_SELF + self.GAMMA;
             self.self_excitation(self.task_ids, self.TASK_SELF);
             self.self_excitation(self.attention_ids, self.ATTENTION_SELF);
             self.self_excitation(self.context_ids, self.CONTEXT_SELF);

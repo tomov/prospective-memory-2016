@@ -1,4 +1,4 @@
-function error = compute_err(data, extra) % takes in the output of EM2005
+function error = compute_err_exp1(data, extra) % takes in the output of EM2005
 % Computes the error for a particular simulation of EM2005
 
 % get stats from subjects and analyze so you can fit with fitparam()

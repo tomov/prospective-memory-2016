@@ -2,18 +2,24 @@
 % TODO only works for experiment 1
 %
 
-
+         % PM Task  PM target(s) initial WM activations
 init_par = [0.35    0.3, ...     % focal, low emph 
             0.6     0.4, ...     % focal, high emph 
             0.8     0.75, ...    % nonfocal, low emph 
-            0.9     0.83];
-min_par =  [0 0 0 0 0 0 0 0];
-max_par =  [1 1 1 1 1 1 1 1];
+            0.9     0.83, ...    % nonfocal, high emph
+            0.4]; % gamma * 10^-3
+min_par =  [0 0 0 0 0 0 0 0 0];
+max_par =  [1 1 1 1 1 1 1 1 1];
 
-options = optimoptions(@fmincon,'Algorithm','sqp','MaxIter', 100, 'DiffMinChange', 0.005);
+options = optimoptions(@fmincon,'Algorithm','sqp','MaxIter', 1000, 'DiffMinChange', 0.001);
 best_par = fmincon(@fitme, init_par, [], [], [], [], min_par, max_par, [], options);
 
 best_par
+
+
+
+% SOLUTIONS FOR EXPERIMENT 1 ---
+%
 
 %  fitting [ 0.27808 0.42082 0.48387 0.48294 0.84110 0.72067 0.88019
 %  0.86090] --> 740
@@ -33,3 +39,11 @@ best_par
 %  628
 
 % best par = 0.2453    0.3713    0.5446    0.4261    0.8402    0.7132    0.7766    0.8729
+
+
+% EXPERIMENT 2
+
+%    ======================>>>>> fitting [  0.36285  0.31384  0.60791  0.39209  0.80395  0.73517  0.88220  0.83836  0.41186]......
+% , error = 767.963778 * 3 + 3652.177395 = 5956.068727
+%
+% best par =  0.3728    0.2708    0.5854    0.4157    0.7403    0.7339    0.8124    0.8061    0.4180

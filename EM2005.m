@@ -4,11 +4,7 @@ function [data, extra] = EM2005( params, exp_id, fitting_mode, debug_mode, do_pr
 
 
 % create a parpool if none exists
-poolobj = gcp('nocreate');
-if isempty(poolobj)
-    poolobj = parpool;
-end
-% delete(poolobj); -- destroys the parpool; no need to though, just FYI
+poolobj = gcp;
 
 
 % parse parameters

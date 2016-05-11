@@ -18,11 +18,7 @@ where
   ];
 %}
 
-poolobj = gcp('nocreate');
-if isempty(poolobj)
-    poolobj = parpool; % create a parpool if none exists
-end
-% delete(poolobj); -- destroys the parpool; no need to though, just FYI
+poolobj = gcp; % create parallel pool
 
 debug_mode = false; % only run 1 subject per condition and show progress ; must change parfor to for in EM2005
 fitting_mode = false; % used when fitting the parameters ; uses a more efficient setup that produces similar results

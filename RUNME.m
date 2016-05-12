@@ -20,7 +20,7 @@ where
 
 debug_mode = false; % only run 1 subject per condition and show progress ; must change parfor to for in EM2005
 fitting_mode = false; % used when fitting the parameters ; uses a more efficient setup that produces similar results
-experiment = 1;
+experiment = 3;
 
 if experiment == 1
     % all 4 conditions; RT's and hit rates.
@@ -59,21 +59,23 @@ elseif experiment == 3
     % OG task, PM task, OG features, target(s)
     startpar = [1  0.0    1    0.6, ...     % focal, low emph     % exp1_v16, exp2_v19
                 1  0.0    1    0.7, ...     % focal, high emph      % exp1_v16
-                1  0.3    1    0.5, ...    % nonfocal, low emph   % exp2_v11
-                1  0.6    1    0.5, ...    % nonfocal, high emph  % exp1_v16 -- sorta
+                1  0.3    1    0.5, ...    % INVALID? nonfocal, low emph   % exp2_v11
+                1  0.6    1    0.5, ...    % INVALID? nonfocal, high emph  % exp1_v16 -- sorta
                 4 4 4, ...   % biases
-         		1 0];        % no noise
+         		0 0, ...     % no noise
+                0.0004];
 elseif experiment == 4  
     % cross-subject monitoring strategies => half of subjects slower OG than
     % other half
     %
     % OG task, PM task, OG features, target(s)
     startpar = [1  0.1    1    0.1, ...     % focal, low emph     % exp1_v16, exp2_v19
-                1  0.6    1    0.4, ...     % focal, high emph      % exp1_v16
-                1  0.8    1    0.75, ...    % nonfocal, low emph   % exp2_v11
-                1  0.9    1    0.83, ...    % nonfocal, high emph  % exp1_v16 -- sorta
+                1  0.6    1    0.4, ...     % INVALID? focal, high emph      % exp1_v16
+                1  0.8    1    0.75, ...    % INVALID? nonfocal, low emph   % exp2_v11
+                1  0.9    1    0.83, ...    % INVALID? nonfocal, high emph  % exp1_v16 -- sorta
                 4 4 4, ...   % biases
-         		1 0.8];      % uniform noise
+         		1 0.8, ...   % uniform noise
+                0.0004];     % gamma
 end
 
 tic

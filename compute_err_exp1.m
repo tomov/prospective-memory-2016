@@ -76,8 +76,8 @@ for FOCAL = 1:-1:0
             for col = 4:7
                 samples = data(data(:, 1) == OG_ONLY & data(:, 2) == FOCAL & data(:, 3) == EMPHASIS, col);
                 samples = samples(~isnan(samples));
-                M = mean(samples, 'omitnan');
-                SD = std(samples, 'omitnan');
+                M = mean(samples);
+                SD = std(samples);
                 %assert(length(samples) == subjects_per_condition);
                 stat = [stat, M, SD];
             end

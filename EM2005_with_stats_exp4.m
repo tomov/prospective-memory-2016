@@ -83,13 +83,14 @@ for EMPHASIS = 0:1
         stat = [OG_ONLY, FOCAL, EMPHASIS];
         for col = 4:7
             samples = subjects(subjects(:, 1) == OG_ONLY & subjects(:, 3) == EMPHASIS & subjects(:, 9) == TARGETS, col);
+            samples = samples(~isnan(samples));
             M = mean(samples);
             SD = std(samples);
             SEM = SD / sqrt(length(samples));
             % this assert blows b/c we get one or two NaN's... ndb
             % instead, assert we're within a reasonable range
             %assert(length(samples) == subjects_per_condition);
-            assert(length(samples) >= subjects_per_condition - 4)
+            %assert(length(samples) >= subjects_per_condition - 4)
             
             %if col == 4
             %    fprintf('OG RT: emphasis = %d, og only = %d: $%.2f \\pm %.2f$\n', EMPHASIS, OG_ONLY,  M * RT_slope + RT_intercept, SEM * RT_slope);

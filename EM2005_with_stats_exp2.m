@@ -89,6 +89,7 @@ for BLOCK = 1:4
             stat = [OG_ONLY, FOCAL, EMPHASIS];
             for col = 4:7
                 samples = blocks(blocks(:, 1) == OG_ONLY & blocks(:, 2) == FOCAL & blocks(:, 10) == BLOCK, col);
+                %samples = samples(~isnan(samples));
                 M = mean(samples);
                 SD = std(samples);
                % assert(length(samples) == subjects_per_condition);

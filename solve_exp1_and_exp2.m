@@ -12,7 +12,7 @@ min_par =  [0 0 0 0 0 0 0 0 0];
 max_par =  [1 1 1 1 1 1 1 1 1];
 
 options = optimoptions(@fmincon,'Algorithm','sqp','MaxIter', 1000, 'DiffMinChange', 0.001);
-best_par = fmincon(@fitme, init_par, [], [], [], [], min_par, max_par, [], options);
+best_par = fmincon(@fit_exp1_and_exp2, init_par, [], [], [], [], min_par, max_par, [], options);
 
 best_par
 

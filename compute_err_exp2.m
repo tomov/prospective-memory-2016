@@ -18,7 +18,6 @@ function error = compute_err_exp2(data, extra) % takes in the output of EM2005
  (see EM2005 exp 2)
 %}
 
-DO_PLOT = false;
 blocks = data;
 
 % -------------- define the empirical stats (Table 1 from E&M 2005)
@@ -83,7 +82,7 @@ empirical_stats(:, SD_cols) = empirical_stats(:, SD_cols) / sqrt(subjects_per_co
 
 % which columns to use in the error calculation
 %
-use_cols = [4  6, 10]; % OG RT's, OG accuracy, and PM hit rates
+use_cols = [4, 6, 10]; % OG RT's, OG accuracy, and PM hit rates
 
 % resize weights of errors to # of conditions
 %
@@ -105,6 +104,7 @@ for BLOCK = 1:4
             stat = [OG_ONLY, FOCAL, EMPHASIS];
             for col = 4:7
                 samples = blocks(blocks(:, 1) == OG_ONLY & blocks(:, 2) == FOCAL & blocks(:, 10) == BLOCK, col);
+                samples = samples(~isnan(samples));
                 M = mean(samples);
                 SD = std(samples);
                 %assert(length(samples) == subjects_per_condition);

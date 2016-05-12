@@ -1,4 +1,4 @@
-function error = fitme( free_params )
+function error = fit_exp1_and_exp2( free_params )
 % the error function to fit with fmincon or whatever which takes only a set of "free" parameters
 % and returns the computed error 
 

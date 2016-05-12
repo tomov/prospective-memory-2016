@@ -69,6 +69,7 @@ for OG_ONLY = 1:-1:0
         stat = [OG_ONLY, FOCAL, EMPHASIS];
         for col = 4:7
             samples = subjects(subjects(:, 1) == OG_ONLY & subjects(:, 9) == TARGETS, col);
+            samples = samples(~isnan(samples));
             M = mean(samples);
             SD = std(samples);
             % TODO B/C WE merge high and low emphasis

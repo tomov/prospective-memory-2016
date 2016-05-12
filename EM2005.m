@@ -63,6 +63,7 @@ elseif exp_id == 2
     emphasis_range = 0;
     target_range = 1;
 elseif exp_id == 3
+    emphasis_range = 0;
     focal_range = 1;
 elseif exp_id == 4
     focal_range = 1;
@@ -86,7 +87,12 @@ if debug_mode
 elseif fitting_mode
     % when fitting, use less subjects for speed
     %
-    subjects_per_condition = 4;
+    if exp_id == 1 || exp_id == 2
+        subjects_per_condition = 4;
+    else
+        assert(exp_id == 3 || exp_id == 4);
+        subjects_per_condition = 16;
+    end
 end
 
 

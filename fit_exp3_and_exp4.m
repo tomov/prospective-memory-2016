@@ -15,10 +15,9 @@ startpar = [1  0.0    1    0.6, ...     %  0.0  0.6  focal, low emph     % exp1_
             NaN NaN   NaN  NaN, ...    % INVALID nonfocal, high emph  % exp1_v16 -- sorta
             4 4 4, ...   % biases
             0 0, ...     % no noise
-            0.0004];
+            0.4180 / 1000]; % gamma from exp1_and_exp2
 
-startpar([2 4 20 21 22]) = free_params; % set the params we're fitting
-startpar(22) = free_params(5) * 10^(-3);
+startpar([2 4 20 21]) = free_params; % set the params we're fitting
 
 % experiment 3
 [data, extra] = EM2005(startpar, 3, fitting_mode, debug_mode, false);

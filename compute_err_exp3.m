@@ -123,8 +123,8 @@ deviations(isnan(deviations)) = 0; % ignore NaN's
 error = sum(sum((deviations.^2) .* err_scalers));
 
 % the OG RT slowing for 6 targets (PM vs. non-PM) should be ~300 msec, add that to the error too
-% TODO necessary?  Figure 20 is prettier
+% ...or maybe not
 %
-OG_6_target_slowing = simulation_stats(simulation_stats(:,1) == 0 & simulation_stats(:, 12) == 6, 4) ...
-    -  simulation_stats(simulation_stats(:,1) == 1 & simulation_stats(:, 12) == 6, 4);
-error = error + (((OG_6_target_slowing - 300) / 300) * 100) .^ 2 * diff_err_scaler;
+%OG_6_target_slowing = simulation_stats(simulation_stats(:,1) == 0 & simulation_stats(:, 12) == 6, 4) ...
+%    -  simulation_stats(simulation_stats(:,1) == 1 & simulation_stats(:, 12) == 6, 4);
+%error = error + (((OG_6_target_slowing - 300) / 300) * 100) .^ 2 * diff_err_scaler;

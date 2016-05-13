@@ -88,7 +88,7 @@ elseif fitting_mode
     % when fitting, use less subjects for speed
     %
     if exp_id == 1 || exp_id == 2
-        subjects_per_condition = 4;
+        subjects_per_condition = 8;
     else
         assert(exp_id == 3 || exp_id == 4);
         subjects_per_condition = 16;
@@ -134,8 +134,8 @@ for OG_ONLY = og_range
 
                 
                 if fitting_mode
-                    % when fitting, have PM task more often and less
-                    % trials overall
+                    % when fitting, have PM task more often so we can get a
+                    % good estimate of the PM hit rate with less subjects
                     %
                     reps = blocks_per_condition * trials_per_block;
                     

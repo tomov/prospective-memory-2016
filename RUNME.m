@@ -19,7 +19,7 @@ where
 %}
 
 debug_mode = false; % only run 1 subject per condition and show progress ; must change parfor to for in EM2005
-fitting_mode = true; % used when fitting the parameters ; uses a more efficient setup that produces similar results
+fitting_mode = false; % used when fitting the parameters ; uses a more efficient setup that produces similar results
 experiment = 4;
 
 if experiment == 1
@@ -64,6 +64,8 @@ elseif experiment == 3
                 4 4 4, ...   % biases
          		0 0, ...     % no noise
                 0.0004];
+            
+      startpar([2 4 20 21 22]) = [ 0.0155         0    1.0000         0         0 / 1000 ]; % probabilistic -- sometimes work sometimes not so well (b/c of the randomness in monitoring)
 elseif experiment == 4  
     % cross-subject monitoring strategies => half of subjects slower OG than
     % other half
@@ -76,6 +78,7 @@ elseif experiment == 4
                 4 4 4, ...   % biases
          		1 0.8, ...   % uniform noise
                 0.0004];     % gamma
+    startpar([2 4 20 21 22]) = [ 0.0155         0    1.0000         0         0 / 1000 ];
 end
 
 tic

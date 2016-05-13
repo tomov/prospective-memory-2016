@@ -153,6 +153,5 @@ error = sum(sum((deviations.^2) .* err_scalers));
 % condition
 % -- makes figure 24 look prettier; kind of cheating but oh well
 %
-diff_deviation = ((empirical_stats(4, 4) - empirical_stats(2, 4)) - (simulation_stats(4, 4) - simulation_stats(2, 4))) / (empirical_stats(4, 4) - empirical_stats(2, 4)) * 100;
-
-error = error + diff_deviation .^2 .* diff_err_scaler;
+%diff_deviation = ((empirical_stats(4, 4) - empirical_stats(2, 4)) - (simulation_stats(4, 4) - simulation_stats(2, 4))) / (empirical_stats(4, 4) - empirical_stats(2, 4)) * 100;
+%error = error + diff_deviation .^2 .* diff_err_scaler;

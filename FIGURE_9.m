@@ -16,14 +16,14 @@ plot_all_conditions_exp1(simulation_stats(:, [1:3 4 5]), 1000, 1700, RT_slope, R
 
 subplot(3, 2, 3);
 ylabel('OG Accuracy (%)');
-plot_all_conditions_exp1(empirical_stats(:, [1:3 6 7]), 40, 100, 1, 0, false);
+plot_all_conditions_exp1(empirical_stats(:, [1:3 6 7]), 0, 100, 1, 0, false);
 
 subplot(3, 2, 4);
-plot_all_conditions_exp1(simulation_stats(:, [1:3 6 7]), 40, 100, 1, 0, false);
+plot_all_conditions_exp1(simulation_stats(:, [1:3 6 7]), 0, 100, 1, 0, false);
 
 subplot(3, 2, 5);
 ylabel('PM Hit Rate (%)');
-plot_all_conditions_exp1(empirical_stats(:, [1:3 10 11]), 40, 100, 1, 0, false);
+plot_all_conditions_exp1(empirical_stats(:, [1:3 10 11]), 0, 100, 1, 0, false);
 
 subplot(3, 2, 6);
-plot_all_conditions_exp1(simulation_stats(:, [1:3 10 11]), 40, 100, 1, 0, false);
+plot_all_conditions_exp1(simulation_stats(:, [1:3 10 11]), 0, 100, 1, 0, false);

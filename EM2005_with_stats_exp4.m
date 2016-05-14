@@ -26,7 +26,7 @@ subjects = data;
  stats variable order = 
     1 - OG_ONLY,
     2 - FOCAL, 
-    3 - EMPHASIS  (N/A in this case, just to make compatible with exp 1
+    3 - STRATEGY (!!!!!!!!!!!!!! not emphasis!!)
     12 - # of targets
  statistics order = 
     4 - OG_RT_M,
@@ -43,11 +43,11 @@ SD_cols = [5 7 9 11];
 subjects_per_condition = 104 / 2; % divide by 2! b/c "EMPHASIS" == "high cost / low cost" is not a real condition => samples will be in half
 
 empirical_stats = [
-    % low emphasis = no cost participants (no monitoring)
+    % strategy 0 = no cost participants (no monitoring)
     1 1 0, 7201.28,  1520.06,       74, 10, NaN, NaN, NaN, NaN, 1;  % no-PM, focal,    low emph, 1 targets
     0 1 0, 6706.30,  1337.78,       73, 10, NaN, NaN, 94,   14, 1;  % PM, focal,    low emph, 1 targets
     
-    % high emphasis = cost participants (monitoring)
+    % strategy 1 = cost participants (monitoring)
     1 1 1, 6797.26, 1484.68,        74, 10, NaN, NaN, NaN, NaN, 1;  % no-PM, focal,    high emph, 1 targets
     0 1 1, 7533.95, 1769.18,        73, 10, NaN, NaN, 95,   17, 1;  % PM, focal,    high emph, 1 targets
 ];
@@ -57,7 +57,7 @@ empirical_stats = [
 empirical_stats(:, SD_cols) = empirical_stats(:, SD_cols) / sqrt(subjects_per_condition);
 
 
-% -------------- change meaning of EMPHASIS column !!!
+% -------------- change meaning of third column (formerly EMPHASIS) !!!
 % now it means whether it's "low cost" (0) or "high cost" (1) group
 
 % first step -- clear the nan's
@@ -73,16 +73,16 @@ end
 % ------------- calculate simulation stats
 
 simulation_stats = [];
-EMPHASIS = 1;
+STRATEGY = 1;
 FOCAL = 1;
 TARGETS = 1;
 % order here matters -- must be same as empirical_data above for line
 % regression
-for EMPHASIS = 0:1
+for STRATEGY = 0:1
     for OG_ONLY = 1:-1:0
-        stat = [OG_ONLY, FOCAL, EMPHASIS];
+        stat = [OG_ONLY, FOCAL, STRATEGY];
         for col = 4:7
-            samples = subjects(subjects(:, 1) == OG_ONLY & subjects(:, 3) == EMPHASIS & subjects(:, 9) == TARGETS, col);
+            samples = subjects(subjects(:, 1) == OG_ONLY & subjects(:, 3) == STRATEGY & subjects(:, 9) == TARGETS, col);
             samples = samples(~isnan(samples));
             M = mean(samples);
             SD = std(samples);

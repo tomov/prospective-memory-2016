@@ -32,17 +32,18 @@ param_noise_sigma_1 = params(20);
 param_noise_sigma_2 = params(21);
 gamma = params(22);
 
-assert(exp_id == 1 || exp_id == 2 || exp_id == 3 || exp_id == 4 || exp_id == 5);
+assert(exp_id == 1 || exp_id == 2 || exp_id == 3 || exp_id == 4 || exp_id == 5 || exp_id == 6);
 
 if do_print, fprintf('\n\n--------========= RUNNING E&M EXPERIMENT %d ======-------\n\n', exp_id); end
 
 % from E&M Experiment 1 & 2 methods
-subjects_per_condition = [24 24 32 104 72];
-blocks_per_condition = [8 4 1 1 10];
-trials_per_block = [24 40 110 110 18];
+subjects_per_condition = [24 24 32 104 72 30];
+blocks_per_condition = [8 4 1 1 10 1];
+trials_per_block = [24 40 110 110 18 110];
 pm_blocks_exp1 = [1 3 6 7];
 pm_trials_exp2 = [40 80 120 160];
 pm_trials_exp3 = [26 52 78 104];
+pm_trials_exp6 = [25 50 75 100];
 
 % since we're doing only 1 experiment at a time
 blocks_per_condition = blocks_per_condition(exp_id);
@@ -73,6 +74,9 @@ elseif exp_id == 5
     focal_range = 1;
     emphasis_range = 0;
     target_range = 1;
+elseif exp_id == 6
+    target_range = 1;
+    % here emphasis means low/high wm capacity
 end
 
 
@@ -87,8 +91,8 @@ if debug_mode
 elseif fitting_mode
     % when fitting, use less subjects for speed
     %
-    if exp_id == 1 || exp_id == 2
-        subjects_per_condition = 8;
+    if exp_id == 1 || exp_id == 2 || exp_id == 6
+        subjects_per_condition = 4;
     else
         assert(exp_id == 3 || exp_id == 4);
         subjects_per_condition = 16;
@@ -195,12 +199,14 @@ for OG_ONLY = og_range
                                     og_correct(middle) = pm_og_correct_pattern(target_id);
                                     is_target(middle) = 1;
                                 end
-                            elseif exp_id == 2 || exp_id == 3 || exp_id == 4
+                            elseif exp_id == 2 || exp_id == 3 || exp_id == 4 || exp_id == 6
                                 % in experiment 2, trials 40, 80, 120, and 160 are
                                 % targets
                                 % experiment 3 also has 4 target trials
                                 if exp_id == 2
                                     pm_trials = pm_trials_exp2;
+                                elseif exp_id == 6
+                                    pm_trials = pm_trials_exp6;
                                 else
                                     assert(exp_id == 3 || exp_id == 4)
                                     pm_trials = pm_trials_exp3;
@@ -268,8 +274,6 @@ for OG_ONLY = og_range
                 % get appropriate parameters depending on the condition
                 %
                 curpar = zeros(1,6);
-                curpar(5) = bias_for_task;
-                curpar(6) = bias_for_attention;
                 if exp_id == 5
                     curpar(7) = 0;
                     curpar(8) = 1;
@@ -277,7 +281,18 @@ for OG_ONLY = og_range
                     curpar(7) = 1;
                     curpar(8) = 0;
                 end
+                curpar(5) = bias_for_task;
+                curpar(6) = bias_for_attention;
                 curpar(9) = bias_for_context;
+                if exp_id == 6 && EMPHASIS == 0
+                    % Brewer et al. 2010, low WM capacity
+                    % note that we use EMPHASIS to denote high/low wm
+                    % capacity #hacksauce
+                    %
+                    curpar(5) = params(23); % bias for task
+                    curpar(6) = params(24); % bias for attention
+                    curpar(9) = params(25); % bias for context
+                end
                 curpar(10) = gamma;
                 if OG_ONLY
                     curpar(1:4) = [1 0 1 0];
@@ -323,7 +338,7 @@ for OG_ONLY = og_range
                     %
                     sim = Simulator(FOCAL, subjpar, have_third_task, fitting_mode);
                 
-                    if do_print, fprintf('\nsubject %d: curpar(2,4) = %.2f %.2f\n', subject_id, subjpar(2), subjpar(4)); end
+                    if do_print, fprintf('\nsubject %d: curpar(2,4) = %.2f %.2f curpar(5,6,9) = %.2f %.2f %.2f\n', subject_id, subjpar(2), subjpar(4), subjpar(5), subjpar(6), subjpar(9)); end
                     
                     % PM instruction
                     %
@@ -348,7 +363,7 @@ for OG_ONLY = og_range
 
                     % collect the relevant data
                     %
-                    if exp_id == 1 || exp_id == 3 || exp_id == 4 || exp_id == 5
+                    if exp_id == 1 || exp_id == 3 || exp_id == 4 || exp_id == 5 || exp_id == 6
                         % for experiment 1, each subject = 1 sample
                         %
                         [OG_RT, ~, OG_Hit, PM_RT, ~, PM_Hit, PM_miss_OG_hit] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, ...

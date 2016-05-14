@@ -1,4 +1,4 @@
-function [OG_RT, OG_RT_SD, OG_Hit, PM_RT, PM_RT_SD, PM_Hit, PM_miss_OG_hit] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses, RTs, act, acc, onsets, offsets, is_target, correct, og_correct, show_pics, do_print)
+function [OG_RT, OG_RT_SD, OG_Hit, PM_RT, PM_RT_SD, PM_Hit, PM_miss_OG_hit, first_PM_RT] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses, RTs, act, acc, onsets, offsets, is_target, correct, og_correct, show_pics, do_print)
 
 OG_count = 0;
 PM_count = 0;
@@ -104,6 +104,11 @@ OG_RT_SD = std(OG_correct_RTs) / sqrt(size(OG_correct_RTs, 2));
 OG_Hit = size(OG_correct_RTs, 1) / OG_count * 100;
 
 PM_RT = mean(PM_hit_RTs);
+if isempty(PM_hit_RTs)
+    first_PM_RT = NaN;
+else
+    first_PM_RT = PM_hit_RTs(1);
+end
 % http://en.wikipedia.org/wiki/Standard_error !!!
 PM_RT_SD = std(PM_hit_RTs) / sqrt(size(PM_hit_RTs, 2));
 PM_Hit = size(PM_hit_RTs, 1) / PM_count * 100;

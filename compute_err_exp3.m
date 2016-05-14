@@ -46,7 +46,7 @@ RT_SD_cols = [5,9]; % RT SDs. we regress those against model cycles SDs to scale
 use_cols    = [4, 6, 10]; % which columns to use in the error calculation -- OG RT's, OG accuracy, and PM hit rates
 % weights of the errors -- keep in mind we're scaling them to %'s so they're all on the same scale
 %
-err_weights = [1, 0.0, 0.0];  % the OG RT's are most important; also they're big => the % deviations are small compared to the hit rate % deviations
+err_weights = [1, 0.5, 0.5];  % the OG RT's are most important; also they're big => the % deviations are small compared to the hit rate % deviations
 
 subjects_per_condition = 32;
 
@@ -56,6 +56,12 @@ empirical_stats = [
     0 1 0, 4885, 591,        69, 10, NaN, NaN, 80,   28, 1;  % PM, focal,    low emph, 1 targets
     0 1 0, 5215, 422,        69, 10, NaN, NaN, 72,   25, 6;  % PM, focal,    low emph, 6 targets
 ];
+
+% necessary b/c we're assuming the paradigm from experiment 1
+empirical_stats(:, 6) = 97;
+empirical_stats(:, 7) = 3;
+empirical_stats([3 4], 10) = 97;
+empirical_stats([3 4], 11) = 3;
 
 
 % convert SD's to SEM's in empirical data

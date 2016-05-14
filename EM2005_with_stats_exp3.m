@@ -13,6 +13,7 @@
     6 - PM_RT, 
     7 - PM_Hit,
     8 - PM_miss_OG_hit
+    10 - first_PM_RT
  (see EM2005 exp 2)
 %}
 
@@ -48,7 +49,6 @@ empirical_stats = [
     0 1 0, 4885, 591,        69, 10, NaN, NaN, 80,   28, 1;  % PM, focal,    low emph, 1 targets
     0 1 0, 5215, 422,        69, 10, NaN, NaN, 72,   25, 6;  % PM, focal,    low emph, 6 targets
 ];
-
 
 % convert SD's to SEM's in empirical data
 empirical_stats(:, SD_cols) = empirical_stats(:, SD_cols) / sqrt(subjects_per_condition);

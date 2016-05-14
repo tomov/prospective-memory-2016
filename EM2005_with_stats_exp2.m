@@ -6,6 +6,7 @@
     1 - OG_ONLY,
     2 - FOCAL, 
     3 - EMPHASIS
+    9 - subject id
     10 - block id
  statistics order = 
     4 - OG_RT, 
@@ -13,7 +14,6 @@
     6 - PM_RT, 
     7 - PM_Hit,
     8 - PM_miss_OG_hit
-    9 - subject id
  (see EM2005 exp 2)
 %}
 

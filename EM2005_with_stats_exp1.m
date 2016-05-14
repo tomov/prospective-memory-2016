@@ -6,12 +6,14 @@
     1 - OG_ONLY,
     2 - FOCAL, 
     3 - EMPHASIS
+    9 - TARGETS
  statistics order = 
     4 - OG_RT, 
     5 - OG_Hit, 
     6 - PM_RT, 
     7 - PM_Hit,
     8 - PM_miss_OG_hit
+    10 - first_PM_RT
  (see EM2005)
 %}
 

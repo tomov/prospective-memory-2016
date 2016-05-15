@@ -37,7 +37,7 @@ assert(exp_id == 1 || exp_id == 2 || exp_id == 3 || exp_id == 4 || exp_id == 5 |
 if do_print, fprintf('\n\n--------========= RUNNING E&M EXPERIMENT %d ======-------\n\n', exp_id); end
 
 % from E&M Experiment 1 & 2 methods
-subjects_per_condition = [24 24 32 104 1000 30]; % 72
+subjects_per_condition = [24 24 32 104 1000 30]; % experiment 5 is 72 subjects but that's not significant...
 blocks_per_condition = [8 4 1 1 10 1];
 trials_per_block = [24 40 110 110 18 110];
 pm_blocks_exp1 = [1 3 6 7];
@@ -72,7 +72,7 @@ elseif exp_id == 4
     emphasis_range = 0;
 elseif exp_id == 5
     og_range = 0; % TODO it's hardcoded -- there must be a PM task
-    focal_range = 1;
+    focal_range = 1; % TODO hardcoded too
     emphasis_range = 0;
     target_range = 1;
 elseif exp_id == 6
@@ -137,7 +137,6 @@ for OG_ONLY = og_range
                 og_correct = correct;
                 is_target = zeros(blocks_per_condition * trials_per_block, 1);
                 is_inter_task = [];
-
                 
                 if fitting_mode
                     assert(exp_id ~= 5);
@@ -168,7 +167,6 @@ for OG_ONLY = og_range
                     og_correct = og_correct(1:reps, :);
                     is_target = is_target(1:reps, :);
                     
-                    inter_target = zeros(); % hack to make parfor work
                 else % if not fitting_mode i.e. regular simulations
                     % insert the PM targets
                     %
@@ -229,6 +227,11 @@ for OG_ONLY = og_range
 
                     if exp_id == 5
                         % experiment 5 is special altogether
+                        % Note that the "inter task" is fake -- it's
+                        % actually just the OG task without the PM
+                        % instruction. This is fine b/c there's no priming
+                        % in our model.
+                        %
                         stimuli_pattern = [
                             {'switch back to OG and PM'}, 1; % task switch
                             
@@ -286,7 +289,7 @@ for OG_ONLY = og_range
                         is_or_was_target = is_or_was_target(1:reps, :);
                         is_inter_task = is_inter_task(1:reps, :);
                     else
-                        inter_target = zeros(); % hack to make parfor work
+                        is_or_was_target = zeros(); % hacks to make parfor work
                     end % if exp_id == 5
                 end % if fitting_mode / else
                 assert(length(correct) == length(stimuli));
@@ -304,13 +307,8 @@ for OG_ONLY = og_range
                 % get appropriate parameters depending on the condition
                 %
                 curpar = zeros(1,6);
-                %if exp_id == 5 TODO cleanup
-                %    curpar(7) = 0;
-                %    curpar(8) = 1;
-                %else
-                    curpar(7) = 1;
-                    curpar(8) = 0;
-                %end
+                curpar(7) = 1;
+                curpar(8) = 0;
                 curpar(5) = bias_for_task;
                 curpar(6) = bias_for_attention;
                 curpar(9) = bias_for_context;
@@ -346,12 +344,6 @@ for OG_ONLY = og_range
                     end
                 end
 
-                %if exp_id == 5 TODO cleanup
-                %    have_third_task = true;
-                %else
-                    have_third_task = false;
-                %end
-                
                 % simulate subjects in parallel; must be serial in
                 % debug_mode (i.e. regular for)
                 %
@@ -366,7 +358,7 @@ for OG_ONLY = og_range
                     
                     % initialize simulator             
                     %
-                    sim = Simulator(FOCAL, subjpar, have_third_task, fitting_mode);
+                    sim = Simulator(FOCAL, subjpar, fitting_mode);
                 
                     if do_print, fprintf('\nsubject %d: curpar(2,4) = %.2f %.2f curpar(5,6,9) = %.2f %.2f %.2f\n', subject_id, subjpar(2), subjpar(4), subjpar(5), subjpar(6), subjpar(9)); end
                     

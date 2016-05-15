@@ -196,7 +196,7 @@ classdef Model < handle
             end
         end
         
-        function self = Model(FOCAL, params, have_third_task)
+        function self = Model(FOCAL, params)
             % specify unit names in each layer
             words = {
                 'tortoise', 'physics', 'crocodile', 'math', ... % words
@@ -221,7 +221,7 @@ classdef Model < handle
                 'Yes', 'No', 'PM'
                 };
             self.task_units = {
-                'OG Task', 'PM Task', 'Inter Task'
+                'OG Task', 'PM Task'
                 };
             self.context_units = {
                 'PM Context', 'Other Context'
@@ -296,8 +296,6 @@ classdef Model < handle
                 self.unit_id('OG Task')        , self.unit_id('No Match 1')        , self.TASK_TO_RESPONSE;
                 self.unit_id('OG Task')        , self.unit_id('No Match 2')        , self.TASK_TO_RESPONSE;
                 self.unit_id('PM Task')        , self.unit_id('PM Response')       , self.TASK_TO_RESPONSE;
-                self.unit_id('Inter Task')     , self.unit_id('Domestic')          , self.TASK_TO_RESPONSE;
-                self.unit_id('Inter Task')     , self.unit_id('Wild')              , self.TASK_TO_RESPONSE;
                 
                 % perception to response mapping (direct OG pathway)
                 %
@@ -446,9 +444,6 @@ classdef Model < handle
                 self.bias(self.unit_id('OG features')) = self.BIAS_FOR_ATTENTION; % ...except for OG features
             self.bias(self.context_ids) = self.BIAS_FOR_CONTEXT;
             self.bias(self.hippo_ids) = self.BIAS_FOR_HIPPO;            
-            if ~have_third_task
-                self.bias(self.unit_id('Inter Task')) = self.BIAS_WHEN_OFF;
-            end
         end
         
         function EM = print_EM(self)

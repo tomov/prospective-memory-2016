@@ -24,7 +24,7 @@ fitting_mode = false; % used when fitting the parameters ; uses a more efficient
 
 
 
-experiment = 5; % <------------------------------- HERE --------------------------------------
+experiment = 6; % <------------------------------- HERE --------------------------------------
 
 
 
@@ -86,6 +86,7 @@ elseif experiment == 6
      % biases = 3.5 4 4 => plots 2 and 4 ok
      % 
      startpar([2 4 6 8 10 12 14 16 22])  =  [0.3425    0.2937    0.5865    0.4131    0.7830  0.7332    0.9019 0.8114    0.4131 / 1000]; % from experiment 1
+     
      startpar([5 6 7 8]) = startpar([1 2 3 4]); % high emphasis = low emphasis (b/c we use it to mean "wm capacity" #hacksauce)
      startpar([13 14 15 16]) = startpar([9 10 11 12]); % high emphasis = low emphasis (b/c we use it to mean "wm capacity" #hacksauce)
  %   startpar([2 4 6 8 10 12 14 16 22])  =  [ 0.3728    0.2708    0.5854    0.4157    0.7403    0.7339    0.8124    0.8061    0.4180 / 1000];
@@ -104,7 +105,7 @@ elseif experiment == 3
          		0 0, ...     % no noise
                 0.0004];
             
-    startpar([2 4 20 21]) = [0         0    1.0000    1.0000];
+    startpar([2 4 20 21]) = [0    0.1368    0.7049    0.5319];
      % startpar([2 4 20 21 22]) = [ 0.0155         0    1.0000         0         0 / 1000 ]; % probabilistic -- sometimes work sometimes not so well (b/c of the randomness in monitoring)
 % from git hash a460e3a5c78a0492811b42a831f37c8b7023e364  --->     [0.2428    1.0000    1.0000    1.0000]
 elseif experiment == 4  
@@ -121,7 +122,7 @@ elseif experiment == 4
          		1 0.8, ...   % uniform noise
                 0.0004];     % gamma
 
-    startpar([2 4 20 21]) = [0         0    1.0000    1.0000];            
+    startpar([2 4 20 21]) = [0    0.1368    0.7049    0.5319];            
 %    startpar([2 4 20 21 22]) = [ 0.0155         0    1.0000         0         0 / 1000 ];
 % from git hash a460e3a5c78a0492811b42a831f37c8b7023e364  --->     [0.2428
 % 1.0000    1.0000    1.0000] ..... also wtf [0    0.0818         0

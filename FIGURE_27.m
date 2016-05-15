@@ -24,8 +24,8 @@ SEMs = [];
 
 
 % from experiment 1
-RT_slope = 12.5;
-RT_intercept = 63;
+RT_slope = 7.5;
+RT_intercept = 499.3;
 
 GroupA = data(:, 11); 
 %GroupA = GroupA(data(:,1) == 0 & data(:, 3) == 0);
@@ -60,7 +60,7 @@ barweb(Ms, SEMs, 1, {}, ...
 h = legend({'Target', 'Nontarget'});
 set(h, 'FontSize', 15);
 ylabel('Third Task RT (ms)');
-ylim([900, 1000]);
+ylim([1100, 1200]);
         
 
         

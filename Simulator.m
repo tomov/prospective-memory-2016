@@ -20,8 +20,8 @@ classdef Simulator < Model
     end
     
     methods
-        function self = Simulator(FOCAL, params, have_third_task, fitting_mode)
-            self = self@Model(FOCAL, params, have_third_task);
+        function self = Simulator(FOCAL, params, fitting_mode)
+            self = self@Model(FOCAL, params);
             self.Nout = size(self.output_ids, 2);
             self.fitting_mode = fitting_mode;
         end
@@ -223,7 +223,6 @@ classdef Simulator < Model
                             % only reset tasks
                             self.wm_act(self.wm_ids == self.unit_id('OG Task')) = self.init_wm(self.wm_ids == self.unit_id('OG Task'));
                             self.wm_act(self.wm_ids == self.unit_id('PM Task')) = self.init_wm(self.wm_ids == self.unit_id('PM Task'));
-                            self.wm_act(self.wm_ids == self.unit_id('Inter Task')) = self.init_wm(self.wm_ids == self.unit_id('Inter Task'));
                         end
                         self.adapt_wm_act_to_ffwd_act();
                     end

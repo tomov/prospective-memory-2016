@@ -1,5 +1,4 @@
 % Find the best set of free parameters
-% TODO only works for experiment 1
 %
 
          % PM Task  PM target(s) initial WM activations

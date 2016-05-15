@@ -141,7 +141,9 @@ classdef Simulator < Model
             onsets = [];
             offsets = [];
             cycles = 0;
-            switched_to_PM_task = false;
+            switched_to_PM_task = false; % hacksauce
+            switched_to_Inter_task = false;
+            switched_to_OG_and_PM_from_Inter_task = false; % hacksauce
             
             % for each input from the time series
             for ord=1:size(stimuli, 1)
@@ -149,7 +151,23 @@ classdef Simulator < Model
                 % each stimulus string must be a comma-separated list of names of
                 % input units
                 stimulus = stimuli{ord, 1};
-                active_ids = self.string_to_ids(stimulus);
+                if strcmp(stimulus, 'switch to Inter Task')
+                    active_ids = [];
+                    switched_to_Inter_task = true;
+                elseif strcmp(stimulus, 'switch back to OG and PM')
+                    active_ids = [];
+                    switched_to_OG_and_PM_from_Inter_task = true;
+                    for target = {'tortoise'} % TODO dedupe with instruction() % TODO pass target as param
+                        target_monitor_unit = strcat('Monitor ', {' '}, target);
+                        target_monitor_id = self.unit_id(target_monitor_unit{1});
+                        % make WM unit available
+                        self.bias(target_monitor_id) = self.BIAS_FOR_ATTENTION;
+                        % and give it some initial activation (according to params)
+                        self.init_wm(self.wm_ids == target_monitor_id) = self.target_init;
+                    end
+                else
+                    active_ids = self.string_to_ids(stimulus);
+                end
                 timeout = stimuli{ord, 2} * self.CYCLES_PER_SEC;
                 
                 % reset feedforward part of the network
@@ -181,9 +199,25 @@ classdef Simulator < Model
                     % initialize WM at beginning of block (i.e. first
                     % trial),
                     % or after a PM switch
-                    if cycle < self.INSTRUCTION_CYLCES && (ord == 1 || switched_to_PM_task)
-                        if ord == 1
+                    if cycle < self.INSTRUCTION_CYLCES && (ord == 1 || switched_to_PM_task || switched_to_Inter_task || switched_to_OG_and_PM_from_Inter_task)
+                        if ord == 1 || switched_to_OG_and_PM_from_Inter_task
                             self.wm_act = self.init_wm;
+                        elseif switched_to_Inter_task
+                            % reset all
+                            % TODO parametrize
+                            for target = {'tortoise'} % TODO dedupe with instruction() % TODO pass target as param
+                                target_monitor_unit = strcat('Monitor ', {' '}, target);
+                                target_monitor_id = self.unit_id(target_monitor_unit{1});
+                                % make WM unit available
+                                self.bias(target_monitor_id) = self.BIAS_FOR_ATTENTION;
+                                % and give it some initial activation (according to params)
+                                self.init_wm(self.wm_ids == target_monitor_id) = 0;
+                            end
+                            self.wm_act(self.wm_ids == self.unit_id('OG features')) = self.init_wm(self.wm_ids == self.unit_id('OG features'));
+                            self.wm_act(self.wm_ids == self.unit_id('OG Task')) = 1;
+                            self.wm_act(self.wm_ids == self.unit_id('PM Task')) = 0;
+                            self.wm_act(self.wm_ids == self.unit_id('PM Context')) = 0.2;
+                            self.wm_act(self.wm_ids == self.unit_id('Other Context')) = 1;
                         else
                             assert(switched_to_PM_task);
                             % only reset tasks
@@ -284,18 +318,24 @@ classdef Simulator < Model
                     end
                 end
                 
-                %switched_to_PM_task = (self.activation(self.unit_id('PM Task')) > self.activation(self.unit_id('OG Task')));
-                % TODO hacky...
-                assert(length(self.resting_wm) == length(self.wm_act));
-                %switched_to_PM_task = (self.wm_act(2) > self.wm_act(1) - 0.1);
-                switched_to_PM_task = (self.wm_act(2) > self.resting_wm(2) + 0.01);
-
                 % record response and response time
-                output = self.units{output_id};
+                if switched_to_Inter_task || switched_to_OG_and_PM_from_Inter_task
+                    output = 'Switch';
+                else
+                    output = self.units{output_id};
+                end
                 offsets = [offsets; cycles + cycle];
                 responses = [responses; {output}];
                 RTs = [RTs; RT];
                 cycles = cycles + cycle;                
+                
+                                %switched_to_PM_task = (self.activation(self.unit_id('PM Task')) > self.activation(self.unit_id('OG Task')));
+                % TODO hacky...
+                assert(length(self.resting_wm) == length(self.wm_act));
+                %switched_to_PM_task = (self.wm_act(2) > self.wm_act(1) - 0.1);
+                switched_to_PM_task = (self.wm_act(2) > self.resting_wm(2) + 0.01);
+                switched_to_Inter_task = false;
+                switched_to_OG_and_PM_from_Inter_task = false;
             end
             
             activation_log(cycles:end,:) = [];

@@ -1,4 +1,4 @@
-function [OG_RT, OG_RT_SD, OG_Hit, PM_RT, PM_RT_SD, PM_Hit, PM_miss_OG_hit, first_PM_RT] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses, RTs, act, acc, onsets, offsets, is_target, correct, og_correct, show_pics, do_print)
+function [OG_RT, OG_RT_SD, OG_Hit, PM_RT, PM_RT_SD, PM_Hit, PM_miss_OG_hit, first_PM_RT] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses, RTs, act, acc, onsets, offsets, is_target, correct, og_correct, is_inter_task, show_pics, do_print)
 
 OG_count = 0;
 PM_count = 0;
@@ -12,6 +12,9 @@ OG_timeout_RTs = [];
 PM_timeout_RTs = [];
 
 for i=1:size(responses, 1)
+    if ~isempty(is_inter_task) && is_inter_task(i)
+        continue
+    end
     if strcmp(responses{i}, correct{i}) == 1
         % right answer
         if is_target(i) == 0
@@ -115,8 +118,6 @@ PM_Hit = size(PM_hit_RTs, 1) / PM_count * 100;
 
 PM_miss_OG_hit = size(PM_miss_correct_OG_RTs, 1) / size(PM_miss_RTs, 1) * 100;
 
-
-
 % show figures
 
 if show_pics
@@ -131,37 +132,37 @@ if show_pics
     % turn off onset plot if necessary
     onset_plot = 0; offset_plot = 0;
     
-    subplot(5, 2, 1);
+    subplot(4, 2, 1);
     plot(t_range, act(t_range, sim.output_ids));
     legend(sim.units(sim.output_ids));
     title('Outputs');
     ylim(y_lim);
 
-    subplot(5, 2, 3);
+    subplot(4, 2, 3);
     plot(t_range, act(t_range, sim.response_ids));
     legend(sim.units(sim.response_ids));
     title('Responses');
     ylim(y_lim);
 
-    subplot(5, 2, 5);
+    subplot(4, 2, 5);
     plot(t_range, act(t_range, sim.perception_ids));
     legend(sim.units(sim.perception_ids));
     title('Feature Perception');
     ylim(y_lim);
 
-    subplot(5, 2, 7);
+    subplot(4, 2, 7);
     plot(t_range, act(t_range, sim.input_ids));
     legend(sim.units(sim.input_ids));
     title('Stimulus Inputs');
     ylim(y_lim);
 
-    subplot(5, 2, 2);
+    subplot(4, 2, 2);
     plot(t_range, acc(t_range, :));
     legend(sim.units(sim.output_ids));
     title('Evidence Accumulation');
     %ylim([sim.MINIMUM_ACTIVATION sim.MAXIMUM_ACTIVATION]);
 
-    subplot(5, 2, 4);
+    subplot(4, 2, 4);
     plot(act(1:end, sim.task_ids));
     legend(sim.units(sim.task_ids));
     title('Task Representation');
@@ -169,7 +170,7 @@ if show_pics
     line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
     line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
 
-    subplot(5, 2, 6);
+    subplot(4, 2, 6);
     plot(act(1:end, sim.attention_ids));
     legend(sim.units(sim.attention_ids));
     title('Feature Attention');
@@ -177,7 +178,7 @@ if show_pics
     line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
     line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
     
-    subplot(5, 2, 8);
+    subplot(4, 2, 8);
     plot(act(1:end, sim.context_ids));
     legend(sim.units(sim.context_ids));
     title('Context');
@@ -186,6 +187,7 @@ if show_pics
     line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
     
 
+    %{
     subplot(5, 2, 10);
     plot(act(1:end, sim.hippo_ids));
     legend(sim.units(sim.hippo_ids));
@@ -193,6 +195,7 @@ if show_pics
     ylim(y_lim);
     line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
     line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
+    %}
 
     figure;
 

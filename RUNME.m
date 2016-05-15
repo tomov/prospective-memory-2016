@@ -18,15 +18,13 @@ where
   ];
 %}
 
-
-
-debug_mode = false; % only run 1 subject per condition and show progress ; must change parfor to for in EM2005
+debug_mode = false; % only run 1 subject per condition and show progress ; !!!!!IMPORTANT!!!!!!!!! must change parfor to for in EM2005
 fitting_mode = false; % used when fitting the parameters ; uses a more efficient setup that produces similar results
 
 
 
 
-experiment = 4; % <------------------------------- HERE --------------------------------------
+experiment = 5; % <------------------------------- HERE --------------------------------------
 
 
 
@@ -81,7 +79,7 @@ elseif experiment == 6
                 4.5   4.5   4.5, ...  % biases, high wm capacity -- tasks, attention, context
 		        0 0, ...        % no noise...
                 0.0002, ...     % gamma
-                3.9 3.9 3.9];     % biases, low wm capacity
+                4 4 4];     % biases, low wm capacity
             
      % biases = 3.5 3.3 4 not bad result ; nvm bad result -> features must
      % be high.... plots 1 and 2 ok
@@ -106,7 +104,7 @@ elseif experiment == 3
          		0 0, ...     % no noise
                 0.0004];
             
-   % startpar([2 4 20 21]) = [0.2428    1.0000    1.0000    1.0000];
+    startpar([2 4 20 21]) = [0         0    1.0000    1.0000];
      % startpar([2 4 20 21 22]) = [ 0.0155         0    1.0000         0         0 / 1000 ]; % probabilistic -- sometimes work sometimes not so well (b/c of the randomness in monitoring)
 % from git hash a460e3a5c78a0492811b42a831f37c8b7023e364  --->     [0.2428    1.0000    1.0000    1.0000]
 elseif experiment == 4  
@@ -123,11 +121,28 @@ elseif experiment == 4
          		1 0.8, ...   % uniform noise
                 0.0004];     % gamma
 
-    %startpar([2 4 20 21]) = [0.2428    1.0000    1.0000    1.0000];            
+    startpar([2 4 20 21]) = [0         0    1.0000    1.0000];            
 %    startpar([2 4 20 21 22]) = [ 0.0155         0    1.0000         0         0 / 1000 ];
 % from git hash a460e3a5c78a0492811b42a831f37c8b7023e364  --->     [0.2428
 % 1.0000    1.0000    1.0000] ..... also wtf [0    0.0818         0
 % 0.0053]
+elseif experiment == 5
+    % interleave third task, see aftereffects of intention
+    % free params = pm context turned off ?
+    % same as experiment 1, low emphasis, focal
+    %
+    % OG task, PM task, OG features, target(s)
+    startpar = [1  0.35   1    0.3, ...     % focal, low emph     % exp1_v16, exp2_v19
+                1  0.6    1    0.4, ...     % focal, high emph      % exp1_v16
+                1  0.8    1    0.75, ...    % nonfocal, low emph   % exp2_v11
+                1  0.9    1    0.83, ...    % nonfocal, high emph  % exp1_v16 -- sorta
+                4 4 4, ... % biases -- tasks, attention, context
+		        0 0, ...   % no noise...
+                0.0004];   % gamma
+            
+            
+     startpar([2 4 6 8 10 12 14 16 22])  =  [0.3425    0.2937    0.5865    0.4131    0.7830  0.7332    0.9019 0.8114    0.4131 / 1000]; % from experiment 1
+
 end
 
 tic
@@ -135,7 +150,7 @@ tic
 toc
 
 if debug_mode
-	m = Model(true, startpar([1 2 3 4 17 18 19 20 21]), false);
+	m = Model(true, startpar([1 2 3 4 17 18 19 20 21 22]), false);
     wm_ids = m.wm_ids;
     context_ids = m.context_ids;
     act = extra{1, 8};
@@ -143,7 +158,7 @@ if debug_mode
    % figure;
    % plot([act(1:100, context_ids), nets(1:100, context_ids)]);
 else
-    save('exp4-data-newww.mat');
+    save(sprintf('exp%d-data-newww.mat', experiment));
 end
 
 

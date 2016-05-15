@@ -37,7 +37,7 @@ assert(exp_id == 1 || exp_id == 2 || exp_id == 3 || exp_id == 4 || exp_id == 5 |
 if do_print, fprintf('\n\n--------========= RUNNING E&M EXPERIMENT %d ======-------\n\n', exp_id); end
 
 % from E&M Experiment 1 & 2 methods
-subjects_per_condition = [24 24 32 104 72 30];
+subjects_per_condition = [24 24 32 104 1000 30]; % 72
 blocks_per_condition = [8 4 1 1 10 1];
 trials_per_block = [24 40 110 110 18 110];
 pm_blocks_exp1 = [1 3 6 7];
@@ -71,6 +71,7 @@ elseif exp_id == 4
     target_range = 1;
     emphasis_range = 0;
 elseif exp_id == 5
+    og_range = 0; % TODO it's hardcoded -- there must be a PM task
     focal_range = 1;
     emphasis_range = 0;
     target_range = 1;
@@ -105,7 +106,7 @@ for OG_ONLY = og_range
         for EMPHASIS = emphasis_range
             for TARGETS = target_range
 
-                % init OG trial pool
+                % init OG trial pool -- the 1 is the timeout in seconds
                 og_stimuli_pattern = [
                     {'crocodile,an animal'}, 1;
                     {'crocodile,a subject'}, 1;
@@ -135,9 +136,12 @@ for OG_ONLY = og_range
                 correct = repmat(og_block_correct, blocks_per_condition, 1);
                 og_correct = correct;
                 is_target = zeros(blocks_per_condition * trials_per_block, 1);
+                is_inter_task = [];
 
                 
                 if fitting_mode
+                    assert(exp_id ~= 5);
+                    
                     % when fitting, have PM task more often so we can get a
                     % good estimate of the PM hit rate with less subjects
                     %
@@ -225,36 +229,62 @@ for OG_ONLY = og_range
 
                     if exp_id == 5
                         % experiment 5 is special altogether
-                        inter_stimuli = [
-                            {'switch to Inter Task'}, 1;
-                            {'dog'}, 1;
-                            {'tortoise'}, 1;
-                            {'dog'}, 1;
-                            {'monkey'}, 1;
-                            {'tortoise'}, 1;
-                            {'switch back to OG and PM'}, 1;
-                            {'crocodile'}, 1;
-                            {'kiwi'}, 1;
-                            {'tortoise'}, 1;
-                            {'cat'}, 1;
-                            {'dog'}, 1;
+                        stimuli_pattern = [
+                            {'switch back to OG and PM'}, 1; % task switch
+                            
+                            {'crocodile,an animal'}, 1;
+                            {'crocodile,a subject'}, 1;
+                            {'physics,an animal'}, 1;
+                            {'tortoise,an animal'}, 1; % PM target
+                            {'physics,a subject'}, 1;
+                            {'math,an animal'}, 1;
+                            {'math,a subject'}, 1;
+                            {'tortoise,a subject'}, 1; % PM target
+                            
+                            {'switch to Inter Task'}, 1; % task switch
+                            
+                            {'crocodile,an animal'}, 1;
+                            {'crocodile,a subject'}, 1;
+                            {'physics,an animal'}, 1;
+                            {'tortoise,an animal'}, 1; % formerly PM target
+                            {'physics,a subject'}, 1;
+                            {'math,an animal'}, 1;
+                            {'math,a subject'}, 1;
+                            {'tortoise,a subject'}, 1; % formerly PM target
                         ];
-                        inter_correct = {'Yes'; 'No'; 'Yes'; 'No'; 'No'; 'No'; 'No'; 'No'; 'Yes'; 'Yes'};
-                        inter_is_target = [0; 1; 0; 0; 1; 0; 0; 1; 0; 0];
-
+                        is_target_pattern = zeros(length(stimuli_pattern), 1);
+                        is_target_pattern([5 9]) = 1;
+                        is_or_was_target_pattern = zeros(length(stimuli_pattern), 1);
+                        is_or_was_target_pattern([5 9 14 18]) = 1;
+                        is_inter_task_pattern = [zeros(10, 1); ones(8, 1)]; % count switches as part of inter task
+                        og_correct_pattern = {'Switch'; 'Yes'; 'No'; 'No'; 'Yes'; 'Yes'; 'No'; 'Yes'; 'No'; 'Switch'; 'Yes'; 'No'; 'No'; 'Yes'; 'Yes'; 'No'; 'Yes'; 'No'};
+                        correct_pattern = og_correct_pattern;
+                        correct_pattern([5 9]) = {'PM'};
+                        
+                        assert(length(stimuli_pattern) == length(og_correct_pattern));
+                        assert(length(stimuli_pattern) == length(correct_pattern));
+                        assert(length(stimuli_pattern) == length(og_correct_pattern));
+                        assert(length(stimuli_pattern) == length(is_target_pattern));
+                        assert(length(stimuli_pattern) == length(is_or_was_target_pattern));
+                        assert(length(stimuli_pattern) == length(is_inter_task_pattern));
+                        
                         % copy & trim 'em
-                        inter_stimuli = repmat(inter_stimuli, trials_per_block, 1);
-                        inter_correct = repmat(inter_correct, trials_per_block, 1);
-                        inter_is_target = repmat(inter_is_target, trials_per_block, 1);
-                        inter_stimuli = inter_stimuli(1:trials_per_block,:);
-                        inter_correct = inter_correct(1:trials_per_block,:);
-                        inter_is_target = inter_is_target(1:trials_per_block,:);
-
-                        stimuli = repmat(inter_stimuli, blocks_per_condition, 1);
-                        correct = repmat(inter_correct, blocks_per_condition, 1);
-                        inter_target = repmat(inter_is_target, blocks_per_condition, 1);
-                        og_correct = correct;
-                        is_target = zeros(blocks_per_condition * trials_per_block, 1);    
+                        reps = blocks_per_condition * trials_per_block;
+                        
+                        stimuli = repmat(stimuli_pattern, reps, 1);
+                        correct = repmat(correct_pattern, reps, 1);
+                        og_correct = repmat(og_correct_pattern, reps, 1);
+                        is_target = repmat(is_target_pattern, reps, 1);
+                        is_or_was_target = repmat(is_or_was_target_pattern, reps, 1);
+                        is_inter_task = repmat(is_inter_task_pattern, reps, 1);
+                    
+                        % truncate
+                        stimuli = stimuli(1:reps, :);
+                        correct = correct(1:reps, :);
+                        og_correct = og_correct(1:reps, :);
+                        is_target = is_target(1:reps, :);
+                        is_or_was_target = is_or_was_target(1:reps, :);
+                        is_inter_task = is_inter_task(1:reps, :);
                     else
                         inter_target = zeros(); % hack to make parfor work
                     end % if exp_id == 5
@@ -274,13 +304,13 @@ for OG_ONLY = og_range
                 % get appropriate parameters depending on the condition
                 %
                 curpar = zeros(1,6);
-                if exp_id == 5
-                    curpar(7) = 0;
-                    curpar(8) = 1;
-                else
+                %if exp_id == 5 TODO cleanup
+                %    curpar(7) = 0;
+                %    curpar(8) = 1;
+                %else
                     curpar(7) = 1;
                     curpar(8) = 0;
-                end
+                %end
                 curpar(5) = bias_for_task;
                 curpar(6) = bias_for_attention;
                 curpar(9) = bias_for_context;
@@ -316,11 +346,11 @@ for OG_ONLY = og_range
                     end
                 end
 
-                if exp_id == 5
-                    have_third_task = true;
-                else
+                %if exp_id == 5 TODO cleanup
+                %    have_third_task = true;
+                %else
                     have_third_task = false;
-                end
+                %end
                 
                 % simulate subjects in parallel; must be serial in
                 % debug_mode (i.e. regular for)
@@ -347,11 +377,11 @@ for OG_ONLY = og_range
                             sim.instruction({'tortoise', 'dog', 'cat', 'kiwi', 'panda', 'monkey'}, true);
                         else
                             assert(TARGETS == 1);
-                            if exp_id == 5
-                                sim.instruction({'tortoise'}, false);
-                            else
+                            %if exp_id == 5 TODO cleanup
+                            %    sim.instruction({'tortoise'}, false);
+                            %else
                                 sim.instruction({'tortoise'}, true);
-                            end
+                            %end
                         end
                     else
                         sim.instruction({'tor'}, true);
@@ -368,26 +398,37 @@ for OG_ONLY = og_range
                         %
                         [OG_RT, ~, OG_Hit, PM_RT, ~, PM_Hit, PM_miss_OG_hit, first_PM_RT] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, ...
                             responses, RTs, act, acc, onsets, offsets, ...
-                            is_target, correct, og_correct, ...
+                            is_target, correct, og_correct, is_inter_task, ...
                             false, do_print);
                         if exp_id == 5
                             % extra analysis for experiment 5
                             %
-                            IT_TAR_RT = mean(RTs(logical(inter_target)));
-                            IT_TAR_SEM = std(RTs(logical(inter_target))) / sqrt(length(RTs(logical(inter_target))));
-                            IT_NONTAR_RT = mean(RTs(logical(~inter_target)));
-                            IT_NONTAR_SEM = std(RTs(logical(~inter_target))) / sqrt(length(RTs(logical(~inter_target))));
+                            it_targets = logical(is_or_was_target) & logical(is_inter_task);
+                            IT_TAR_RT = mean(RTs(it_targets));
+                            IT_TAR_SEM = std(RTs(it_targets)) / sqrt(length(RTs(it_targets)));
+                            it_non_targets = logical(~is_or_was_target) & logical(is_inter_task);
+                            IT_NONTAR_RT = mean(RTs(it_non_targets));
+                            IT_NONTAR_SEM = std(RTs(it_non_targets)) / sqrt(length(it_non_targets));
                             if do_print, fprintf(' bonus Exp 5: target RT = %.2f (%.2f), nontarget RT = %.2f (%.2f)\n', ...
                                 IT_TAR_RT, IT_TAR_SEM, IT_NONTAR_RT, IT_NONTAR_SEM); end
+                        
+                            it_tar_resp = responses(it_targets);
+                            it_tar_correct = correct(it_targets);
+                            IT_TAR_HIT = sum(strcmp(it_tar_resp, it_tar_correct)) / length(it_tar_correct) * 100;
+                            if do_print, fprintf('            : accuracy on targets = %.2f\n', IT_TAR_HIT); end
                             
-                            tar_resp = responses(logical(inter_target));
-                            tar_correct = correct(logical(inter_target));
-                            IT_tar_hit = sum(strcmp(tar_resp, tar_correct)) / length(tar_correct) * 100;
-                            if do_print, fprintf('            : accuracy on targets = %.2f\n', IT_tar_hit); end
+                            it_nontar_resp = responses(it_non_targets);
+                            it_nontar_correct = correct(it_non_targets);
+                            IT_NONTAR_HIT = sum(strcmp(it_nontar_resp, it_nontar_correct)) / length(it_nontar_correct) * 100;
+                            if do_print, fprintf('            : accuracy on non-targets = %.2f\n', IT_NONTAR_HIT); end
                         end
                      
                         subject = [OG_ONLY, FOCAL, EMPHASIS, OG_RT, OG_Hit, PM_RT, PM_Hit, PM_miss_OG_hit, TARGETS, first_PM_RT];
+                        if exp_id == 5
+                            subject = [subject, IT_TAR_RT, IT_NONTAR_RT, IT_TAR_HIT, IT_NONTAR_HIT];
+                        end
                         data = [data; subject];
+                        
                         if debug_mode
                             subject_extra = {sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses, RTs, act, acc, onsets, offsets, nets, subjpar};
                             extra = [extra; subject_extra];
@@ -407,6 +448,7 @@ for OG_ONLY = og_range
                                 is_target(block_start:block_end), ...
                                 correct(block_start:block_end), ...
                                 og_correct(block_start:block_end), ...
+                                [], ...
                                 false, do_print);
 
                             % put subject and block id's at the end to make it
@@ -428,12 +470,12 @@ for OG_ONLY = og_range
                     %
                     if debug_mode
                         fprintf('   curpar(1:4) = %.3f %.3f %.3f %.3f\n', subjpar(1), subjpar(2), subjpar(3), subjpar(4));
-                        if ~OG_ONLY
+                        %if ~OG_ONLY
                             getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, ...
                                 responses, RTs, act, acc, onsets, offsets, ...
-                                is_target, correct, og_correct, ...
+                                is_target, correct, og_correct, is_inter_task, ...
                                 true, true);
-                        end
+                        %end
                     end
                 end % parfor subject_id
             

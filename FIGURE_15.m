@@ -1,4 +1,4 @@
-%load('exp2-data.mat')
+%load('exp2-data-newww.mat')
 
 EM2005_with_stats_exp2
 

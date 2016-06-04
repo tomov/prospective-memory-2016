@@ -58,6 +58,7 @@ empirical_stats = [
     0 0 1, 1593.43, 300.86, 97, 2, NaN, NaN, 81, 27;    % PM,    nonfocal, high emph 
 ];
 
+
 % convert SD's to SEM's in empirical data
 empirical_stats(:, SD_cols) = empirical_stats(:, SD_cols) / sqrt(subjects_per_condition);
 
@@ -86,6 +87,7 @@ for FOCAL = 1:-1:0
     end
 end
 
+
 % convert SD's to SEM's in simulation data
 simulation_stats(:, SD_cols) = simulation_stats(:, SD_cols) / sqrt(subjects_per_condition);
 
@@ -104,6 +106,15 @@ yfit = polyval(p, simulation_cycles);
 % replace model cycles with fit RT values
 simulation_stats(:,RT_mean_cols) = polyval(p, simulation_stats(:,RT_mean_cols));
 
+
+
+focalD = @(stats) CohensD(stats(2, 4), stats(2, 5) * sqrt(subjects_per_condition), subjects_per_condition, stats(4, 4), stats(4, 5) * sqrt(subjects_per_condition), subjects_per_condition);
+
+focalD(empirical_stats)
+focalD(simulation_stats)
+
+
+
 % -------------- Ball park for RT variances too, though I don't know if we really want to fit them
 % Momchil: this is wrong; some of the SD's are RT's, the others are hit
 % rates => can't regress
@@ -113,7 +124,8 @@ simulation_stats(:,RT_mean_cols) = polyval(p, simulation_stats(:,RT_mean_cols));
 % now we can compute errors. let's do percent deviation from humans,
 % squared (TODO or not squared?)
 %
-deviations = (abs(simulation_stats(:,use_cols) - empirical_stats(:,use_cols))) ./ empirical_stats(:,use_cols) .* 100;
+
+deviations = (abs(simulation_stats(:,use_cols) - empirical_stats(:,use_cols))) ./ empirical_stats(:,use_cols) .* 100
 deviations(isnan(deviations)) = 0; % ignore NaN's
 
 % this is an extra error term for differences between RT's in conditions

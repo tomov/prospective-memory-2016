@@ -1,3 +1,6 @@
+%load('exp5-data-newww.mat')
+
+
 %{
  subjects[subj_id, :] ==
  samples variable order = 

@@ -1,4 +1,4 @@
-%load('exp1-data.mat')
+%load('exp1-data-newww.mat')
 
 EM2005_with_stats_exp1
 
@@ -34,8 +34,8 @@ plot_all_conditions_exp1(simulation_stats(:, [1:3 10 11]), 0, 100, 1, 0, false);
 
 subplot(4, 2, 7);
 ylabel('PM RT (msec)');
-plot_all_conditions_exp1(empirical_stats(:, [1:3 8 9]), 1000, 2100, 1, 0, false);
+plot_all_conditions_exp1(empirical_stats(:, [1:3 8 9]), 1000, 2300, 1, 0, false);
 
 subplot(4, 2, 8);
-plot_all_conditions_exp1(simulation_stats(:, [1:3 8 9]), 1000, 2100, RT_slope, RT_intercept, false);
+plot_all_conditions_exp1(simulation_stats(:, [1:3 8 9]), 1000, 2300, RT_slope, RT_intercept, false);
 

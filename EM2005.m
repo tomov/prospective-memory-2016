@@ -166,6 +166,7 @@ for OG_ONLY = og_range
                     correct = correct(1:reps, :);
                     og_correct = og_correct(1:reps, :);
                     is_target = is_target(1:reps, :);
+                    is_or_was_target = zeros(); % hacks to make parfor work
                     
                 else % if not fitting_mode i.e. regular simulations
                     % insert the PM targets
@@ -347,7 +348,7 @@ for OG_ONLY = og_range
                 % simulate subjects in parallel; must be serial in
                 % debug_mode (i.e. regular for)
                 %
-                parfor subject_id = 1:subjects_per_condition
+                for subject_id = 1:subjects_per_condition
                     % optionally add cross-subject variability
                     %
                     subjpar = curpar;

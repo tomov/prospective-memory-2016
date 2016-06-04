@@ -1,4 +1,4 @@
-%load('exp1-data.mat')
+%load('exp6-data-newww.mat')
 
 B2010_with_stats
 
@@ -13,7 +13,7 @@ subplot(4, 2, 2);
 title('Simulation Data');
 plot_all_conditions_brewer(simulation_stats(:, [1:3 10 11]), 50, 100, 1, 0, false);
 
-text(-10,10.2,'Test title spanning two subplots -- Some fine tuning will be required')
+%text(-10,10.2,'Test title spanning two subplots -- Some fine tuning will be required')
 
 subplot(4, 2, 3);
 ylabel('OG RT (msec)');

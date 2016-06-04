@@ -142,7 +142,7 @@ end
 
 
 
-PM_hit = subjects(:, 7);
+PM_hit = subjects(:, 7); % OG_ONLY (i.e. NaN's) are automatically ignored
 
 % ----------------------- PM hit rate in focal vs. nonfocal ----
 
@@ -233,7 +233,7 @@ fprintf('\n\n----- PM Performance: Interaction between Focality and Emphasis ---
 fprintf('\n  Empirical Data -------\n');
 fprintf('    Focality:    F = 20.03\n');
 fprintf('    Emphasis:    F = 10.41\n');
-fprintf('    Interaction: F = 5.73\n');
+fprintf('    Interaction:  = 5.73\n');
 fprintf('\n  Simulation Data -------\n');
 fprintf('    Focality:    F = %.4f, p = %f\n', table{2,6}, p(1));
 fprintf('    Emphasis:    F = %.4f, p = %f\n', table{3,6}, p(2));
@@ -271,10 +271,30 @@ if DO_PLOT
     end
 end
 
+%%% ----------- PM hit rate in high vs. low emphasis for focal condition only
+
+PM_hit_low_focal = PM_hit(subjects(:, 3) == 0 & subjects(:, 2) == 1);
+PM_hit_high_focal = PM_hit(subjects(:, 3) == 1 & subjects(:, 2) == 1);
+[p, table] = anova1([PM_hit_high_focal PM_hit_low_focal], {'High, Focal', 'Low, Focal'}, 'off');
+
+fprintf('\n\n----- PM Performance: High vs. Low Emphasis for Focal targets only ------\n');
+fprintf('\n  Empirical Data -------\n');
+fprintf('                 F < 1\n');
+fprintf('\n  Simulation Data -------\n');
+fprintf('                 F = %.4f, p = %f\n', table{2,5}, p(1));
 
 
+%%% ----------- PM hit rate in high vs. low emphasis for nonfocal condition only
 
+PM_hit_low_nonfocal = PM_hit(subjects(:, 3) == 0 & subjects(:, 2) == 0);
+PM_hit_high_nonfocal = PM_hit(subjects(:, 3) == 1 & subjects(:, 2) == 0);
+[p, table] = anova1([PM_hit_high_nonfocal PM_hit_low_nonfocal], {'High, nonfocal', 'Low, nonfocal'}, 'off');
 
+fprintf('\n\n----- PM Performance: High vs. Low Emphasis for Nonfocal targets only ------\n');
+fprintf('\n  Empirical Data -------\n');
+fprintf('                 F = 5.90\n');
+fprintf('\n  Simulation Data -------\n');
+fprintf('                 F = %.4f, p = %f\n', table{2,5}, p(1));
 
 
 
@@ -348,7 +368,7 @@ OG_hit = subjects(:, 5);
 fprintf('\n\n----- OG accuracy: 2x2x2 ANOVA ------\n');
 table(1:8,6)
 p
-fprintf('===> shit, some of these are significant... oh well....\n');
+fprintf('===> all of these should be F < ~1.48 and p > ~ .29\n');
 
 
 
@@ -442,7 +462,7 @@ end
 
 fprintf('\n\n----- OG RTs: PM vs. No PM ------\n');
 fprintf('\n  Empirical Data -------\n');
-fprintf('                 F = 131.66\n');
+fprintf('                 F = 131.665\n');
 fprintf('\n  Simulation Data -------\n');
 fprintf('                 F = %.4f, p = %f\n', table{2,6}, p(1));
 

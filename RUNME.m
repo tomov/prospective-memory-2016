@@ -24,7 +24,7 @@ fitting_mode = false; % used when fitting the parameters ; uses a more efficient
 
 
 
-experiment = 6; % <------------------------------- HERE --------------------------------------
+experiment = 1; % <------------------------------- HERE --------------------------------------
 
 
 
@@ -122,7 +122,7 @@ elseif experiment == 4
          		1 0.8, ...   % uniform noise
                 0.0004];     % gamma
 
-    startpar([2 4 20 21]) = [0    0.1368    0.7049    0.5319];            
+    %startpar([2 4 20 21]) = [0    0.1368    0.7049    0.5319];            
 %    startpar([2 4 20 21 22]) = [ 0.0155         0    1.0000         0         0 / 1000 ];
 % from git hash a460e3a5c78a0492811b42a831f37c8b7023e364  --->     [0.2428
 % 1.0000    1.0000    1.0000] ..... also wtf [0    0.0818         0
@@ -159,7 +159,7 @@ if debug_mode
    % figure;
    % plot([act(1:100, context_ids), nets(1:100, context_ids)]);
 else
-    save(sprintf('exp%d-data-newww.mat', experiment));
+   % save(sprintf('exp%d-data-newww.mat', experiment));
 end
 
 

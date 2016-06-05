@@ -348,7 +348,7 @@ for OG_ONLY = og_range
                 % simulate subjects in parallel; must be serial in
                 % debug_mode (i.e. regular for)
                 %
-                for subject_id = 1:subjects_per_condition
+                parfor subject_id = 1:subjects_per_condition
                     % optionally add cross-subject variability
                     %
                     subjpar = curpar;

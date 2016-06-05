@@ -489,15 +489,43 @@ end
 fprintf('\n\n----- OG RTs: 2x2x2 ANOVA ------\n');
 table(1:8,6)
 p
-fprintf('===> shit...theyre all significant.. .fuck fuck fuck\n');
 
-% ----------------- OG RT: cost qualified
+% ----------------- OG RT: cost, focal vs nonfocal
 
-% cost is implied in figures above, NEXT...
+OG_RT_cost_focal = OG_RTs(subjects(:, 1) == 0 & subjects(:, 2) == 1) - OG_RTs(subjects(:, 1) == 1 & subjects(:, 2) == 1);
+OG_RT_cost_nonfocal = OG_RTs(subjects(:, 1) == 0 & subjects(:, 2) == 0) - OG_RTs(subjects(:, 1) == 1 & subjects(:, 2) == 0);
+[p, table] = anova1([OG_RT_cost_focal OG_RT_cost_nonfocal], {'Focal cost', 'Nonfocal cost'}, 'off');
+
+fprintf('\n\n----- OG RT cost: Focal vs Nonfocal ------\n');
+fprintf('\n  Empirical Data -------\n');
+fprintf('                 F = 59.01\n');
+fprintf('                 Focal M_cost = 68.77 ms\n');
+fprintf('                 Nonfocal M_cost = 347.37 ms\n');
+fprintf('\n  Simulation Data -------\n');
+fprintf('                 F = %.4f, p = %f\n', table{2,5}, p(1));
+fprintf('                 Focal M_cost = %.3f ms\n', mean(OG_RT_cost_focal) * RT_slope + RT_intercept);
+fprintf('                 Nonfocal M_cost = %.3f ms\n', mean(OG_RT_cost_nonfocal) * RT_slope + RT_intercept);
 
 
+% ----------------- OG RT: cost, high emphasis vs low emphasis
 
-% ----------------- OG RT: cost, interaction focality & emphasis
+OG_RT_cost_high = OG_RTs(subjects(:, 1) == 0 & subjects(:, 3) == 1) - OG_RTs(subjects(:, 1) == 1 & subjects(:, 3) == 1);
+OG_RT_cost_low = OG_RTs(subjects(:, 1) == 0 & subjects(:, 3) == 0) - OG_RTs(subjects(:, 1) == 1 & subjects(:, 3) == 0);
+[p, table] = anova1([OG_RT_cost_high OG_RT_cost_low], {'High emphasis cost', 'Low emphasis cost'}, 'off');
+
+fprintf('\n\n----- OG RT cost: High emphasis vs Low emphasis ------\n');
+fprintf('\n  Empirical Data -------\n');
+fprintf('                 F = 5.37\n');
+fprintf('                 High emphasis M_cost = 250.09 ms\n');
+fprintf('                 Low emphasis M_cost = 166.05 ms\n');
+fprintf('\n  Simulation Data -------\n');
+fprintf('                 F = %.4f, p = %f\n', table{2,5}, p(1));
+fprintf('                 High emphasis M_cost = %.3f ms\n', mean(OG_RT_cost_high) * RT_slope + RT_intercept);
+fprintf('                 Low emphasis M_cost = %.3f ms\n', mean(OG_RT_cost_low) * RT_slope + RT_intercept);
+
+
+% ----------------- OG RT: cost, interaction focality & emphasis (not
+% really calculating cost, but since baseline is the same, it's equivalent)
 
 
 M_OG_only = mean(OG_RTs(subjects(:, 1) == 1));

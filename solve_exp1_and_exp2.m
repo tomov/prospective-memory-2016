@@ -11,8 +11,11 @@ init_par = [0.35    0.3, ...     % focal, low emph
 min_par =  [0 0 0 0 0 0 0 0 0 0 0];
 max_par =  [1 1 1 1 1 1 1 1 1 1 1];
 
+runhash = randstr(10) % so we can tag the output files
+fit = @(init_par) fit_exp1_and_exp2(init_par, runhash);
+
 options = optimoptions(@fmincon,'Algorithm','sqp','MaxIter', 1000, 'DiffMinChange', 0.001);
-best_par = fmincon(@fit_exp1_and_exp2, init_par, [], [], [], [], min_par, max_par, [], options);
+best_par = fmincon(fit, init_par, [], [], [], [], min_par, max_par, [], options);
 
 best_par
 

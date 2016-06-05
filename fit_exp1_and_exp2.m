@@ -1,4 +1,4 @@
-function error = fit_exp1_and_exp2( free_params )
+function error = fit_exp1_and_exp2( free_params, runhash )
 % the error function to fit with fmincon or whatever which takes only a set of "free" parameters
 % and returns the computed error 
 
@@ -35,7 +35,7 @@ error = error_exp1 * 3+ error_exp2;
 %fprintf('%8.2f', free_params);
 fprintf(', error = %f * 3 + %f = %f\n\n\n', error_exp1, error_exp2, error);
 
-filename = sprintf('data/exp1_and_2_error_%.3f_%s.mat', error, randstr(10))
+filename = sprintf('data/exp1_and_2_run_%s_error_%.3f_hash_%s.mat', runhash, error, randstr(10))
 save(filename);
 
 end

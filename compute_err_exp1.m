@@ -222,4 +222,4 @@ deviations(isnan(deviations)) = 0; % ignore NaN's
 
 deviation_error = sum(sum((deviations.^2) .* err_scalers))
 
-error = deviation_error    +  F_error * 0.005; % + sum((diff_deviations.^2) .* diff_err_scalers);
+error = deviation_error    +  F_error * 0.05; % + sum((diff_deviations.^2) .* diff_err_scalers);

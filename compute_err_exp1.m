@@ -40,10 +40,10 @@ SD_cols = [5,7,9,11]; % SDs. we convert those to SEM by dividing by data_per_con
 RT_mean_cols = [4,8]; % RTs. we regress those against model cycles means to scale
 RT_SD_cols = [5,9]; % RT SDs. we regress those against model cycles SDs to scale
 
-use_cols    = [4  6, 10]; % which columns to use in the error calculation -- OG RT's, OG accuracy, and PM hit rates
-err_weights = [1, 1, 1];  % weights of the errors -- keep in mind we're scaling them to %'s so they're all on the same scale
+use_cols    = [4 5, 6 7, 10 11]; % which columns to use in the error calculation -- OG RT's + SDs, OG accuracy + SDs, and PM hit rates + SDs
+err_weights = [1 1, 1 1,  1  1];  % weights of the errors -- keep in mind we're scaling them to %'s so they're all on the same scale
 
-data_per_condition = 24;
+subjects_per_condition = 24;
 
 % comes from E&M 2005 paper
 empirical_stats = [
@@ -60,7 +60,7 @@ empirical_stats = [
 
 
 % convert SD's to SEM's in empirical data
-empirical_stats(:, SD_cols) = empirical_stats(:, SD_cols) / sqrt(data_per_condition);
+empirical_stats(:, SD_cols) = empirical_stats(:, SD_cols) / sqrt(subjects_per_condition);
 
 % resize weights of errors to # of conditions
 err_scalers = repmat(err_weights, size(empirical_stats, 1), 1);
@@ -89,7 +89,7 @@ end
 
 
 % convert SD's to SEM's in simulation data
-simulation_stats(:, SD_cols) = simulation_stats(:, SD_cols) / sqrt(data_per_condition);
+simulation_stats(:, SD_cols) = simulation_stats(:, SD_cols) / sqrt(subjects_per_condition);
 
 
 
@@ -105,6 +105,7 @@ yfit = polyval(p, simulation_cycles);
 
 % replace model cycles with fit RT values
 simulation_stats(:,RT_mean_cols) = polyval(p, simulation_stats(:,RT_mean_cols));
+simulation_stats(:,RT_SD_cols) = simulation_stats(:,RT_SD_cols) * RT_slope;
 
 
 % ----------------- Cohen's D -- not sure how to use it though...
@@ -222,4 +223,4 @@ deviations(isnan(deviations)) = 0; % ignore NaN's
 
 deviation_error = sum(sum((deviations.^2) .* err_scalers))
 
-error = deviation_error    +  F_error * 0.05; % + sum((diff_deviations.^2) .* diff_err_scalers);
+error = deviation_error   ; % +  F_error * 0.05; % + sum((diff_deviations.^2) .* diff_err_scalers);

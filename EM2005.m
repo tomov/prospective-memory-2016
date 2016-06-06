@@ -1,4 +1,4 @@
-function [data, extra] = EM2005( params, exp_id, debug_mode )
+function [data, extra] = EM2005( params, exp_id, debug_mode, backprop )
 % run a simulation of the E&M with certain parameters and spit out the data
 % for all subjects
 
@@ -32,8 +32,13 @@ pm_trials_exp3 = [26 52 78 104];
 
 % since we're doing only 1 experiment at a time
 blocks_per_condition = blocks_per_condition(exp_id);
-trials_per_block = 1000; % trials_per_block(exp_id); TODO restore
-subjects_per_condition = 1; % subjects_per_condition(exp_id); TODO restore
+if backprop
+    trials_per_block = 1000;
+    subjects_per_condition = 1;
+else
+    trials_per_block = trials_per_block(exp_id);
+    subjects_per_condition = subjects_per_condition(exp_id);
+end
 
 data = [];
 extra = [];
@@ -45,7 +50,9 @@ target_range = [1, 6];
 
 if exp_id == 1
     target_range = 1;
-    og_range = 1; % TODO remove
+    if backprop
+        og_range = 1;
+    end
 elseif exp_id == 2
     emphasis_range = 0;
     target_range = 1;
@@ -283,7 +290,7 @@ for OG_ONLY = og_range
 
                 % simulate subjects in parallel
                 for subject_id = 1:subjects_per_condition % TODO parfor
-                    [responses, RTs, act, acc, onsets, offsets, nets] = sim.trial(stimuli, correct, true);
+                    [responses, RTs, act, acc, onsets, offsets, nets] = sim.trial(stimuli, correct, backprop);
 
                     if exp_id == 1 || exp_id == 3 || exp_id == 4 || exp_id == 5
                         % for experiment 1, each subject = 1 sample
@@ -344,7 +351,7 @@ for OG_ONLY = og_range
                     
                     % show picture of whole thing (for debugging)
                     if debug_mode
-                        fprintf('   curpar(1:4) = %.3f %.3f %.3f %.3f', curpar(1), curpar(2), curpar(3), curpar(4));
+                        fprintf('   curpar(1:4) = %.3f %.3f %.3f %.3f\n', curpar(1), curpar(2), curpar(3), curpar(4));
                         if ~OG_ONLY
                             getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, ...
                                 responses, RTs, act, acc, onsets, offsets, ...

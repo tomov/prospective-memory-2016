@@ -27,14 +27,15 @@ where
                 4 4 4, ... % biases
 		0 0];      % noise -- no noise...
  
-debug_mode = false;
+debug_mode = true;
+backprop = false;
 experiment = 1;
 
 tic
-[data, extra] = EM2005(startpar, experiment, debug_mode);
+[data, extra] = EM2005(startpar, experiment, debug_mode, backprop);
 toc
 
-save('exp1-data-newww.mat');
+%save('exp1-data-newww.mat');
 
 
 %{

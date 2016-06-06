@@ -148,7 +148,7 @@ classdef Simulator < Model
             J = J + reg;
         end
 
-        function [responses, RTs, activation_log, accumulators_log, onsets, offsets, net_log] = trial(self, stimuli, correct, train)
+        function [responses, RTs, activation_log, accumulators_log, onsets, offsets, net_log, last_trial] = trial(self, stimuli, correct, train)
             % initialize activations and outputs
             trial_duration = sum(cat(2, stimuli{:, 2})) * self.CYCLES_PER_SEC;
             self.accumulators = zeros(1, self.Nout);
@@ -181,19 +181,23 @@ classdef Simulator < Model
                 
                 self.weights(self.response_ids, self.output_ids) = rand(length(self.response_ids), length(self.output_ids)) * 2 * epsilon_init - epsilon_init;
                 self.weights(self.perception_ids, self.response_ids) = rand(length(self.perception_ids), length(self.response_ids)) * 2 * epsilon_init - epsilon_init;
-                %self.weights(self.input_ids, self.perception_ids) = rand(length(self.input_ids), length(self.perception_ids)) * 2 * epsilon_init - epsilon_init;
+                  %self.weights(self.input_ids, self.perception_ids) = rand(length(self.input_ids), length(self.perception_ids)) * 2 * epsilon_init - epsilon_init;
                 
                 self.bias(self.output_ids) = rand(1, length(self.output_ids)) * 2 * epsilon_init - epsilon_init;
                 self.bias(self.response_ids) = rand(1, length(self.response_ids)) * 2 * epsilon_init - epsilon_init;
-                %self.bias(self.perception_ids) = rand(1, length(self.perception_ids)) * 2 * epsilon_init - epsilon_init;
+                  %self.bias(self.perception_ids) = rand(1, length(self.perception_ids)) * 2 * epsilon_init - epsilon_init;
                 
-                %self.weights = rand(size(self.weights)) * 2 * epsilon_init - epsilon_init;
-                %self.bias = rand(1, length(self.bias)) * 2 * epsilon_init - epsilon_init;
+                  %self.weights = rand(size(self.weights)) * 2 * epsilon_init - epsilon_init;
+                  %self.bias = rand(1, length(self.bias)) * 2 * epsilon_init - epsilon_init;
+                  
+                hits = 0;
+                misses = 0;
+                is_hit = zeros(size(stimuli, 1), 1);
+                rolling_hits_window = 50; % helps for debugging, and also so u know when to stop training TODO const in self.
+                rolling_hit_rate_stop_threshold = 0.90; % when we hit this hit rate, we stop learning TODO const in self.
             end
             
-            hits = 0;
-            misses = 0;
-            
+            last_trial = size(stimuli, 1);
             % for each input from the time series
             for ord=1:size(stimuli, 1)
                 % get active input units for given stimulus
@@ -323,18 +327,23 @@ classdef Simulator < Model
                             % timeout
                             break;
                         end
-                    end
-                end
+                    end % if is_settled
+                end % for cycle = 1:timeout
                 
                 %switched_to_PM_task = (self.activation(self.unit_id('PM Task')) > self.activation(self.unit_id('OG Task')));
-                % TODO hacky...
-                assert(length(self.resting_wm) == length(self.wm_act));
-                switched_to_PM_task = (self.wm_act(2) > self.resting_wm(2) + 0.01);
+              % TODO RESTORE  self.wm_act
+              % TODO RESTORE   assert(length(self.resting_wm) == length(self.wm_act));
+              % TODO RESTORE  switched_to_PM_task = (self.wm_act(2) > self.resting_wm(2) + 0.01);
                 %switched_to_PM_task = (self.wm_act(2) > self.wm_act(1) - 0.1);
 
                 % record response and response time
                 output = self.units{output_id};
                 offsets = [offsets; cycles + cycle];
+                if ~is_settled 
+                    % we never settled => no stimulus onset (put it same as
+                    % offset for consistency
+                    onsets = [onsets; cycles + cycle];
+                end
                 responses = [responses; {output}];
                 RTs = [RTs; RT];
                 cycles = cycles + cycle;
@@ -342,6 +351,7 @@ classdef Simulator < Model
                 if train
                     if strcmp(output, correct{ord}) == 1
                         hits = hits + 1;
+                        is_hit(ord) = 1;
                     else
                         misses = misses + 1;
                     end
@@ -349,7 +359,18 @@ classdef Simulator < Model
                     expected = zeros(1, self.N); % TODO optimize -- no need to initialize every time
                     expected(self.unit_id(correct{ord})) = 1;
                     
-                    fprintf('hits = %d, misses = %d, hit ratio = %f, cost = %f\n', hits, misses, hits / (hits + misses), self.cost(expected));
+                    if ord > rolling_hits_window
+                        rolling_hits = sum(is_hit(ord - rolling_hits_window + 1:ord));
+                    else
+                        rolling_hits = 0;
+                    end
+                    fprintf('hits = %d, misses = %d, hit ratio = %f, cost = %f (rolling hits = %d, ratio = %f)\n', hits, misses, hits / (hits + misses), self.cost(expected), rolling_hits, rolling_hits / rolling_hits_window);
+                    if rolling_hits / rolling_hits_window >= rolling_hit_rate_stop_threshold
+                        last_trial = ord; % so we know where to look
+                        length(onsets)
+                        last_trial
+                        break % we've learned
+                    end
                     
                     % errors
                     self.del(self.output_ids) = self.activation(self.output_ids) - expected(self.output_ids);
@@ -379,7 +400,7 @@ classdef Simulator < Model
                     
                     % TODO maybe use fmincg or something?
                     % gradient descent
-                    eps = 10; % TODO move to self.
+                    eps = 10; % TODO const move to self.
                     self.weights = self.weights - self.weightsGradient * eps;
                     self.bias = self.bias - self.biasGradient * eps;
                     
@@ -417,11 +438,14 @@ classdef Simulator < Model
                     k = waitforbuttonpress;
                     %}
                 end
-            end
+            end % for ord in stimuli
             
             activation_log(cycles:end,:) = [];
             accumulators_log(cycles:end,:) = [];
             net_log(cycles:end,:) = [];
-        end
-    end
-end
+            self.weights
+            self.bias(self.output_ids)
+            self.bias(self.response_ids)
+        end % function trial()
+    end % methods
+end % classdef Simulator

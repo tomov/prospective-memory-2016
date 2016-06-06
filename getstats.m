@@ -1,4 +1,4 @@
-function [OG_RT, OG_RT_SD, OG_Hit, PM_RT, PM_RT_SD, PM_Hit, PM_miss_OG_hit] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses, RTs, act, acc, onsets, offsets, is_target, correct, og_correct, show_pics)
+function [OG_RT, OG_RT_SD, OG_Hit, PM_RT, PM_RT_SD, PM_Hit, PM_miss_OG_hit] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses, RTs, act, acc, onsets, offsets, is_target, correct, og_correct, show_pics, last_trial)
 
 OG_count = 0;
 PM_count = 0;
@@ -117,49 +117,68 @@ PM_miss_OG_hit = size(PM_miss_correct_OG_RTs, 1) / size(PM_miss_RTs, 1) * 100;
 if show_pics
     figure;
 
-    t_range = 1:5000;
+    %t_range = 1:5000;
+    %x_lim = [1 5000]; 
+    x_lim = [onsets(last_trial) - 1000 onsets(last_trial)];
     %t_range = 1:2000;
     y_lim = [sim.MINIMUM_ACTIVATION - 0.1 sim.MAXIMUM_ACTIVATION + 0.1];
     bar_names = {'OG correct', 'PM hit', 'false alarm', 'OG wrong', 'PM miss', 'PM OG' 'OG timeout', 'PM timeout'};
-    onset_plot = onsets(onsets < t_range(end));
-    offset_plot = offsets(offsets < t_range(end));
+    onset_plot = onsets; %(onsets < t_range(end));
+    offset_plot = offsets; %(offsets < t_range(end));
     % turn off onset plot if necessary
-    onset_plot = 0; offset_plot = 0;
+    %onset_plot = 0; offset_plot = 0;
     
     subplot(5, 2, 1);
-    plot(t_range, act(t_range, sim.output_ids));
+    plot(act(:, sim.output_ids));
     legend(sim.units(sim.output_ids));
     title('Outputs');
+    xlim(x_lim);
     ylim(y_lim);
+    line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
+    line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
 
     subplot(5, 2, 3);
-    plot(t_range, act(t_range, sim.response_ids));
+    plot(act(:, sim.response_ids));
     legend(sim.units(sim.response_ids));
     title('Responses');
+    xlim(x_lim);
     ylim(y_lim);
+    line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
+    line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
 
     subplot(5, 2, 5);
-    plot(t_range, act(t_range, sim.perception_ids));
+    plot(act(:, sim.perception_ids));
     legend(sim.units(sim.perception_ids));
     title('Feature Perception');
+    xlim(x_lim);
     ylim(y_lim);
+    line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
+    line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
 
     subplot(5, 2, 7);
-    plot(t_range, act(t_range, sim.input_ids));
+    plot(act(:, sim.input_ids));
     legend(sim.units(sim.input_ids));
     title('Stimulus Inputs');
+    xlim(x_lim);
     ylim(y_lim);
+    line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
+    line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
 
     subplot(5, 2, 2);
-    plot(t_range, acc(t_range, :));
+    plot(acc(:, :));
     legend(sim.units(sim.output_ids));
     title('Evidence Accumulation');
+    xlim(x_lim);
+    ylim([-3 1]);
     %ylim([sim.MINIMUM_ACTIVATION sim.MAXIMUM_ACTIVATION]);
+    line([onset_plot onset_plot],[-3 1],'Color',[0.5 0.5 0.5])
+    line([offset_plot offset_plot],[-3 1], 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
 
     subplot(5, 2, 4);
     plot(act(1:end, sim.task_ids));
     legend(sim.units(sim.task_ids));
     title('Task Representation');
+    xlim(x_lim);
     ylim(y_lim);
     line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
     line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
@@ -168,6 +187,7 @@ if show_pics
     plot(act(1:end, sim.attention_ids));
     legend(sim.units(sim.attention_ids));
     title('Feature Attention');
+    xlim(x_lim);
     ylim(y_lim);
     line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
     line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
@@ -176,6 +196,7 @@ if show_pics
     plot(act(1:end, sim.context_ids));
     legend(sim.units(sim.context_ids));
     title('Context');
+    xlim(x_lim);
     ylim(y_lim);
     line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
     line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
@@ -185,6 +206,7 @@ if show_pics
     plot(act(1:end, sim.hippo_ids));
     legend(sim.units(sim.hippo_ids));
     title('Hippocampus');
+    xlim(x_lim);
     ylim(y_lim);
     line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
     line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])

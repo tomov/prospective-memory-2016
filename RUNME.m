@@ -28,7 +28,7 @@ where
 		0 0];      % noise -- no noise...
  
 debug_mode = true;
-backprop = false;
+backprop = true;
 experiment = 1;
 
 tic

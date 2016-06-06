@@ -10,7 +10,7 @@ classdef Model < handle
         DECAY = 0.01;
         CYCLES_PER_SEC = 500; % 500 ; CANNOT be lower, e.g. 200...
         SETTLE_MEAN_EPS = 1e-3; % adjust these when you add noise to the model
-        SETTLE_STD_EPS = 1e-4; % ...this too
+        SETTLE_STD_EPS = 1e-4; % 1e-4; % ...this too
         TAU = 0.1; % rate constant from Jon's paper = 0.1
         INSTRUCTION_CYLCES = 2/Model.TAU;
         RESET_CYCLES = Model.INSTRUCTION_CYLCES;
@@ -26,7 +26,7 @@ classdef Model < handle
         
         INPUT_ACTIVATION = 1;
         
-        LAMBDA = 0; % regularization constant for backprop TODO set to 1 or 0.1 or something
+        LAMBDA = 0; %0.001; % regularization constant for backprop TODO set to 1 or 0.1 or something
     end
 
     
@@ -37,32 +37,32 @@ classdef Model < handle
         
         % perception
         
-        BIAS_FOR_PERCEPTION = -18;
+        BIAS_FOR_PERCEPTION = -1; % -18;
         PERCEPTION_INHIBITION = 0;
         
-        INPUT_TO_PERCEPTION = 15;
+        INPUT_TO_PERCEPTION =  2; %  15;
         INPUT_TO_PERCEPTION_INHIBITION = 0;
         
-        ATTENTION_TO_PERCEPTION = 8;
+        ATTENTION_TO_PERCEPTION = 0; % 8;
         ATTENTION_TO_PERCEPTION_INHIBITION = 0;
 
         % responses
         
-        BIAS_FOR_RESPONSES = -12;
-        RESPONSE_INHIBITION = -5;
+        BIAS_FOR_RESPONSES = 0; % -12;
+        RESPONSE_INHIBITION = 0;  % -5;
         
-        PERCEPTION_TO_RESPONSE = 5;
+        PERCEPTION_TO_RESPONSE = 0;  %5;
         PERCEPTION_TO_RESPONSE_INHIBITION = 0;
 
-        TASK_TO_RESPONSE = 8;
+        TASK_TO_RESPONSE = 0; % 8;
         TASK_TO_RESPONSE_INHIBITION = 0;
         
         % outputs
         
         BIAS_FOR_OUTPUTS = 0;
-        OUTPUT_INHIBITION = -3;
+        OUTPUT_INHIBITION = 0; %-3;
         
-        RESPONSE_TO_OUTPUT = 1;
+        RESPONSE_TO_OUTPUT = 0; %1;
         RESPONSE_TO_OUTPUT_INHIBITION = 0;
         
         % WM and EM units follow
@@ -72,42 +72,42 @@ classdef Model < handle
                 
         % task representation (WM)
         
-        BIAS_FOR_TASK = 3;
-        TASK_INHIBITION = -2;
-        TASK_SELF = -2 + 0.0004;
+        BIAS_FOR_TASK = 0;% 3;
+        TASK_INHIBITION = 0; % -2;
+        TASK_SELF =  0; % -2 + 0.0004;
         
-        ATTENTION_TO_TASK = -1;
+        ATTENTION_TO_TASK = 0; % -1;
         
-        HIPPO_TO_TASK = 10;
+        HIPPO_TO_TASK =  0; % 10;
         %PERCEPTION_TO_TASK = 1.2;  % EM = speed of task switch --
         %DEPRECATEd; see hippo
         
         % feature attention (WM)
         
-        BIAS_FOR_ATTENTION = 3;
-        ATTENTION_INHIBITION = -2;
-        ATTENTION_SELF = -2 + 0.0004;
+        BIAS_FOR_ATTENTION = 0; % 3;
+        ATTENTION_INHIBITION = 0; % -2;
+        ATTENTION_SELF = 0; % -2 + 0.0004;
         
-        TASK_TO_ATTENTION = -1;
+        TASK_TO_ATTENTION = 0; %-1;
         
         % context units
         
-        BIAS_FOR_CONTEXT = 3;
-        CONTEXT_INHIBITION = -2;
-        CONTEXT_SELF = -2 + 0.0004;
+        BIAS_FOR_CONTEXT = 0; % 3;
+        CONTEXT_INHIBITION = 0; %-2;
+        CONTEXT_SELF = 0; % -2 + 0.0004;
         
-        TASK_TO_CONTEXT = -1;
-        ATTENTION_TO_CONTEXT = -1;
-        CONTEXT_TO_TASK_AND_ATTENTION = -1;
+        TASK_TO_CONTEXT = 0; %-1;
+        ATTENTION_TO_CONTEXT = 0; %-1;
+        CONTEXT_TO_TASK_AND_ATTENTION = 0; % -1;
         
         % hippocampus
         
         % FUTURE -20
-        BIAS_FOR_HIPPO = -23; %-32;  % must be < -10, o/w tasks drift b/c of (super small) input current from hippo
+        BIAS_FOR_HIPPO = 0; % -23; %-32;  % must be < -10, o/w tasks drift b/c of (super small) input current from hippo
         
         % FUTURE 20, 12
-        STIMULUS_TO_HIPPO = 16; % 30
-        CONTEXT_TO_HIPPO = 16;  % 20
+        STIMULUS_TO_HIPPO = 0; % 16; % 30
+        CONTEXT_TO_HIPPO = 0; % 16;  % 20
         
         %OUTPUT_TO_SELF = 0; % makes response->output more like copying rather than integration
         %RESPONSE_TO_SELF = 0;

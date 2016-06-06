@@ -33,7 +33,7 @@ pm_trials_exp3 = [26 52 78 104];
 % since we're doing only 1 experiment at a time
 blocks_per_condition = blocks_per_condition(exp_id);
 if backprop
-    trials_per_block = 1000;
+    trials_per_block = 100;
     subjects_per_condition = 1;
 else
     trials_per_block = trials_per_block(exp_id);
@@ -71,6 +71,8 @@ end
 if debug_mode
     subjects_per_condition = 1;
     og_range = 0;
+    focal_range = 0;
+    emphasis_range = 0;
     %focal_range = 1:-1:0;
     %emphasis_range = 0;
     %target_range = [1,6];
@@ -108,7 +110,11 @@ for OG_ONLY = og_range
                     {'tortoise,a subject'}, 1;
                 ];
                 pm_og_correct = {'Yes'; 'No'};
-                pm_correct = {'PM', 'PM'};
+                if backprop
+                    pm_correct = pm_og_correct; % ignore PM task for now; just OG task
+                else
+                    pm_correct = {'PM', 'PM'};
+                end
 
                 % generate OG block
                 og_block = repmat(og_stimuli, trials_per_block, 1);
@@ -290,14 +296,14 @@ for OG_ONLY = og_range
 
                 % simulate subjects in parallel
                 for subject_id = 1:subjects_per_condition % TODO parfor
-                    [responses, RTs, act, acc, onsets, offsets, nets] = sim.trial(stimuli, correct, backprop);
+                    [responses, RTs, act, acc, onsets, offsets, nets, last_trial] = sim.trial(stimuli, correct, backprop);
 
                     if exp_id == 1 || exp_id == 3 || exp_id == 4 || exp_id == 5
                         % for experiment 1, each subject = 1 sample
                         [OG_RT, ~, OG_Hit, PM_RT, ~, PM_Hit, PM_miss_OG_hit] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, ...
                             responses, RTs, act, acc, onsets, offsets, ...
                             is_target, correct, og_correct, ...
-                            false);
+                            false, last_trial);
                         if exp_id == 5
                             % extra analysis for experiment 5
                             IT_TAR_RT = mean(RTs(logical(inter_target)));
@@ -334,7 +340,7 @@ for OG_ONLY = og_range
                                 is_target(block_start:block_end), ...
                                 correct(block_start:block_end), ...
                                 og_correct(block_start:block_end), ...
-                                false);
+                                false, last_trial);
 
                             % put subject and block id's at the end to make it
                             % compatible with the data from experiment 1
@@ -356,7 +362,7 @@ for OG_ONLY = og_range
                             getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, ...
                                 responses, RTs, act, acc, onsets, offsets, ...
                                 is_target, correct, og_correct, ...
-                                true);
+                                true, last_trial);
                         end
                     end 
                 end

@@ -150,13 +150,13 @@ classdef Simulator < Model
 
         function [responses, RTs, activation_log, accumulators_log, onsets, offsets, net_log, last_trial] = trial(self, stimuli, correct, train)
             % initialize activations and outputs
-            trial_duration = sum(cat(2, stimuli{:, 2})) * self.CYCLES_PER_SEC;
+            experiment_duration = sum(cat(2, stimuli{:, 2})) * self.CYCLES_PER_SEC;
             self.accumulators = zeros(1, self.Nout);
             self.net_input = zeros(1, self.N);
             self.net_input_avg = zeros(1, self.N);
-            activation_log = zeros(trial_duration, self.N);
-            accumulators_log = zeros(trial_duration, self.Nout);
-            net_log = zeros(trial_duration, self.N);
+            activation_log = zeros(experiment_duration, self.N);
+            accumulators_log = zeros(experiment_duration, self.Nout);
+            net_log = zeros(experiment_duration, self.N);
             self.activation = zeros(1, self.N);
             self.wm_act = zeros(1, size(self.wm_ids, 2));
             self.wm_net = zeros(1, size(self.wm_ids, 2));
@@ -170,17 +170,21 @@ classdef Simulator < Model
             switched_to_PM_task = false;
             
             if train
+                saved_weights = self.weights;
+                saved_bias = self.bias;
+                
+                self.bias(self.wm_ids) = 0; % turn off WM TODO const in self.
+                self.init_wm = zeros(size(self.init_wm)); % WM is part of the input if we're doing backprop
+                
                 self.del = zeros(1, self.N);
                 self.weightsGradient = zeros(size(self.weights));
                 self.biasGradient = zeros(size(self.bias));
-                
-                saved_weights = self.weights;
-                saved_bias = self.bias;
                 
                 epsilon_init = 0.12; % from ML course TODO move to self.
                 
                 self.weights(self.response_ids, self.output_ids) = rand(length(self.response_ids), length(self.output_ids)) * 2 * epsilon_init - epsilon_init;
                 self.weights(self.perception_ids, self.response_ids) = rand(length(self.perception_ids), length(self.response_ids)) * 2 * epsilon_init - epsilon_init;
+                %self.weights(self.task_ids, self.response_ids) = rand(length(self.task_ids), length(self.response_ids)) * 2 * epsilon_init - epsilon_init;
                   %self.weights(self.input_ids, self.perception_ids) = rand(length(self.input_ids), length(self.perception_ids)) * 2 * epsilon_init - epsilon_init;
                 
                 self.bias(self.output_ids) = rand(1, length(self.output_ids)) * 2 * epsilon_init - epsilon_init;
@@ -193,7 +197,7 @@ classdef Simulator < Model
                 hits = 0;
                 misses = 0;
                 is_hit = zeros(size(stimuli, 1), 1);
-                rolling_hits_window = 50; % helps for debugging, and also so u know when to stop training TODO const in self.
+                rolling_hits_window = 100; % helps for debugging, and also so u know when to stop training TODO const in self.
                 rolling_hit_rate_stop_threshold = 0.90; % when we hit this hit rate, we stop learning TODO const in self.
             end
             
@@ -236,6 +240,7 @@ classdef Simulator < Model
                     % initialize WM at beginning of block (i.e. first
                     % trial),
                     % or after a PM switch
+                    
                     if cycle < self.INSTRUCTION_CYLCES && (ord == 1 || switched_to_PM_task)
                         if ord == 1
                             self.wm_act = self.init_wm;
@@ -278,7 +283,7 @@ classdef Simulator < Model
                         + self.bias(self.ffwd_ids) + normrnd(0, 0.1, size(self.ffwd_ids));
                     self.net_input(self.wm_ids) = self.activation(self.ffwd_ids) * self.weights(self.ffwd_ids, self.wm_ids) ...
                         + self.wm_act * self.weights(self.wm_ids, self.wm_ids) ...
-                        + self.bias(self.wm_ids) + normrnd(0, 0.01, size(self.wm_ids));
+                        + self.bias(self.wm_ids); % TODO REVERT ME -- problem is they drift too fast + normrnd(0, 0.01, size(self.wm_ids));
                     
                     % on instruction, oscillate around initial WM
                     % activations -- WTF bro
@@ -367,8 +372,6 @@ classdef Simulator < Model
                     fprintf('hits = %d, misses = %d, hit ratio = %f, cost = %f (rolling hits = %d, ratio = %f)\n', hits, misses, hits / (hits + misses), self.cost(expected), rolling_hits, rolling_hits / rolling_hits_window);
                     if rolling_hits / rolling_hits_window >= rolling_hit_rate_stop_threshold
                         last_trial = ord; % so we know where to look
-                        length(onsets)
-                        last_trial
                         break % we've learned
                     end
                     
@@ -382,6 +385,7 @@ classdef Simulator < Model
                     % weight gradients
                     self.weightsGradient(self.response_ids, self.output_ids) = 1.0 / m * self.activation(self.response_ids)' * self.del(self.output_ids);
                     self.weightsGradient(self.perception_ids, self.response_ids) = 1.0 / m * self.activation(self.perception_ids)' * self.del(self.response_ids);
+                    %self.weightsGradient(self.task_ids, self.response_ids) = 1.0 / m * self.wm_act(ismember(self.wm_ids, self.task_ids))' * self.del(self.response_ids);
                     %self.weightsGradient(self.input_ids, self.perception_ids) = 1.0 / m * self.activation(self.input_ids)' * self.del(self.perception_ids);
                     
                     % bias gradients
@@ -392,6 +396,7 @@ classdef Simulator < Model
                     % regularization
                     self.weightsGradient(self.response_ids, self.output_ids) = self.LAMBDA / m * self.weights(self.response_ids, self.output_ids) + self.weightsGradient(self.response_ids, self.output_ids);
                     self.weightsGradient(self.perception_ids, self.response_ids) = self.LAMBDA / m * self.weights(self.perception_ids, self.response_ids) + self.weightsGradient(self.perception_ids, self.response_ids);
+                    %self.weightsGradient(self.task_ids, self.response_ids) = self.LAMBDA / m * self.weights(self.task_ids, self.response_ids) + self.weightsGradient(self.task_ids, self.response_ids);
                     %self.weightsGradient(self.input_ids, self.perception_ids) = self.LAMBDA / m * self.weights(self.input_ids, self.perception_ids) + self.weightsGradient(self.input_ids, self.perception_ids);
                     
                     self.biasGradient(self.output_ids) = self.LAMBDA / m * self.bias(self.output_ids) + self.biasGradient(self.output_ids);
@@ -403,7 +408,7 @@ classdef Simulator < Model
                     eps = 10; % TODO const move to self.
                     self.weights = self.weights - self.weightsGradient * eps;
                     self.bias = self.bias - self.biasGradient * eps;
-                    
+                   
                     %saved_bias(self.output_ids)
                     %self.bias(self.output_ids)
                     %self.del(self.output_ids)

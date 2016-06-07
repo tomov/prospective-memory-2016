@@ -33,7 +33,7 @@ pm_trials_exp3 = [26 52 78 104];
 % since we're doing only 1 experiment at a time
 blocks_per_condition = blocks_per_condition(exp_id);
 if backprop
-    trials_per_block = 100;
+    trials_per_block = 200;
     subjects_per_condition = 1;
 else
     trials_per_block = trials_per_block(exp_id);
@@ -110,11 +110,7 @@ for OG_ONLY = og_range
                     {'tortoise,a subject'}, 1;
                 ];
                 pm_og_correct = {'Yes'; 'No'};
-                if backprop
-                    pm_correct = pm_og_correct; % ignore PM task for now; just OG task
-                else
-                    pm_correct = {'PM', 'PM'};
-                end
+                pm_correct = {'PM', 'PM'};
 
                 % generate OG block
                 og_block = repmat(og_stimuli, trials_per_block, 1);
@@ -129,13 +125,56 @@ for OG_ONLY = og_range
                 is_target = zeros(blocks_per_condition * trials_per_block, 1);
 
                 
-                % insert one PM target in each of the PM blocks
                 if ~OG_ONLY
-                    % every third trial is a PM trial -- this is only for
-                    % testing; not used in any of E&M's experiments
-
-                    if debug_mode
+                    if backprop
+                        % a bit copy-pasted from above
+                        % notice that the OG task units are part of input
+                        % when training.
+                        % We train it to perform one task when OG task unit
+                        % is on, and the other when PM unit is on
+                        %
+                        og_stimuli = [
+                            {'crocodile,an animal'}, 1;
+                            {'crocodile,a subject'}, 1;
+                            {'physics,an animal'}, 1;
+                            {'physics,a subject'}, 1;
+                            {'math,an animal'}, 1;
+                            {'math,a subject'}, 1;
+                            {'tortoise,an animal'}, 1;
+                            {'tortoise,a subject'}, 1;
+                            
+                            {'crocodile,an animal'}, 1;
+                            {'crocodile,a subject'}, 1;
+                            {'physics,an animal'}, 1;
+                            {'physics,a subject'}, 1;
+                            {'math,an animal'}, 1;
+                            {'math,a subject'}, 1;
+                            {'tortoise,an animal'}, 1;
+                            {'tortoise,a subject'}, 1;
+                        ];
+                        og_correct = {%'Yes'; 'Yes'; 'Yes'; 'Yes'; 'Yes'; 'Yes'; 'Yes'; 'Yes';  % dumb -- all yes
+                                      'Yes'; 'No'; 'No'; 'Yes'; 'No'; 'Yes'; 'Yes'; 'No';
+                                      'Yes'; 'No'; 'No'; 'Yes'; 'No'; 'Yes'; 'Yes'; 'No';
+                                       %'Yes'; 'No'; 'Yes'; 'No'; 'Yes'; 'No'; 'Yes'; 'No'; % dumb -- animal = yes
+                                      %'PM';  'PM'; 'PM'; 'PM';  'PM'; 'PM';  'PM';  'PM'
+                                      };
+                                  
+                        og_block = repmat(og_stimuli, trials_per_block, 1);
+                        og_block_correct = repmat(og_correct, trials_per_block, 1);
+                        og_block = og_block(1:trials_per_block,:);
+                        og_block_correct = og_block_correct(1:trials_per_block,:);
                         
+                        stimuli = repmat(og_block, blocks_per_condition, 1);
+                        correct = repmat(og_block_correct, blocks_per_condition, 1);
+                        rand_ids = randperm(length(stimuli)); % randomize 'em for learning
+                        stimuli = stimuli(rand_ids, :);
+                        correct = correct(rand_ids, :);
+                        
+                        og_correct = correct;
+                        is_target = zeros(blocks_per_condition * trials_per_block, 1);
+                    elseif debug_mode % but not backprop
+                        % in debug mode (but not backprop mode), every fourth trial is a PM trial -- this is only for
+                        % testing; not used in any of E&M's experiments
                         for i = 1:length(stimuli)
                             if mod(i,4) == 0
                                 target_id = mod(i, size(pm_targets, 1)) + 1;
@@ -146,9 +185,10 @@ for OG_ONLY = og_range
                                 is_target(middle) = 1;
                             end
                         end
-                    
-                    else
-
+                    else % not debug_mode nor backprop
+                        % insert one PM target in each of the PM blocks
+                        % the PM blocks depend on the experiment
+                        %
                         if exp_id == 1
                             % in experiment 1, there is a target in blocks 1, 3, 6, 7
                             for i = 1:length(pm_blocks_exp1)
@@ -186,7 +226,6 @@ for OG_ONLY = og_range
                     end
 
                 end
-                
                 
                 if exp_id == 5
                     inter_stimuli = [

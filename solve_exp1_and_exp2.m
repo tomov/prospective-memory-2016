@@ -1,6 +1,8 @@
 % Find the best set of free parameters
 %
 
+rng('shuffle');
+
          % PM Task  PM target(s) initial WM activations
 init_par = [0.35    0.3, ...     % focal, low emph 
             0.6     0.4, ...     % focal, high emph 

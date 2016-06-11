@@ -21,7 +21,7 @@ best_par = fmincon(fit, init_par, [], [], [], [], min_par, max_par, [], options)
 
 best_par
 
-
+fit_exp1_and_exp2(init_par, strcat(runhash, '_BEST')); % run and save the simulation w/ best parameters
 
 
 % SOLUTIONS FOR EXPERIMENT 1 ---

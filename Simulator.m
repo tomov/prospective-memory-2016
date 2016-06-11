@@ -243,7 +243,9 @@ classdef Simulator < Model
                             % it has settled
                             is_settled = true;
                             settle_cycles = cycle;
-                            if ord == 1
+                            % set the initial valeues of WM so we can check
+                            % if we switched to the PM task
+                            if ord == 1 || isempty(self.resting_wm)
                                 self.resting_wm = self.wm_act;
                             end
                             % save stimulus onset
@@ -330,9 +332,14 @@ classdef Simulator < Model
                 
                                 %switched_to_PM_task = (self.activation(self.unit_id('PM Task')) > self.activation(self.unit_id('OG Task')));
                 % TODO hacky...
-                assert(length(self.resting_wm) == length(self.wm_act));
-                %switched_to_PM_task = (self.wm_act(2) > self.wm_act(1) - 0.1);
-                switched_to_PM_task = (self.wm_act(2) > self.resting_wm(2) + 0.01);
+                if isempty(self.resting_wm)
+                    assert(~is_settled);
+                    switched_to_PM_task = false;
+                else
+                    assert(length(self.resting_wm) == length(self.wm_act));
+                    %switched_to_PM_task = (self.wm_act(2) > self.wm_act(1) - 0.1);
+                    switched_to_PM_task = (self.wm_act(2) > self.resting_wm(2) + 0.01);
+                end
                 switched_to_Inter_task = false;
                 switched_to_OG_and_PM_from_Inter_task = false;
             end

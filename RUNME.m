@@ -1,6 +1,11 @@
 warning('off', 'MATLAB:ClassInstanceExists');
 clear classes % ! super important ! if you don't do this, MATLAB won't reload your classes
 
+rng('shuffle');
+
+runhash = randstr(10) % so we can tag the output files
+
+
 % best parameters so far...
 % KEEP I_WM equal for both task and feature units
 
@@ -149,6 +154,9 @@ end
 tic
 [data, extra] = EM2005(startpar, experiment, fitting_mode, debug_mode, true);
 toc
+
+filename = sprintf('exp%d-runhash-%s', experiment, runhash);
+save(filename);
 
 if debug_mode
 	m = Model(true, startpar([1 2 3 4 17 18 19 20 21 22]), false);

@@ -137,6 +137,8 @@ PM_hit_high = PM_hit(data(:, 3) == 1);
 simulation_Fs = [simulation_Fs table{2, 5}];
 empirical_Fs = [empirical_Fs 10.41];
 %}
+
+%{
 % -------------- PM hit rate in high emph vs. low emph. for different focalities 
 [p, table] = anovan(PM_hit, {data(:, 2) data(:, 3)}, 'model','interaction', 'display', 'off');
 simulation_Fs = [simulation_Fs table{2, 6} table{3, 6} table{4, 6}];
@@ -201,6 +203,8 @@ empirical_Fs
 F_errors = simulation_Fs - empirical_Fs; % TODO maybe % differences, like below (watch out for the 0's doe), TODO maybe err_scalers here too?
 F_errors = F_errors(~isnan(F_errors)); % ignore NaN's TODO good idea?
 F_error = sum(F_errors.^2)
+
+%}
 
 % -------------- Ball park for RT variances too, though I don't know if we really want to fit them
 % Momchil: this is wrong; some of the SD's are RT's, the others are hit

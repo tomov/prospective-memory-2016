@@ -155,7 +155,7 @@ tic
 [data, extra] = EM2005(startpar, experiment, fitting_mode, debug_mode, true);
 toc
 
-filename = sprintf('exp%d-runhash-%s', experiment, runhash);
+filename = sprintf('exp%d-runhash-%s', experiment, runhash) % print it
 save(filename);
 
 if debug_mode

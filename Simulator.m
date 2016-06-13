@@ -16,12 +16,20 @@ classdef Simulator < Model
         wm_net;
         Nout;
         
+        processing_noise_sigma;
+        
         fitting_mode; % are we just fitting parameters? use more efficient setup
     end
     
     methods
         function self = Simulator(FOCAL, params, fitting_mode)
             self = self@Model(FOCAL, params);
+            if length(params) == 11
+                self.processing_noise_sigma = params(11);
+            else
+                assert(length(params) == 10);
+                self.processing_noise_sigma = self.FEEDFORWARD_PROCESSING_NOISE_SIGMA;
+            end
             self.Nout = size(self.output_ids, 2);
             self.fitting_mode = fitting_mode;
         end
@@ -265,8 +273,8 @@ classdef Simulator < Model
                     %
                     if ~self.fitting_mode
                         % TODO parametrize the noise
-                        self.net_input(self.ffwd_ids) = self.net_input(self.ffwd_ids) + normrnd(0, 0.1, size(self.ffwd_ids));
-                        self.net_input(self.wm_ids) = self.net_input(self.wm_ids) + normrnd(0, 0.01, size(self.wm_ids));
+                        self.net_input(self.ffwd_ids) = self.net_input(self.ffwd_ids) + normrnd(0, self.processing_noise_sigma, size(self.ffwd_ids));
+                        self.net_input(self.wm_ids) = self.net_input(self.wm_ids) + normrnd(0, self.WM_PROCESSING_NOISE_SIGMA, size(self.wm_ids));
                     end
                     
                     % on instruction, oscillate around initial WM

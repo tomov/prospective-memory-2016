@@ -3,7 +3,7 @@ function error = fit_exp1_and_exp2( free_params, runhash )
 % and returns the computed error 
 
 fprintf('\n\n\n     ======================>>>>> fitting [');
-fprintf('%11.5f', free_params);
+fprintf('%12.5f', free_params);
 fprintf(']......\n');
 
 debug_mode = false;
@@ -14,11 +14,12 @@ startpar = [1  0.35   1    0.3, ...     % focal, low emph     % exp1_v16, exp2_v
             1  0.8    1    0.75, ...    % nonfocal, low emph   % exp2_v11
             1  0.9    1    0.83, ...    % nonfocal, high emph  % exp1_v16 -- sorta
             4 4 4, ... % biases
-            0 0, ...
-            0.0004];      % no noise...
+            0 0, ...       % init wm noise
+            0.0004, ...   % gamma
+            0.1];   % processing noise
 
 %TODO REVERT ME startpar([2 4 6 8 10 12 14 16 22]) = free_params; % set the params we're fitting
-startpar([2 4 6 8 10 12 14 16    20 21   22]) = free_params; % set the params we're fitting
+startpar([2 4 6 8 10 12 14 16    20 21   22   23]) = free_params; % set the params we're fitting
 startpar(22) = free_params(11) * 10^(-3); % TODO REVERT ME to (9)
 
 % experiment 1

@@ -18,6 +18,8 @@ classdef Model < handle
         EVIDENCE_ACCUM_SIGMA = 0.05;
         EVIDENCE_ACCUM_ALPHA = 0.05;
         EVIDENCE_ACCUM_THRESHOLD = 1;
+        FEEDFORWARD_PROCESSING_NOISE_SIGMA = 0.1; % this is only a default value, we fit it
+        WM_PROCESSING_NOISE_SIGMA = 0.01; % we don't fit this one... yet
         
         % activation levels
 

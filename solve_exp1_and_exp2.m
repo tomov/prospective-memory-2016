@@ -8,10 +8,11 @@ init_par = [0.35    0.3, ...     % focal, low emph
             0.6     0.4, ...     % focal, high emph 
             0.8     0.75, ...    % nonfocal, low emph 
             0.9     0.83, ...    % nonfocal, high emph
-            0 0, ... % noise
-            0.4]; % gamma * 10^-3
-min_par =  [0 0 0 0 0 0 0 0 0 0 0];
-max_par =  [1 1 1 1 1 1 1 1 1 1 1];
+            0 0, ... % init wm noise
+            0.4, ... % gamma * 10^-3
+            0.1]; % processing noise
+min_par =  [0 0 0 0 0 0 0 0 0 0 0 0];
+max_par =  [1 1 1 1 1 1 1 1 1 1 1 1];
 
 runhash = randstr(10) % so we can tag the output files
 fit = @(init_par) fit_exp1_and_exp2(init_par, runhash);

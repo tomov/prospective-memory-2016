@@ -46,7 +46,8 @@ if experiment == 1
                 1  0.9    1    0.83, ...    % nonfocal, high emph  % exp1_v16 -- sorta
                 4 4 4, ... % biases -- tasks, attention, context
 		        0 0, ...   % no noise...
-                0.0004];   % gamma
+                0.0004, ... % gamma
+                0.1];   % processing noise sigma
             
             
      startpar([2 4 6 8 10 12 14 16 22])  =  [0.3425    0.2937    0.5865    0.4131    0.7830  0.7332    0.9019 0.8114    0.4131 / 1000];
@@ -155,7 +156,7 @@ tic
 [data, extra] = EM2005(startpar, experiment, fitting_mode, debug_mode, true);
 toc
 
-filename = sprintf('exp%d-runhash-%s', experiment, runhash) % print it
+filename = sprintf('exp%d-runhash-%s.mat', experiment, runhash) % print it
 save(filename);
 
 if debug_mode

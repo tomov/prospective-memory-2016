@@ -31,6 +31,13 @@ bias_for_context = params(19);
 param_noise_sigma_1 = params(20);
 param_noise_sigma_2 = params(21);
 gamma = params(22);
+if exp_id == 6 % there are experiment-specific
+    brewer_bias_for_task_low = params(23);
+    brewer_bias_for_attention_low = params(24);
+    brewer_bias_for_context_low = params(25);
+elseif exp_id == 1 % TODO merge with above
+    processing_noise_sigma = params(23);
+end
 
 assert(exp_id == 1 || exp_id == 2 || exp_id == 3 || exp_id == 4 || exp_id == 5 || exp_id == 6);
 
@@ -310,19 +317,24 @@ for OG_ONLY = og_range
                 curpar = zeros(1,6);
                 curpar(7) = 1;
                 curpar(8) = 0;
-                curpar(5) = bias_for_task;
-                curpar(6) = bias_for_attention;
-                curpar(9) = bias_for_context;
                 if exp_id == 6 && EMPHASIS == 0
                     % Brewer et al. 2010, low WM capacity
                     % note that we use EMPHASIS to denote high/low wm
                     % capacity #hacksauce
                     %
-                    curpar(5) = params(23); % bias for task
-                    curpar(6) = params(24); % bias for attention
-                    curpar(9) = params(25); % bias for context
+                    curpar(5) = brewer_bias_for_task_low; % low-wm bias for task
+                    curpar(6) = brewer_bias_for_attention_low; % low-wm bias for attention
+                    curpar(9) = brewer_bias_for_context_low; % low-wm bias for context
+                else
+                    curpar(5) = bias_for_task;
+                    curpar(6) = bias_for_attention;
+                    curpar(9) = bias_for_context;
                 end
                 curpar(10) = gamma;
+                if exp_id == 1 % TODO hacksauce... standardize parameters
+                    curpar(11) = processing_noise_sigma;
+                end
+                
                 if OG_ONLY
                     curpar(1:4) = [1 0 1 0];
                 else       

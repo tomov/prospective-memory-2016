@@ -19,12 +19,12 @@ MINIMUM_ACTIVATION = 0;
 
 INPUT_ACTIVATION = 1;
 
-LAMBDA = 0; %0.001; % regularization constant for backprop TODO set to 1 or 0.1 or something
+LAMBDA = 1; %0.001; % regularization constant for backprop TODO set to 1 or 0.1 or something
 
 Nout = 2;
 N = 6;
 
-reps = 2;
+reps = 1000;
 
 % the actual values
 stimuli = [
@@ -33,8 +33,16 @@ stimuli = [
     1 0;
     1 1
 ];
+
 correct = [
     0 1;
+    1 0;
+    1 0;
+    0 1;
+];
+
+correct_and = [
+    1 0;
     1 0;
     1 0;
     0 1;
@@ -54,7 +62,7 @@ correct = correct(rand_ids, :);
             accumulators_log = zeros(experiment_duration, Nout);
             net_log = zeros(experiment_duration, N);
             activation = zeros(1, N);
-            self.net_input_avg = zeros(1, N);
+            net_input_avg = zeros(1, N);
             responses = [];
             RTs = [];
             onsets = [];
@@ -78,11 +86,17 @@ correct = correct(rand_ids, :);
 
             epsilon_init = 0.12; % from ML course TODO move to self.
 
-            self.weights(hidden_ids, output_ids) = rand(length(hidden_ids), length(output_ids)) * 2 * epsilon_init - epsilon_init;
-            self.weights(input_ids, hidden_ids) = rand(length(input_ids), length(hidden_ids)) * 2 * epsilon_init - epsilon_init;
+            %weights(3, 5) = 1;
+            %weights(4, 6) = 1;
+            %weights(1, 3) = 10;
+            %weights(2, 4) = 10;
+            %weights(1, 4) = -10;
+            %weights(2, 3) = -10;
+            weights(hidden_ids, output_ids) = rand(length(hidden_ids), length(output_ids)) * 2 * epsilon_init - epsilon_init;
+            weights(input_ids, hidden_ids) = rand(length(input_ids), length(hidden_ids)) * 2 * epsilon_init - epsilon_init;
 
-            self.bias(output_ids) = rand(1, length(output_ids)) * 2 * epsilon_init - epsilon_init;
-            self.bias(hidden_ids) = rand(1, length(hidden_ids)) * 2 * epsilon_init - epsilon_init;
+            bias(output_ids) = rand(1, length(output_ids)) * 2 * epsilon_init - epsilon_init;
+            bias(hidden_ids) = rand(1, length(hidden_ids)) * 2 * epsilon_init - epsilon_init;
 
             hits = 0;
             misses = 0;
@@ -105,9 +119,9 @@ correct = correct(rand_ids, :);
                 
                 % simulate response to stimulus
                 responded = false;
-                is_settled = false;
+                is_settled = true;
                 settle_cycles = 0;
-                for cycle=1:timeout
+                for cycle=1:1
                     % set input activations
                     activation(input_ids) = 0;
                     if is_settled
@@ -119,6 +133,7 @@ correct = correct(rand_ids, :);
                     net_log(cycles + cycle, :) = net_input;
                     
                     % see if network has settled
+                    %{
                     if cycle > SETTLE_LEEWAY && ~is_settled
                         from = cycles + cycle - SETTLE_LEEWAY + 1;
                         to = cycles + cycle - 1;
@@ -133,6 +148,7 @@ correct = correct(rand_ids, :);
                             onsets = [onsets; cycles + cycle];
                         end
                     end
+                    %}
                     
                     % calculate net inputs for all units
                     net_input = activation * weights ...
@@ -141,11 +157,20 @@ correct = correct(rand_ids, :);
                     % update activation levels for feedforward part of the
                     % network
                     net_input_avg = TAU * net_input + (1 - TAU) * net_input_avg;
-                    activation = logistic(net_input_avg);
-                                        
+                    
+                    %activation = logistic(net_input);
+                    %% SIMULTANEOUS UPDATE!!! #FUCKUP
+                    activation(hidden_ids) = logistic(activation(input_ids) * weights(input_ids, hidden_ids) + bias(hidden_ids));
+                    activation(output_ids) = logistic(activation(hidden_ids) * weights(hidden_ids, output_ids) + bias(output_ids));
+                    
+                    [max_act, max_idx] = max(activation(output_ids), [], 2);
+                    output = activation(output_ids) == max_act;
+                    
+                    
                 end % for cycle = 1:timeout
                 
                 %output = self.units{output_id};
+                
                 offsets = [offsets; cycles + cycle];
                 if ~is_settled 
                     % we never settled => no stimulus onset (put it same as
@@ -157,37 +182,36 @@ correct = correct(rand_ids, :);
                 cycles = cycles + cycle;
 
                 % train
-                    %{
-                    TODO fill out
-                    if strcmp(output, correct{ord}) == 1
+                    
+                    expected = correct(ord, :);
+                                        
+                    if output == expected
                         hits = hits + 1;
                         is_hit(ord) = 1;
                     else
                         misses = misses + 1;
                     end
-                    %}
-                
-                    expected = correct(ord, :);
-                    
-                    %{
                     if ord > rolling_hits_window
                         rolling_hits = sum(is_hit(ord - rolling_hits_window + 1:ord));
                     else
                         rolling_hits = 0;
                     end
-                    fprintf('hits = %d, misses = %d, hit ratio = %f, cost = %f (rolling hits = %d, ratio = %f)\n', hits, misses, hits / (hits + misses), self.cost(expected), rolling_hits, rolling_hits / rolling_hits_window);
+                    fprintf('hits = %d, misses = %d, hit ratio = %f, cost = %f (rolling hits = %d, ratio = %f)\n', hits, misses, hits / (hits + misses), NaN, rolling_hits, rolling_hits / rolling_hits_window);
                     if rolling_hits / rolling_hits_window >= rolling_hit_rate_stop_threshold
                         last_trial = ord; % so we know where to look
                         break % we've learned
                     end
-                    %}
+                    
                     
                     % errors
-                    del(output_ids) = activation(output_ids) - expected
-                    del(hidden_ids) = (del(output_ids) * weights(hidden_ids, output_ids)') .* logisticGradient(net_input_avg(hidden_ids)); % TODO net_input_avg or net_input? make sure math is right
+                    
+                    del(output_ids) = activation(output_ids) - expected;
+                    del(hidden_ids) = (del(output_ids) * weights(hidden_ids, output_ids)') .* logisticGradient(net_input(hidden_ids)); % TODO net_input_avg or net_input? make sure math is right
                     %self.del(self.perception_ids) = (self.del(self.response_ids) * self.weights(self.perception_ids, self.response_ids)') .* self.logisticGradient(self.net_input_avg(self.perception_ids)); % TODO same here
                 
-                    m = size(input_ids, 2);
+                    %% IT IS 1 !!!! #FUCKUP also you should compute cost simultaneously on all examples...
+                    m = size(input_ids, 1);
+                    
                     % weight gradients
                     weightsGradient(hidden_ids, output_ids) = 1.0 / m * activation(hidden_ids)' * del(output_ids);
                     weightsGradient(input_ids, hidden_ids) = 1.0 / m * activation(input_ids)' * del(hidden_ids);
@@ -208,10 +232,9 @@ correct = correct(rand_ids, :);
                     biasGradient(output_ids) = LAMBDA / m * bias(output_ids) + biasGradient(output_ids);
                     biasGradient(hidden_ids) = LAMBDA / m * bias(hidden_ids) + biasGradient(hidden_ids);
                     %self.biasGradient(self.perception_ids) = self.LAMBDA / m * self.bias(self.perception_ids) + self.biasGradient(self.perception_ids);
-                    
                     % TODO maybe use fmincg or something?
                     % gradient descent
-                    eps = 10; % TODO const move to self.
+                    eps = 0.1; % TODO const move to self.
                     weights = weights - weightsGradient * eps;
                     bias = bias - biasGradient * eps;
                    
@@ -275,8 +298,8 @@ correct = correct(rand_ids, :);
     title('Outputs');
     xlim(x_lim);
     ylim(y_lim);
-    line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
-    line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
+    %line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
+    %line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
 
     subplot(3, 1, 2);
     plot(act(:, hidden_ids));
@@ -284,8 +307,8 @@ correct = correct(rand_ids, :);
     title('Hiddens');
     xlim(x_lim);
     ylim(y_lim);
-    line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
-    line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
+    %line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
+    %line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
 
     subplot(3, 1, 3);
     plot(act(:, input_ids));
@@ -293,7 +316,7 @@ correct = correct(rand_ids, :);
     title('Inputs');
     xlim(x_lim);
     ylim(y_lim);
-    line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
-    line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
+    %line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
+    %line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
 
             

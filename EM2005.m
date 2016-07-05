@@ -1,4 +1,4 @@
-function [data, extra] = EM2005( params, exp_id, fitting_mode, debug_mode, do_print)
+function [data, extra] = EM2005( params, exp_id, fitting_mode, training_mode, debug_mode, do_print)
 % run a simulation of the E&M with certain parameters and spit out the data
 % for all subjects
 
@@ -100,6 +100,13 @@ elseif fitting_mode
     end
 end
 
+if training_mode
+    og_range = 1;
+    focal_range = 1;
+    emphasis_range = 0;
+    target_range = 1;
+end
+
 
 for OG_ONLY = og_range
     for FOCAL = focal_range
@@ -138,7 +145,37 @@ for OG_ONLY = og_range
                 is_target = zeros(blocks_per_condition * trials_per_block, 1);
                 is_inter_task = [];
                 
-                if fitting_mode
+                if training_mode
+                    assert(exp_id == 1);
+                    
+                    % when training, have each possible input appear the
+                    % same number of times
+                    %
+                    reps = blocks_per_condition * trials_per_block;
+                    
+                    stimuli_pattern = [og_stimuli_pattern; pm_targets_pattern];
+                    correct_pattern = [og_correct_pattern; pm_og_correct_pattern];
+                    assert(length(correct_pattern) == length(stimuli_pattern));
+                    og_correct_pattern = correct_pattern;
+                    if ~OG_ONLY
+                        is_target_pattern = [zeros(length(og_stimuli_pattern), 1); ones(length(pm_targets_pattern), 1)];
+                    else
+                        is_target_pattern = [zeros(length(og_stimuli_pattern), 1); zeros(length(pm_targets_pattern), 1)];
+                    end
+                    
+                    % repeat patterns
+                    stimuli = repmat(stimuli_pattern, reps, 1);
+                    correct = repmat(correct_pattern, reps, 1);
+                    og_correct = repmat(og_correct_pattern, reps, 1);
+                    is_target = repmat(is_target_pattern, reps, 1);
+                    
+                    % truncate
+                    stimuli = stimuli(1:reps, :);
+                    correct = correct(1:reps, :);
+                    og_correct = og_correct(1:reps, :);
+                    is_target = is_target(1:reps, :);
+                
+                elseif fitting_mode
                     assert(exp_id ~= 5);
                     
                     % when fitting, have PM task more often so we can get a
@@ -347,7 +384,7 @@ for OG_ONLY = og_range
                 % simulate subjects in parallel; must be serial in
                 % debug_mode (i.e. regular for)
                 %
-                parfor subject_id = 1:subjects_per_condition
+                for subject_id = 1:subjects_per_condition
                     % optionally add cross-subject variability
                     %
                     subjpar = curpar;
@@ -377,6 +414,12 @@ for OG_ONLY = og_range
                         end
                     else
                         sim.instruction({'tor'}, true);
+                    end
+                    
+                    % optionally train the model
+                    %
+                    if training_mode
+                        sim.train(stimuli, og_correct);
                     end
                     
                     % run the actual simulation

@@ -116,6 +116,10 @@ classdef Model < handle
         % EM parameters
         
         LEARNING_RATE = 0.01;
+        
+        % training parameters
+        
+        LAMBDA = 1;
                 
         % variables
         

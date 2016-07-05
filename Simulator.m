@@ -122,6 +122,56 @@ classdef Simulator < Model
             %self.activation(self.wm_ids) = self.logistic(self.wm_act * 12 - 6);
         end
         
+        function train(self, stimuli, correct)
+            assert(length(stimuli) == length(correct));
+            
+            training_ids = [self.perception_ids self.response_ids self.output_ids];
+   
+            % populate X (training inputs)
+            % skip the input layer => start straight from perception
+            m = length(stimuli);
+            X0 = zeros(m, self.N);
+            for ord=1:m
+                stimulus = stimuli{ord, 1};
+                active_ids = self.string_to_ids(stimulus);
+                X0(ord, active_ids) = self.INPUT_ACTIVATION;
+            end
+            X = self.logistic(X0(:, self.input_ids) * self.weights(self.input_ids, self.perception_ids) + ones(m, 1) * self.bias(self.perception_ids) + self.ATTENTION_TO_PERCEPTION);
+            
+            % populate y (training outputs)
+            y = zeros(length(correct), 1);
+            for ord=1:length(correct)
+                correct_id = cellfun(@self.unit_id, correct(ord));
+                y(ord) = find(self.output_ids == correct_id);
+            end
+            
+            % unroll params
+            weights = self.weights(training_ids, training_ids);
+            bias = self.bias(training_ids);
+            initial_nn_params = [weights(:); bias(:)];
+
+            % train
+            options = optimset('MaxIter', 1000);
+            N = length(training_ids);
+            input_ids = 1:length(self.perception_ids);
+            hidden_ids = max(input_ids) + 1:max(input_ids) + length(self.response_ids);
+            output_ids = max(hidden_ids) + 1:max(hidden_ids) + length(self.output_ids);
+            costFn = @(p) costFunction(p, ...
+                                       N, ...
+                                       input_ids, ...
+                                       hidden_ids, ...
+                                       output_ids, ...
+                                       X, y, self.LAMBDA);
+
+            [nn_params, cost] = fmincg(costFn, initial_nn_params, options);
+
+            % roll params
+            weights = reshape(nn_params(1:N*N), N, N);
+            bias = reshape(nn_params(N*N+1:end), 1, N);
+            self.weights(training_ids, training_ids) = weights;
+            self.bias(training_ids) = bias;
+        end
+        
         function [responses, RTs, activation_log, accumulators_log, onsets, offsets, net_log] = trial(self, stimuli)
             % initialize activations and outputs
             trial_duration = sum(cat(2, stimuli{:, 2})) * self.CYCLES_PER_SEC;
@@ -243,7 +293,7 @@ classdef Simulator < Model
                             % it has settled
                             is_settled = true;
                             settle_cycles = cycle;
-                            if ord == 1
+                            if ord == 1 || isempty(self.resting_wm)
                                 self.resting_wm = self.wm_act;
                             end
                             % save stimulus onset
@@ -330,11 +380,14 @@ classdef Simulator < Model
                 
                                 %switched_to_PM_task = (self.activation(self.unit_id('PM Task')) > self.activation(self.unit_id('OG Task')));
                 % TODO hacky...
-                assert(length(self.resting_wm) == length(self.wm_act));
-                %switched_to_PM_task = (self.wm_act(2) > self.wm_act(1) - 0.1);
-                switched_to_PM_task = (self.wm_act(2) > self.resting_wm(2) + 0.01);
-                switched_to_Inter_task = false;
-                switched_to_OG_and_PM_from_Inter_task = false;
+                if isempty(self.resting_wm)
+                    assert(~is_settled);
+                    switched_to_PM_task = false;
+                else
+                    assert(length(self.resting_wm) == length(self.wm_act));
+                    %switched_to_PM_task = (self.wm_act(2) > self.wm_act(1) - 0.1);
+                    switched_to_PM_task = (self.wm_act(2) > self.resting_wm(2) + 0.01);
+                end
             end
             
             activation_log(cycles:end,:) = [];

@@ -1,4 +1,4 @@
-clear ; close all; clc
+% clear ; close all; clc
 
 NOISE_SIGMA = 0.1; % TODO -- ??
 STEP_SIZE = 0.05;
@@ -37,6 +37,53 @@ for ord = 1:size(X, 1)
     correct(ord, y(ord)) = 1;
 end
 
+input_ids = [1 2];
+hidden_ids = [3 4];
+output_ids = [5 6];
+
+% training stuff
+%
+
+%{
+weights = zeros(N, N);
+bias = zeros(1, N);
+
+del = zeros(1, N);
+weightsGradient = zeros(size(weights));
+biasGradient = zeros(size(bias));
+
+epsilon_init = 0.12; % from ML course TODO move to self.
+
+% initialize weights & biases
+
+weights(hidden_ids, output_ids) = rand(length(hidden_ids), length(output_ids)) * 2 * epsilon_init - epsilon_init;
+weights(input_ids, hidden_ids) = rand(length(input_ids), length(hidden_ids)) * 2 * epsilon_init - epsilon_init;
+
+bias(output_ids) = rand(1, length(output_ids)) * 2 * epsilon_init - epsilon_init;
+bias(hidden_ids) = rand(1, length(hidden_ids)) * 2 * epsilon_init - epsilon_init;
+
+% -------- TRAIN!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+initial_nn_params = [weights(:); bias(:)];
+
+options = optimset('MaxIter', 1000);
+
+costFn = @(p) costFunction(p, ...
+                           N, ...
+                           input_ids, ...
+                           hidden_ids, ...
+                           output_ids, ...
+                           X, y, LAMBDA);
+
+[nn_params, cost] = fmincg(costFn, initial_nn_params, options);
+
+weights = reshape(nn_params(1:N*N), N, N);
+bias = reshape(nn_params(N*N+1:end), 1, N);
+
+% --- end of training.................
+%}
+            
+for shit = 1:2
 
             experiment_duration = length(stimuli) * CYCLES_PER_SEC;
             net_input = zeros(1, N);
@@ -53,64 +100,14 @@ end
             cycles = 0;
             switched_to_PM_task = false;
             
-            input_ids = [1 2];
-            hidden_ids = [3 4];
-            output_ids = [5 6];
             
-            % training stuff
-            %
-            weights = zeros(N, N);
-            weightsGradient = zeros(N, N);
-            bias = zeros(1, N);
-            
-            del = zeros(1, N);
-            weightsGradient = zeros(size(weights));
-            biasGradient = zeros(size(bias));
-
-            epsilon_init = 0.12; % from ML course TODO move to self.
-
-            %weights(3, 5) = 1;
-            %weights(4, 6) = 1;
-            %weights(1, 3) = 10;
-            %weights(2, 4) = 10;
-            %weights(1, 4) = -10;
-            %weights(2, 3) = -10;
-            weights(hidden_ids, output_ids) = rand(length(hidden_ids), length(output_ids)) * 2 * epsilon_init - epsilon_init;
-            weights(input_ids, hidden_ids) = rand(length(input_ids), length(hidden_ids)) * 2 * epsilon_init - epsilon_init;
-
-            bias(output_ids) = rand(1, length(output_ids)) * 2 * epsilon_init - epsilon_init;
-            bias(hidden_ids) = rand(1, length(hidden_ids)) * 2 * epsilon_init - epsilon_init;
-            
-            % -------- TRAIN!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            
-            initial_nn_params = [weights(:); bias(:)];
-            
-            options = optimset('MaxIter', 1000);
-            
-            costFn = @(p) costFunction(p, ...
-                                       N, ...
-                                       input_ids, ...
-                                       hidden_ids, ...
-                                       output_ids, ...
-                                       X, y, LAMBDA);
-            
-            [nn_params, cost] = fmincg(costFn, initial_nn_params, options);
-            
-            weights = reshape(nn_params(1:N*N), N, N);
-            bias = reshape(nn_params(N*N+1:end), 1, N);
-            
-            % --- end of training.................
-            
-
             hits = 0;
             misses = 0;
             is_hit = zeros(size(stimuli, 1), 1);
-            rolling_hits_window = 100; % helps for debugging, and also so u know when to stop training TODO const in self.
-            rolling_hit_rate_stop_threshold = 0.90; % when we hit this hit rate, we stop learning TODO const in self.
             
             last_trial = size(stimuli, 1);
             % for each input from the time series
-            for ord=1:size(stimuli, 1)
+            for ord=1:100
                 timeout = CYCLES_PER_SEC;
                 
                 % reset feedforward part of the network
@@ -123,9 +120,9 @@ end
                 
                 % simulate response to stimulus
                 responded = false;
-                is_settled = true;
+                is_settled = false;
                 settle_cycles = 0;
-                for cycle=1:1
+                for cycle=1:timeout
                     % set input activations
                     activation(input_ids) = 0;
                     if is_settled
@@ -137,7 +134,6 @@ end
                     net_log(cycles + cycle, :) = net_input;
                     
                     % see if network has settled
-                    %{
                     if cycle > SETTLE_LEEWAY && ~is_settled
                         from = cycles + cycle - SETTLE_LEEWAY + 1;
                         to = cycles + cycle - 1;
@@ -152,21 +148,26 @@ end
                             onsets = [onsets; cycles + cycle];
                         end
                     end
-                    %}
                     
                     % calculate net inputs for all units
-                  %  net_input = activation * weights ...
-                  %      + bias; % TODO REVERT ME + normrnd(0, 0.1, N);
+                    net_input = activation * weights ...
+                        + bias; % TODO REVERT ME + normrnd(0, 0.1, N);
                                         
                     % update activation levels for feedforward part of the
                     % network
-                   % net_input_avg = TAU * net_input + (1 - TAU) * net_input_avg;
+                    net_input_avg = TAU * net_input + (1 - TAU) * net_input_avg;
                     
-                    %activation = logistic(net_input);
+                    if shit == 1
+                        activation = logistic(net_input);
+                    else
+                        activation = logistic(net_input_avg);
+                    end
+                    
+                    
                     %% SIMULTANEOUS UPDATE!!! #FUCKUP
-                    activation(input_ids) = X(ord, :);
-                    activation(hidden_ids) = logistic(activation(input_ids) * weights(input_ids, hidden_ids) + bias(hidden_ids));
-                    activation(output_ids) = logistic(activation(hidden_ids) * weights(hidden_ids, output_ids) + bias(output_ids));
+                    %activation(input_ids) = X(ord, :);
+                    %activation(hidden_ids) = logistic(activation(input_ids) * weights(input_ids, hidden_ids) + bias(hidden_ids));
+                    %activation(output_ids) = logistic(activation(hidden_ids) * weights(hidden_ids, output_ids) + bias(output_ids));
                     
                     [max_act, max_idx] = max(activation(output_ids), [], 2);
                     output = activation(output_ids) == max_act;
@@ -186,27 +187,15 @@ end
                 %RTs = [RTs; RT];
                 cycles = cycles + cycle;
 
-                % train
-                    
-                    expected = correct(ord, :);
-                                        
-                    if output == expected
-                        hits = hits + 1;
-                        is_hit(ord) = 1;
-                    else
-                        misses = misses + 1;
-                    end
-                    if ord > rolling_hits_window
-                        rolling_hits = sum(is_hit(ord - rolling_hits_window + 1:ord));
-                    else
-                        rolling_hits = 0;
-                    end
-                    fprintf('hits = %d, misses = %d, hit ratio = %f, cost = %f (rolling hits = %d, ratio = %f)\n', hits, misses, hits / (hits + misses), NaN, rolling_hits, rolling_hits / rolling_hits_window);
-                    if rolling_hits / rolling_hits_window >= rolling_hit_rate_stop_threshold
-                        %last_trial = ord; % so we know where to look
-                        %break % we've learned
-                    end
-                    
+                expected = correct(ord, :);
+
+                if output == expected
+                    hits = hits + 1;
+                    is_hit(ord) = 1;
+                else
+                    misses = misses + 1;
+                end
+                fprintf('hits = %d, misses = %d, hit ratio = %f\n', hits, misses, hits / (hits + misses));
             end % for ord in stimuli
             
             activation_log(cycles:end,:) = [];
@@ -223,7 +212,7 @@ end
     figure;
 
     %x_lim = [onsets(last_trial) - 1000 onsets(last_trial)];
-    x_lim = [0 10];
+    x_lim = [0 10000];
     y_lim = [MINIMUM_ACTIVATION - 0.1 MAXIMUM_ACTIVATION + 0.1];
     onset_plot = onsets;
     offset_plot = offsets;
@@ -234,8 +223,8 @@ end
     title('Outputs');
     xlim(x_lim);
     ylim(y_lim);
-    %line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
-    %line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
+    line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
+    line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
 
     subplot(3, 1, 2);
     plot(act(:, hidden_ids));
@@ -243,8 +232,8 @@ end
     title('Hiddens');
     xlim(x_lim);
     ylim(y_lim);
-    %line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
-    %line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
+    line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
+    line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
 
     subplot(3, 1, 3);
     plot(act(:, input_ids));
@@ -252,7 +241,8 @@ end
     title('Inputs');
     xlim(x_lim);
     ylim(y_lim);
-    %line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
-    %line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
+    line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
+    line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
 
             
+end

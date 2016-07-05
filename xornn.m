@@ -1,3 +1,5 @@
+clear ; close all; clc
+
 NOISE_SIGMA = 0.1; % TODO -- ??
 STEP_SIZE = 0.05;
 DECAY = 0.01;
@@ -19,40 +21,21 @@ MINIMUM_ACTIVATION = 0;
 
 INPUT_ACTIVATION = 1;
 
-LAMBDA = 1; %0.001; % regularization constant for backprop TODO set to 1 or 0.1 or something
+LAMBDA = 3; %0.001; % regularization constant for backprop TODO set to 1 or 0.1 or something
 
 Nout = 2;
 N = 6;
 
-reps = 1000;
-
 % the actual values
-stimuli = [
-    0 0;
-    0 1;
-    1 0;
-    1 1
-];
 
-correct = [
-    0 1;
-    1 0;
-    1 0;
-    0 1;
-];
+X = rand(5000, 2) > 0.5;
+y = xor(X(:, 1), X(:, 2)) + 1;
 
-correct_and = [
-    1 0;
-    1 0;
-    1 0;
-    0 1;
-];
-
-stimuli = repmat(stimuli, reps, 1);
-correct = repmat(correct, reps, 1);
-rand_ids = randperm(length(stimuli));
-stimuli = stimuli(rand_ids, :);
-correct = correct(rand_ids, :);
+stimuli = X;
+correct = zeros(size(X));
+for ord = 1:size(X, 1)
+    correct(ord, y(ord)) = 1;
+end
 
 
             experiment_duration = length(stimuli) * CYCLES_PER_SEC;
@@ -97,6 +80,27 @@ correct = correct(rand_ids, :);
 
             bias(output_ids) = rand(1, length(output_ids)) * 2 * epsilon_init - epsilon_init;
             bias(hidden_ids) = rand(1, length(hidden_ids)) * 2 * epsilon_init - epsilon_init;
+            
+            % -------- TRAIN!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            
+            initial_nn_params = [weights(:); bias(:)];
+            
+            options = optimset('MaxIter', 1000);
+            
+            costFn = @(p) costFunction(p, ...
+                                       N, ...
+                                       input_ids, ...
+                                       hidden_ids, ...
+                                       output_ids, ...
+                                       X, y, LAMBDA);
+            
+            [nn_params, cost] = fmincg(costFn, initial_nn_params, options);
+            
+            weights = reshape(nn_params(1:N*N), N, N);
+            bias = reshape(nn_params(N*N+1:end), 1, N);
+            
+            % --- end of training.................
+            
 
             hits = 0;
             misses = 0;
@@ -151,15 +155,16 @@ correct = correct(rand_ids, :);
                     %}
                     
                     % calculate net inputs for all units
-                    net_input = activation * weights ...
-                        + bias; % TODO REVERT ME + normrnd(0, 0.1, N);
+                  %  net_input = activation * weights ...
+                  %      + bias; % TODO REVERT ME + normrnd(0, 0.1, N);
                                         
                     % update activation levels for feedforward part of the
                     % network
-                    net_input_avg = TAU * net_input + (1 - TAU) * net_input_avg;
+                   % net_input_avg = TAU * net_input + (1 - TAU) * net_input_avg;
                     
                     %activation = logistic(net_input);
                     %% SIMULTANEOUS UPDATE!!! #FUCKUP
+                    activation(input_ids) = X(ord, :);
                     activation(hidden_ids) = logistic(activation(input_ids) * weights(input_ids, hidden_ids) + bias(hidden_ids));
                     activation(output_ids) = logistic(activation(hidden_ids) * weights(hidden_ids, output_ids) + bias(output_ids));
                     
@@ -198,79 +203,10 @@ correct = correct(rand_ids, :);
                     end
                     fprintf('hits = %d, misses = %d, hit ratio = %f, cost = %f (rolling hits = %d, ratio = %f)\n', hits, misses, hits / (hits + misses), NaN, rolling_hits, rolling_hits / rolling_hits_window);
                     if rolling_hits / rolling_hits_window >= rolling_hit_rate_stop_threshold
-                        last_trial = ord; % so we know where to look
-                        break % we've learned
+                        %last_trial = ord; % so we know where to look
+                        %break % we've learned
                     end
                     
-                    
-                    % errors
-                    
-                    del(output_ids) = activation(output_ids) - expected;
-                    del(hidden_ids) = (del(output_ids) * weights(hidden_ids, output_ids)') .* logisticGradient(net_input(hidden_ids)); % TODO net_input_avg or net_input? make sure math is right
-                    %self.del(self.perception_ids) = (self.del(self.response_ids) * self.weights(self.perception_ids, self.response_ids)') .* self.logisticGradient(self.net_input_avg(self.perception_ids)); % TODO same here
-                
-                    %% IT IS 1 !!!! #FUCKUP also you should compute cost simultaneously on all examples...
-                    m = size(input_ids, 1);
-                    
-                    % weight gradients
-                    weightsGradient(hidden_ids, output_ids) = 1.0 / m * activation(hidden_ids)' * del(output_ids);
-                    weightsGradient(input_ids, hidden_ids) = 1.0 / m * activation(input_ids)' * del(hidden_ids);
-                    %self.weightsGradient(self.task_ids, self.response_ids) = 1.0 / m * self.wm_act(ismember(self.wm_ids, self.task_ids))' * self.del(self.response_ids);
-                    %self.weightsGradient(self.input_ids, self.perception_ids) = 1.0 / m * self.activation(self.input_ids)' * self.del(self.perception_ids);
-                    
-                    % bias gradients
-                    biasGradient(output_ids) = 1.0 / m * del(output_ids);
-                    biasGradient(hidden_ids) = 1.0 / m * del(hidden_ids);
-                    %self.biasGradient(self.perception_ids) = 1.0 / m * self.del(self.perception_ids);
-
-                    % regularization
-                    weightsGradient(hidden_ids, output_ids) = LAMBDA / m * weights(hidden_ids, output_ids) + weightsGradient(hidden_ids, output_ids);
-                    weightsGradient(input_ids, hidden_ids) = LAMBDA / m * weights(input_ids, hidden_ids) + weightsGradient(input_ids, hidden_ids);
-                    %self.weightsGradient(self.task_ids, self.response_ids) = self.LAMBDA / m * self.weights(self.task_ids, self.response_ids) + self.weightsGradient(self.task_ids, self.response_ids);
-                    %self.weightsGradient(self.input_ids, self.perception_ids) = self.LAMBDA / m * self.weights(self.input_ids, self.perception_ids) + self.weightsGradient(self.input_ids, self.perception_ids);
-                    
-                    biasGradient(output_ids) = LAMBDA / m * bias(output_ids) + biasGradient(output_ids);
-                    biasGradient(hidden_ids) = LAMBDA / m * bias(hidden_ids) + biasGradient(hidden_ids);
-                    %self.biasGradient(self.perception_ids) = self.LAMBDA / m * self.bias(self.perception_ids) + self.biasGradient(self.perception_ids);
-                    % TODO maybe use fmincg or something?
-                    % gradient descent
-                    eps = 0.1; % TODO const move to self.
-                    weights = weights - weightsGradient * eps;
-                    bias = bias - biasGradient * eps;
-                   
-                    %saved_bias(self.output_ids)
-                    %self.bias(self.output_ids)
-                    %self.del(self.output_ids)
-                    %self.activation(self.response_ids)
-                    %self.weightsGradient(self.response_ids, self.output_ids)
-                    %full(saved_weights(self.response_ids, self.output_ids))
-                    %self.weights(self.response_ids, self.output_ids)
-                    %full(saved_weights(self.perception_ids, self.response_ids))
-                    %self.weights(self.perception_ids, self.response_ids)
-                    % debugging
-                    %{
-                    fprintf('debug output');
-                    self.activation(self.output_ids)
-                    expected(self.output_ids)
-                    output
-                    correct{ord}                    
-                    
-                    fprintf('dels');
-                    self.del(self.output_ids)
-                    %self.del(self.response_ids)
-                    %self.del(self.perception_ids)
-                    
-                    fprintf('weights');
-                    self.weightsGradient(self.response_ids, self.output_ids)
-                    %self.weights(self.perception_ids, self.response_ids)
-                    %self.weights(self.input_ids, self.perception_ids)
-                    
-                    fprintf('biases');
-                    self.biasGradient(self.output_ids)
-                    %self.bias(self.response_ids)
-                    %self.bias(self.perception_ids)
-                    k = waitforbuttonpress;
-                    %}
             end % for ord in stimuli
             
             activation_log(cycles:end,:) = [];
@@ -287,7 +223,7 @@ correct = correct(rand_ids, :);
     figure;
 
     %x_lim = [onsets(last_trial) - 1000 onsets(last_trial)];
-    x_lim = [0 1000];
+    x_lim = [0 10];
     y_lim = [MINIMUM_ACTIVATION - 0.1 MAXIMUM_ACTIVATION + 0.1];
     onset_plot = onsets;
     offset_plot = offsets;

@@ -401,19 +401,21 @@ for OG_ONLY = og_range
                     
                     % PM instruction
                     %
-                    if FOCAL
-                        if TARGETS == 6
-                            sim.instruction({'tortoise', 'dog', 'cat', 'kiwi', 'panda', 'monkey'}, true);
+                    if ~OG_ONLY
+                        if FOCAL
+                            if TARGETS == 6
+                                sim.instruction({'tortoise', 'dog', 'cat', 'kiwi', 'panda', 'monkey'}, true);
+                            else
+                                assert(TARGETS == 1);
+                                %if exp_id == 5 TODO cleanup
+                                %    sim.instruction({'tortoise'}, false);
+                                %else
+                                    sim.instruction({'tortoise'}, true);
+                                %end
+                            end
                         else
-                            assert(TARGETS == 1);
-                            %if exp_id == 5 TODO cleanup
-                            %    sim.instruction({'tortoise'}, false);
-                            %else
-                                sim.instruction({'tortoise'}, true);
-                            %end
+                            sim.instruction({'tor'}, true);
                         end
-                    else
-                        sim.instruction({'tor'}, true);
                     end
                     
                     % optionally train the model
@@ -425,6 +427,8 @@ for OG_ONLY = og_range
                     % run the actual simulation
                     %
                     [responses, RTs, act, acc, onsets, offsets, nets] = sim.trial(stimuli);
+                    
+                    [stimuli responses]
 
                     % collect the relevant data
                     %

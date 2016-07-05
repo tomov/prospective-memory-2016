@@ -14,7 +14,7 @@ classdef Model < handle
         TAU = 0.1; % rate constant from Jon's paper
         INSTRUCTION_CYLCES = 2/Model.TAU;
         RESET_CYCLES = Model.INSTRUCTION_CYLCES;
-        SETTLE_LEEWAY = 2*Model.INSTRUCTION_CYLCES;
+        SETTLE_LEEWAY = 2 * Model.INSTRUCTION_CYLCES;
         EVIDENCE_ACCUM_SIGMA = 0.05;
         EVIDENCE_ACCUM_ALPHA = 0.05;
         EVIDENCE_ACCUM_THRESHOLD = 1;

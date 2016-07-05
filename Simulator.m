@@ -126,7 +126,11 @@ classdef Simulator < Model
             assert(length(stimuli) == length(correct));
             
             training_ids = [self.perception_ids self.response_ids self.output_ids];
-   
+            N = length(training_ids);
+            input_ids = 1:length(self.perception_ids);
+            hidden_ids = max(input_ids) + 1:max(input_ids) + length(self.response_ids);
+            output_ids = max(hidden_ids) + 1:max(hidden_ids) + length(self.output_ids);
+
             % populate X (training inputs)
             % skip the input layer => start straight from perception
             m = length(stimuli);
@@ -145,31 +149,56 @@ classdef Simulator < Model
                 y(ord) = find(self.output_ids == correct_id);
             end
             
-            % unroll params
-            weights = self.weights(training_ids, training_ids);
-            bias = self.bias(training_ids);
+            % y => expected
+            expected = zeros(m, length(self.output_ids));
+            idx = sub2ind(size(expected), 1:size(expected, 1), y');
+            expected(idx) = 1;
+            
+            % throw in a few 0 -> 0 's
+            %X = [X; zeros(200, size(X, 2))];
+            %expected = [expected; zeros(200, size(expected, 2))];
+            
+            % init the weights and biases
+            epsilon_init = 0.12; % TODO const in Model
+            weights = zeros(N, N);
+            weights(hidden_ids, output_ids) = rand(length(hidden_ids), length(output_ids)) * 2 * epsilon_init - epsilon_init;
+            weights(input_ids, hidden_ids) = rand(length(input_ids), length(hidden_ids)) * 2 * epsilon_init - epsilon_init;
+
+            bias = zeros(1, N);
+            bias(input_ids) = self.bias(self.perception_ids);
+            bias(output_ids) = rand(1, length(output_ids)) * 2 * epsilon_init - epsilon_init;
+            bias(hidden_ids) = rand(1, length(hidden_ids)) * 2 * epsilon_init - epsilon_init;
+            
+            % unroll params 
             initial_nn_params = [weights(:); bias(:)];
 
+            save('what-the-fuck.mat');
             % train
             options = optimset('MaxIter', 1000);
-            N = length(training_ids);
-            input_ids = 1:length(self.perception_ids);
-            hidden_ids = max(input_ids) + 1:max(input_ids) + length(self.response_ids);
-            output_ids = max(hidden_ids) + 1:max(hidden_ids) + length(self.output_ids);
             costFn = @(p) costFunction(p, ...
                                        N, ...
                                        input_ids, ...
                                        hidden_ids, ...
                                        output_ids, ...
-                                       X, y, self.LAMBDA);
+                                       X, expected, self.LAMBDA);
 
             [nn_params, cost] = fmincg(costFn, initial_nn_params, options);
 
             % roll params
-            weights = reshape(nn_params(1:N*N), N, N);
-            bias = reshape(nn_params(N*N+1:end), 1, N);
+            weights = reshape(nn_params(1:N*N), N, N)
+            bias = reshape(nn_params(N*N+1:end), 1, N)
             self.weights(training_ids, training_ids) = weights;
             self.bias(training_ids) = bias;
+
+            % do a sanity check with the feedforward part
+            act = zeros(m, N);
+            act(:, input_ids) = X;
+            net_input_to_hidden = act(:, input_ids) * weights(input_ids, hidden_ids) + ones(m, 1) * bias(hidden_ids);
+            act(:, hidden_ids) = logistic(net_input_to_hidden);
+            act(:, output_ids) = logistic(act(:, hidden_ids) * weights(hidden_ids, output_ids) + ones(m, 1) * bias(output_ids));
+            [dummy, pred] = max(act(:, output_ids), [], 2);
+            fprintf('\nAccuracy on training set = %f\n', mean(double(pred == y)) * 100);
+
         end
         
         function [responses, RTs, activation_log, accumulators_log, onsets, offsets, net_log] = trial(self, stimuli)
@@ -362,6 +391,12 @@ classdef Simulator < Model
                             responded = true;
                             % a bit hacky, ALSO TODO does not work after
                             % timeout
+                            
+                            % reset
+                            self.activation = zeros(1, self.N);
+                            self.wm_act = zeros(1, size(self.wm_ids, 2));
+                            self.wm_net = zeros(1, size(self.wm_ids, 2));
+                            self.net_input_avg = zeros(1, self.N);
                             break;
                         end
                     end

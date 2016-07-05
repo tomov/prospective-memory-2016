@@ -4,7 +4,7 @@ function [J grad] = costFunction(nn_params, ...
                                    hidden_ids, ...
                                    output_ids, ... 
                                    X,  ... % aka stimuli
-                                   y,  ... % aka correct (almost)
+                                   expected,  ... % aka correct (almost)
                                    lambda)
 
 assert(isempty(intersect(input_ids, hidden_ids)));
@@ -20,9 +20,7 @@ num_labels = size(output_ids, 2);
 
 % expected output
 
-expected = zeros(m, num_labels);
-idx = sub2ind(size(expected), 1:size(expected, 1), y');
-expected(idx) = 1;
+
 
 % feedforward 
 

@@ -119,7 +119,7 @@ classdef Model < handle
         
         % training parameters
         
-        LAMBDA = 1;
+        LAMBDA = 0;
                 
         % variables
         

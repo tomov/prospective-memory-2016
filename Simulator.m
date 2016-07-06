@@ -159,6 +159,8 @@ classdef Simulator < Model
             %expected = [expected; zeros(200, size(expected, 2))];
             
             % init the weights and biases
+            % note that this obliterates any lateral (mutual) inhibition
+            %
             epsilon_init = 0.12; % TODO const in Model
             weights = zeros(N, N);
             weights(hidden_ids, output_ids) = rand(length(hidden_ids), length(output_ids)) * 2 * epsilon_init - epsilon_init;
@@ -172,7 +174,7 @@ classdef Simulator < Model
             % unroll params 
             initial_nn_params = [weights(:); bias(:)];
 
-            save('what-the-fuck.mat');
+           % save('what-the-fuck.mat');
             % train
             options = optimset('MaxIter', 1000);
             costFn = @(p) costFunction(p, ...

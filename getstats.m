@@ -126,7 +126,7 @@ PM_miss_OG_hit = size(PM_miss_correct_OG_RTs, 1) / size(PM_miss_RTs, 1) * 100;
 if show_pics
     figure;
 
-    t_range = 1:min(1000, length(act));
+    t_range = 1:min(3000, length(act));
     %t_range = 1:2000;
     y_lim = [sim.MINIMUM_ACTIVATION - 0.1 sim.MAXIMUM_ACTIVATION + 0.1];
     bar_names = {'OG correct', 'PM hit', 'false alarm', 'OG wrong', 'PM miss', 'PM OG' 'OG timeout', 'PM timeout'};

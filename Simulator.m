@@ -155,8 +155,8 @@ classdef Simulator < Model
             expected(idx) = 1;
             
             % throw in a few 0 -> 0 's
-            %X = [X; zeros(200, size(X, 2))];
-            %expected = [expected; zeros(200, size(expected, 2))];
+            %X = [X; zeros(20, size(X, 2))];
+            %expected = [expected; zeros(20, size(expected, 2))];
             
             % init the weights and biases
             % note that this obliterates any lateral (mutual) inhibition
@@ -174,7 +174,6 @@ classdef Simulator < Model
             % unroll params 
             initial_nn_params = [weights(:); bias(:)];
 
-           % save('what-the-fuck.mat');
             % train
             options = optimset('MaxIter', 1000);
             costFn = @(p) costFunction(p, ...
@@ -184,13 +183,18 @@ classdef Simulator < Model
                                        output_ids, ...
                                        X, expected, self.LAMBDA);
 
-            [nn_params, cost] = fmincg(costFn, initial_nn_params, options);
+            %[nn_params, cost] = fmincg(costFn, initial_nn_params, options);
+            load('post-training-100-OG.mat');
 
             % roll params
             weights = reshape(nn_params(1:N*N), N, N)
             bias = reshape(nn_params(N*N+1:end), 1, N)
             self.weights(training_ids, training_ids) = weights;
             self.bias(training_ids) = bias;
+            
+            % remove 0 -> 0's
+            %X = X(1:end-20, :);
+            %expected = expected(1:end-20, :);
 
             % do a sanity check with the feedforward part
             act = zeros(m, N);
@@ -201,6 +205,7 @@ classdef Simulator < Model
             [dummy, pred] = max(act(:, output_ids), [], 2);
             fprintf('\nAccuracy on training set = %f\n', mean(double(pred == y)) * 100);
 
+            %save('Simulator-after-training.mat');
         end
         
         function [responses, RTs, activation_log, accumulators_log, onsets, offsets, net_log] = trial(self, stimuli)
@@ -395,10 +400,10 @@ classdef Simulator < Model
                             % timeout
                             
                             % reset
-                            self.activation = zeros(1, self.N);
-                            self.wm_act = zeros(1, size(self.wm_ids, 2));
-                            self.wm_net = zeros(1, size(self.wm_ids, 2));
-                            self.net_input_avg = zeros(1, self.N);
+                            %self.activation = zeros(1, self.N);
+                            %self.wm_act = zeros(1, size(self.wm_ids, 2));
+                            %self.wm_net = zeros(1, size(self.wm_ids, 2));
+                            %self.net_input_avg = zeros(1, self.N);
                             break;
                         end
                     end

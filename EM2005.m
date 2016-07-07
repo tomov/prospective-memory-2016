@@ -347,7 +347,7 @@ for OG_ONLY = og_range
                 % simulate subjects in parallel; must be serial in
                 % debug_mode (i.e. regular for)
                 %
-                parfor subject_id = 1:subjects_per_condition
+                for subject_id = 1:subjects_per_condition
                     % optionally add cross-subject variability
                     %
                     subjpar = curpar;
@@ -384,6 +384,9 @@ for OG_ONLY = og_range
                     % run the actual simulation
                     %
                     [responses, RTs, act, acc, onsets, offsets, nets] = sim.trial(stimuli);
+
+                    save('shitface.mat');
+                    sdfsdf;
 
                     % collect the relevant data
                     %

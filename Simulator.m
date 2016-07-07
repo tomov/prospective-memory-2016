@@ -118,32 +118,31 @@ classdef Simulator < Model
         % converting WM activations to activations for the feedforward
         % network
         function adapt_wm_act_to_ffwd_act(self)
-            self.activation(self.wm_ids) = self.wm_act;
+            self.activation(:, self.wm_ids) = self.wm_act;
             %self.activation(self.wm_ids) = self.logistic(self.wm_act * 12 - 6);
         end
         
-        function [responses, RTs, activation_log, accumulators_log, onsets, offsets, net_log] = trial(self, stimuli)
+        function [responses, RTs, activation_log, accumulators_log, onsets, offsets, net_log] = trial(self, stimuli, n_subjects)
             % initialize activations and outputs
             trial_duration = sum(cat(2, stimuli{:, 2})) * self.CYCLES_PER_SEC;
-            self.accumulators = zeros(1, self.Nout);
-            self.net_input = zeros(1, self.N);
-            self.net_input_avg = zeros(1, self.N);
-            activation_log = zeros(trial_duration, self.N);
-            accumulators_log = zeros(trial_duration, self.Nout);
-            net_log = zeros(trial_duration, self.N);
-            self.activation = zeros(1, self.N);
-            self.wm_act = zeros(1, size(self.wm_ids, 2));
-            self.wm_net = zeros(1, size(self.wm_ids, 2));
-            self.net_input_avg = zeros(1, self.N);
-            self.resting_wm = [];
-            responses = [];
-            RTs = [];
-            onsets = [];
-            offsets = [];
+            self.accumulators = zeros(n_subjects, self.Nout);
+            self.net_input = zeros(n_subjects, self.N);
+            self.net_input_avg = zeros(n_subjects, self.N);
+            activation_log = zeros(n_subjects, trial_duration, self.N);
+            accumulators_log = zeros(n_subjects, trial_duration, self.Nout);
+            net_log = zeros(n_subjects, trial_duration, self.N);
+            self.activation = zeros(n_subjects, self.N);
+            self.wm_act = zeros(n_subjects, size(self.wm_ids, 2));
+            self.wm_net = zeros(n_subjects, size(self.wm_ids, 2));
+            self.resting_wm = self.wm_act;
+            responses = cell(n_subjects, size(stimuli, 1));
+            RTs = zeros(n_subjects, size(stimuli, 1));
+            onsets = zeros(n_subjects, size(stimuli, 1));
+            offsets = zeros(n_subjects, size(stimuli, 1));
             cycles = 0;
-            switched_to_PM_task = false; % hacksauce
-            switched_to_Inter_task = false;
-            switched_to_OG_and_PM_from_Inter_task = false; % hacksauce
+            switched_to_PM_task = zeros(n_subjects, 1); % hacksauce
+            switched_to_Inter_task = zeros(n_subjects, 1);
+            switched_to_OG_and_PM_from_Inter_task = zeros(n_subjects, 1); % hacksauce
             
             % for each input from the time series
             for ord=1:size(stimuli, 1)
@@ -175,30 +174,49 @@ classdef Simulator < Model
                 %self.net_input_avg(self.ffwd_ids) = -10;
                 
                 % reset response, output, and monitoring activations
-                self.accumulators = zeros(1, size(self.output_ids, 2));
+                self.accumulators = zeros(n_subjects, size(self.output_ids, 2));
                 
                 % default output is timeout
-                output_id = self.unit_id('timeout');
-                RT = timeout;
+                output_id = self.unit_id('timeout') * ones(n_subjects, 1);
+                RT(ord) = timeout;
                 
                 % simulate response to stimulus
-                responded = false;
-                is_settled = false;
-                settle_cycles = 0;
+                responded = zeros(n_subjects, 1);
+                is_settled = zeros(n_subjects, 1);
+                settle_cycles = zeros(n_subjects, 1);
                 for cycle=1:timeout
                     % set input activations
-                    self.activation(self.input_ids) = 0;                    
-                    if is_settled
-                        self.activation(active_ids) = self.INPUT_ACTIVATION;
-                    end
+                    self.activation(:, self.input_ids) = 0;                    
+                    self.activation(:, active_ids) = is_settled * self.INPUT_ACTIVATION;
                     
                     % hack for testing different activations
                     %self.wm_act = self.init_wm;
                     %self.activation(self.wm_ids) = (self.wm_act + 5) / 10;%self.logistic(self.wm_act);
-                    
+                   
                     % initialize WM at beginning of block (i.e. first
                     % trial),
                     % or after a PM switch
+                    if cycle < self.INSTRUCTION_CYCLES
+                        % initial WM
+                        self.wm_act = ...
+                            (ord == 1 | switched_to_OG_and_PM_from_Inter_task) * self.init_wm + ...
+                            (ord ~= 1 & ~switched_to_OG_and_PM_from_Inter_task) * self.wm_act;
+
+                        % switch to inter task
+                        % TODO WTF (ord > 1 & switched_to_Inter_task
+
+                        % switched to PM task
+                        self.wm_act(self.wm_ids == self.unit_id('OG Task')) = ...
+                            switched_to_PM_task * self.init_wm(self.wm_ids == self.unit_id('OG Task')) + ...
+                            ~switched_to_PM_task * self.wm_act(self.wm_ids == self.unit_id('OG Task'));
+                        self.wm_act(self.wm_ids == self.unit_id('PM Task')) = ...
+                            switched_to_PM_task * self.init_wm(self.wm_ids == self.unit_id('PM Task')) + ...
+                            ~switched_to_PM_task * self.wm_act(self.wm_ids == self.unit_id('PM Task'));
+
+                        self.adapt_wm_act_to_ffwd_act();
+                    end
+
+                    %{
                     if cycle < self.INSTRUCTION_CYLCES && (ord == 1 || switched_to_PM_task || switched_to_Inter_task || switched_to_OG_and_PM_from_Inter_task)
                         if ord == 1 || switched_to_OG_and_PM_from_Inter_task
                             self.wm_act = self.init_wm;
@@ -226,17 +244,34 @@ classdef Simulator < Model
                         end
                         self.adapt_wm_act_to_ffwd_act();
                     end
+                    %}
 
                     % log activation for plotting
-                    activation_log(cycles + cycle, :) = self.activation;
-                    accumulators_log(cycles + cycle, :) = self.accumulators;
-                    net_log(cycles + cycle, :) = self.net_input;
-                    
+                    activation_log(:, cycles + cycle, :) = self.activation;
+                    accumulators_log(:, cycles + cycle, :) = self.accumulators;
+                    net_log(:, cycles + cycle, :) = self.net_input;
+                   
                     % see if network has settled
+                    if cycle > self.SETTLE_LEEWAY
+                        from = cycles + cycle - self.SETTLE_LEEWAY + 1;
+                        to = cycles + cycle - 1;
+                        m = activation_log(:, from:to, :) - activation_log(:, from-1:to-1, :);
+                        m = abs(mean(m, 3));
+                        was_settled = is_settled;
+                        is_settled = is_settled | (mean(m, 2) < self.SETTLE_MEAN_EPS & std(m, 0, 2) < self.SETTLE_STD_EPS);
+                        did_settle = xor(was_settled, is_settled);
+                        settle_cycles = did_settle * cycles + ~did_settle .* settle_cycles;
+                        if ord == 1
+                            self.resting_wm = (did_settle * ones(1, size(self.wm_act, 2))) .* self.wm_act + (~did_settle * ones(1, size(self.resting_wm))) .* self.resting_wm;
+                        end
+                        onsets(:, ord) = did_settle * (cycles + cycle) + ~did_settle .* onsets(:, ord);
+                    end
+
+                    %{
                     if cycle > self.SETTLE_LEEWAY && ~is_settled
                         from = cycles + cycle - self.SETTLE_LEEWAY + 1;
                         to = cycles + cycle - 1;
-                        m = activation_log(from:to,:) - activation_log(from-1:to-1,:);
+                        m = activation_log(from:to, :) - activation_log(from-1:to-1, :);
                         m = abs(mean(m, 2));
                         %fprintf('%d -> %.6f, %6f\n', cycle, mean(m), std(m));
                         if mean(m) < self.SETTLE_MEAN_EPS && std(m) < self.SETTLE_STD_EPS
@@ -250,21 +285,22 @@ classdef Simulator < Model
                             onsets = [onsets; cycles + cycle];
                         end
                     end
+                    %}
                     
                     % calculate net inputs for all units
                     %
-                    self.net_input(self.ffwd_ids) = self.activation * self.weights(:, self.ffwd_ids) ...
-                        + self.bias(self.ffwd_ids);
-                    self.net_input(self.wm_ids) = self.activation(self.ffwd_ids) * self.weights(self.ffwd_ids, self.wm_ids) ...
+                    self.net_input(:, self.ffwd_ids) = self.activation * self.weights(:, self.ffwd_ids) ...
+                        + ones(n_subjects, 1) * self.bias(self.ffwd_ids);
+                    self.net_input(:, self.wm_ids) = self.activation(:, self.ffwd_ids) * self.weights(self.ffwd_ids, self.wm_ids) ...
                         + self.wm_act * self.weights(self.wm_ids, self.wm_ids) ...
-                        + self.bias(self.wm_ids);
+                        + ones(n_subjects, 1) * self.bias(self.wm_ids);
                     % unless we're fitting (i.e. when doing regular
                     % simulations), add noise to the net inputs
                     %
                     if ~self.fitting_mode
                         % TODO parametrize the noise
-                        self.net_input(self.ffwd_ids) = self.net_input(self.ffwd_ids) + normrnd(0, 0.1, size(self.ffwd_ids));
-                        self.net_input(self.wm_ids) = self.net_input(self.wm_ids) + normrnd(0, 0.01, size(self.wm_ids));
+                        self.net_input(:, self.ffwd_ids) = self.net_input(:, self.ffwd_ids) + normrnd(0, 0.1, size(self.ffwd_ids));
+                        self.net_input(:, self.wm_ids) = self.net_input(:, self.wm_ids) + normrnd(0, 0.01, size(self.wm_ids));
                     end
                     
                     % on instruction, oscillate around initial WM
@@ -282,22 +318,47 @@ classdef Simulator < Model
                     
                     % update activation levels for feedforward part of the
                     % network
-                    self.net_input_avg(self.ffwd_ids) = self.TAU * self.net_input(self.ffwd_ids) + (1 - self.TAU) * self.net_input_avg(self.ffwd_ids);
-                    self.activation(self.ffwd_ids) = self.logistic(self.net_input_avg(self.ffwd_ids));
+                    self.net_input_avg(:, self.ffwd_ids) = self.TAU * self.net_input(:, self.ffwd_ids) + (1 - self.TAU) * self.net_input_avg(:, self.ffwd_ids);
+                    self.activation(:, self.ffwd_ids) = self.logistic(self.net_input_avg(:, self.ffwd_ids));
                     
                     % same for WM module
                     % for WM module, activation f'n is linear and
                     % thresholded between 0 and 1
-                    self.wm_act = self.wm_act + self.STEP_SIZE * self.net_input(self.wm_ids);
+                    self.wm_act = self.wm_act + self.STEP_SIZE * self.net_input(:, self.wm_ids);
                     self.wm_act = min(self.wm_act, self.MAXIMUM_ACTIVATION);
                     self.wm_act = max(self.wm_act, self.MINIMUM_ACTIVATION);
                     self.adapt_wm_act_to_ffwd_act();
-                    
+                   
+                    if is_settled
+                        % find output unit with max activation for each subject
+                        [act_max, max_idx] = max(self.activation(:, self.output_ids), [], 2);
+                        % get their indices
+                        max_linear_idx = sub2ind(size(self.activation), 1:n_subjects, max_idx');
+                        % set them temporarily to -inf so we can find the second max activation units
+                        self.activation(max_linear_idx) = -inf;
+                        second_act_max = max(self.activation(:, self.output_ids), [], 2);
+                        % scale act_max to same size as the output units
+                        act_to_subtract = ones(n_subjects, size(self.output_ids, 2)) .* act_max;
+                        % restore the actual max activations
+                        self.activation(max_linear_idx) = act_max;
+                        % see evidence accumulation equations in paper
+                        % basically, we subtract the max activation from everybody
+                        % except from the max activation units themselves -- from them
+                        % we subtract the second max activations
+                        act_to_subtract(max_linear_idx) = second_max_act;
+                        mu = self.EVIDENCE_ACCUM_ALPHA * (self.activation(:, self.output_ids) - act_to_subtract);
+                        % then we add noise proportional to that to the evidence accumulators
+                        add = normrnd(mu, ones(size(mu)) * self.EVIDENCE_ACCUM_SIGMA);
+                        self.accumulators = self.accumulators + add;
+
+                        WTF
+                        CHECK IF THRESHOLDS ARE MET!!
+                    end
                     % update evidence accumulators (after network has
                     % settled)
                     if is_settled
                         act_sorted = sort(self.activation(self.output_ids), 'descend');
-                        act_max = ones(1, size(self.output_ids, 2)) * act_sorted(1);
+                        act_max = ones(n_subjects, size(self.output_ids, 2)) .* act_max;
                         act_max(self.activation(self.output_ids) == act_sorted(1)) = act_sorted(2);
                         mu = self.EVIDENCE_ACCUM_ALPHA * (self.activation(self.output_ids) - act_max);
                         add = normrnd(mu, ones(size(mu)) * self.EVIDENCE_ACCUM_SIGMA);
@@ -316,7 +377,8 @@ classdef Simulator < Model
                         end
                     end
                 end
-                
+               
+                WTF BUT can do one by one nbd
                 % record response and response time
                 if switched_to_Inter_task || switched_to_OG_and_PM_from_Inter_task
                     output = 'Switch';

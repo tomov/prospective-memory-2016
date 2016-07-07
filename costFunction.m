@@ -25,10 +25,25 @@ num_labels = size(output_ids, 2);
 % feedforward 
 
 activation = zeros(m, N);
+
+% ---- instant propagation
 activation(:, input_ids) = X;
 net_input_to_hidden = activation(:, input_ids) * weights(input_ids, hidden_ids) + ones(m, 1) * bias(hidden_ids);
 activation(:, hidden_ids) = logistic(net_input_to_hidden);
 activation(:, output_ids) = logistic(activation(:, hidden_ids) * weights(hidden_ids, output_ids) + ones(m, 1) * bias(output_ids));
+
+% ---- cascading propagation
+net_input_avg = zeros(m, N);
+for cycle=1:Model.CYCLES_PER_SEC / 2
+    activation(:, input_ids) = X;
+    net_input = activation * weights + ones(m, 1) * bias;
+    net_input_avg = Model.TAU * net_input + (1 - Model.TAU) * net_input_avg;
+    activation = logistic(net_input_avg);
+    
+    %activation(hidden_ids)
+    %activation(hidden_ids)
+end
+
 
 % cost
 

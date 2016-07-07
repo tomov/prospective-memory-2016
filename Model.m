@@ -35,13 +35,13 @@ classdef Model < handle
         
         % perception
         
-        BIAS_FOR_PERCEPTION = -18;
+        BIAS_FOR_PERCEPTION = -18; %-18;
         PERCEPTION_INHIBITION = 0;
         
-        INPUT_TO_PERCEPTION = 15;
+        INPUT_TO_PERCEPTION = 15; % 15;
         INPUT_TO_PERCEPTION_INHIBITION = 0;
         
-        ATTENTION_TO_PERCEPTION = 8;
+        ATTENTION_TO_PERCEPTION = 8; % 8;
         ATTENTION_TO_PERCEPTION_INHIBITION = 0;
 
         % responses

@@ -175,7 +175,7 @@ classdef Simulator < Model
             initial_nn_params = [weights(:); bias(:)];
 
             % train
-            options = optimset('MaxIter', 1000);
+            options = optimset('MaxIter', 100000);
             costFn = @(p) costFunction(p, ...
                                        N, ...
                                        input_ids, ...
@@ -183,8 +183,8 @@ classdef Simulator < Model
                                        output_ids, ...
                                        X, expected, self.LAMBDA);
 
-            %[nn_params, cost] = fmincg(costFn, initial_nn_params, options);
-            load('post-training-100-OG.mat');
+            [nn_params, cost] = fmincg(costFn, initial_nn_params, options);
+            %load('post-training-100-OG.mat');
 
             % roll params
             weights = reshape(nn_params(1:N*N), N, N)
@@ -205,7 +205,7 @@ classdef Simulator < Model
             [dummy, pred] = max(act(:, output_ids), [], 2);
             fprintf('\nAccuracy on training set = %f\n', mean(double(pred == y)) * 100);
 
-            %save('Simulator-after-training.mat');
+            save('Simulator-after-training.mat');
         end
         
         function [responses, RTs, activation_log, accumulators_log, onsets, offsets, net_log] = trial(self, stimuli)

@@ -152,10 +152,10 @@ classdef Simulator < Model
                 stimulus = stimuli{ord, 1};
                 if strcmp(stimulus, 'switch to Inter Task')
                     active_ids = [];
-                    switched_to_Inter_task = true;
+                    switched_to_Inter_task(:) = true;
                 elseif strcmp(stimulus, 'switch back to OG and PM')
                     active_ids = [];
-                    switched_to_OG_and_PM_from_Inter_task = true;
+                    switched_to_OG_and_PM_from_Inter_task(:) = true;
                     for target = {'tortoise'} % TODO dedupe with instruction() % TODO pass target as param
                         target_monitor_unit = strcat('Monitor ', {' '}, target);
                         target_monitor_id = self.unit_id(target_monitor_unit{1});
@@ -178,16 +178,16 @@ classdef Simulator < Model
                 
                 % default output is timeout
                 output_id = self.unit_id('timeout') * ones(n_subjects, 1);
-                RT(ord) = timeout;
+                RTs(:, ord) = timeout;
                 
                 % simulate response to stimulus
-                responded = zeros(n_subjects, 1);
-                is_settled = zeros(n_subjects, 1);
+                responded = logical(zeros(n_subjects, 1));
+                settled = logical(zeros(n_subjects, 1));
                 settle_cycles = zeros(n_subjects, 1);
                 for cycle=1:timeout
                     % set input activations
                     self.activation(:, self.input_ids) = 0;                    
-                    self.activation(:, active_ids) = is_settled * self.INPUT_ACTIVATION;
+                    self.activation(settled, active_ids) = self.INPUT_ACTIVATION;
                     
                     % hack for testing different activations
                     %self.wm_act = self.init_wm;
@@ -198,20 +198,15 @@ classdef Simulator < Model
                     % or after a PM switch
                     if cycle < self.INSTRUCTION_CYCLES
                         % initial WM
-                        self.wm_act = ...
-                            (ord == 1 | switched_to_OG_and_PM_from_Inter_task) * self.init_wm + ...
-                            (ord ~= 1 & ~switched_to_OG_and_PM_from_Inter_task) * self.wm_act;
+                        who_needs_wm_init = ord == 1 | switched_to_OG_and_PM_from_Inter_task;
+                        self.wm_act(who_needs_wm_init, :) = ones(sum(who_needs_wm_init), 1) * self.init_wm;
 
                         % switch to inter task
-                        % TODO WTF (ord > 1 & switched_to_Inter_task
+                        % BIG TODO WTF -- see below
 
                         % switched to PM task
-                        self.wm_act(self.wm_ids == self.unit_id('OG Task')) = ...
-                            switched_to_PM_task * self.init_wm(self.wm_ids == self.unit_id('OG Task')) + ...
-                            ~switched_to_PM_task * self.wm_act(self.wm_ids == self.unit_id('OG Task'));
-                        self.wm_act(self.wm_ids == self.unit_id('PM Task')) = ...
-                            switched_to_PM_task * self.init_wm(self.wm_ids == self.unit_id('PM Task')) + ...
-                            ~switched_to_PM_task * self.wm_act(self.wm_ids == self.unit_id('PM Task'));
+                        self.wm_act(switched_to_PM_task, self.wm_ids == self.unit_id('OG Task')) = self.init_wm(self.wm_ids == self.unit_id('OG Task'));
+                        self.wm_act(switched_to_PM_task, self.wm_ids == self.unit_id('PM Task')) = self.init_wm(self.wm_ids == self.unit_id('PM Task'));
 
                         self.adapt_wm_act_to_ffwd_act();
                     end
@@ -257,14 +252,14 @@ classdef Simulator < Model
                         to = cycles + cycle - 1;
                         m = activation_log(:, from:to, :) - activation_log(:, from-1:to-1, :);
                         m = abs(mean(m, 3));
-                        was_settled = is_settled;
-                        is_settled = is_settled | (mean(m, 2) < self.SETTLE_MEAN_EPS & std(m, 0, 2) < self.SETTLE_STD_EPS);
-                        did_settle = xor(was_settled, is_settled);
-                        settle_cycles = did_settle * cycles + ~did_settle .* settle_cycles;
+                        were_settled = settled;
+                        settled = settled | (mean(m, 2) < self.SETTLE_MEAN_EPS & std(m, 0, 2) < self.SETTLE_STD_EPS);
+                        just_settled = xor(were_settled, settled);
+                        settle_cycles(just_settled) = cycles;
                         if ord == 1
-                            self.resting_wm = (did_settle * ones(1, size(self.wm_act, 2))) .* self.wm_act + (~did_settle * ones(1, size(self.resting_wm))) .* self.resting_wm;
+                            self.resting_wm(just_settled, :) = self.wm_act(just_settled, :);
                         end
-                        onsets(:, ord) = did_settle * (cycles + cycle) + ~did_settle .* onsets(:, ord);
+                        onsets(just_settled, ord) = cycles + cycle;
                     end
 
                     %{
@@ -288,6 +283,7 @@ classdef Simulator < Model
                     %}
                     
                     % calculate net inputs for all units
+                    % WTF TODO ~responded insteaf of : ? faster?
                     %
                     self.net_input(:, self.ffwd_ids) = self.activation * self.weights(:, self.ffwd_ids) ...
                         + ones(n_subjects, 1) * self.bias(self.ffwd_ids);
@@ -319,43 +315,65 @@ classdef Simulator < Model
                     % update activation levels for feedforward part of the
                     % network
                     self.net_input_avg(:, self.ffwd_ids) = self.TAU * self.net_input(:, self.ffwd_ids) + (1 - self.TAU) * self.net_input_avg(:, self.ffwd_ids);
-                    self.activation(:, self.ffwd_ids) = self.logistic(self.net_input_avg(:, self.ffwd_ids));
+                    self.activation(~responded, self.ffwd_ids) = self.logistic(self.net_input_avg(~responded, self.ffwd_ids)); % only update activations of those who haven't responded yet
                     
                     % same for WM module
                     % for WM module, activation f'n is linear and
                     % thresholded between 0 and 1
-                    self.wm_act = self.wm_act + self.STEP_SIZE * self.net_input(:, self.wm_ids);
-                    self.wm_act = min(self.wm_act, self.MAXIMUM_ACTIVATION);
-                    self.wm_act = max(self.wm_act, self.MINIMUM_ACTIVATION);
+                    self.wm_act(~responded, :) = self.wm_act(~responded) + self.STEP_SIZE * self.net_input(~responded, self.wm_ids);
+                    self.wm_act(~responded, :) = min(self.wm_act(~responded, :), self.MAXIMUM_ACTIVATION);
+                    self.wm_act(~responded, :) = max(self.wm_act(~responded, :), self.MINIMUM_ACTIVATION);
                     self.adapt_wm_act_to_ffwd_act();
                    
-                    if is_settled
-                        % find output unit with max activation for each subject
-                        [act_max, max_idx] = max(self.activation(:, self.output_ids), [], 2);
-                        % get their indices
-                        max_linear_idx = sub2ind(size(self.activation), 1:n_subjects, max_idx');
-                        % set them temporarily to -inf so we can find the second max activation units
-                        self.activation(max_linear_idx) = -inf;
-                        second_act_max = max(self.activation(:, self.output_ids), [], 2);
-                        % scale act_max to same size as the output units
-                        act_to_subtract = ones(n_subjects, size(self.output_ids, 2)) .* act_max;
-                        % restore the actual max activations
-                        self.activation(max_linear_idx) = act_max;
-                        % see evidence accumulation equations in paper
-                        % basically, we subtract the max activation from everybody
-                        % except from the max activation units themselves -- from them
-                        % we subtract the second max activations
-                        act_to_subtract(max_linear_idx) = second_max_act;
-                        mu = self.EVIDENCE_ACCUM_ALPHA * (self.activation(:, self.output_ids) - act_to_subtract);
-                        % then we add noise proportional to that to the evidence accumulators
-                        add = normrnd(mu, ones(size(mu)) * self.EVIDENCE_ACCUM_SIGMA);
-                        self.accumulators = self.accumulators + add;
+                    % ---- update evidence accumulators (after network has settled) -----
+                    %
+                    % take only the output activation units we care about
+                    act = self.activation(~responded & settled, self.output_ids);
+                    % find output unit with max activation for each subject
+                    [act_max, max_idx] = max(act, [], 2);
+                    % get their indices
+                    max_linear_idx = sub2ind(size(act), 1:length(max_idx), max_idx');
+                    % set them temporarily to -inf so we can find the second max activation units
+                    act(max_linear_idx) = -inf;
+                    second_act_max = max(act, [], 2);
+                    % scale act_max to same size as the output units
+                    act_to_subtract = act_max * ones(1, size(self.output_ids, 2));
+                    % restore the actual max activations
+                    act(max_linear_idx) = act_max;
+                    % see evidence accumulation equations in paper
+                    % basically, we subtract the max activation from everybody
+                    % except from the max activation units themselves -- from them
+                    % we subtract the second max activations
+                    act_to_subtract(max_linear_idx) = second_max_act;
+                    mu = self.EVIDENCE_ACCUM_ALPHA * (act - act_to_subtract);
+                    % then we add noise proportional to that to the evidence accumulators
+                    add = normrnd(mu, ones(size(mu)) * self.EVIDENCE_ACCUM_SIGMA);
+                    self.accumulators = self.accumulators + add;
 
-                        WTF
-                        CHECK IF THRESHOLDS ARE MET!!
-                    end
+                    % check if activation threshold is met
+                    %
+                    [v, id] = max(self.accumulators, [], 2);
+                    % get the output id for all subjects
+                    all_output_id = self.output_ids(id);
+                    % see which subjects passed the response threshold (and haven't responded yet)
+                    who_just_responded = ~responded & is_settled & v > self.EVIDENCE_ACCUM_THRESHOLD;
+                    % set their output ids
+                    output_id(who_just_responded) = all_output_id(who_just_responded); % TODO might have to flip
+                    % record the actual response
+                    responses(who_just_responded & (switched_to_Inter_task | switched_to_OG_and_PM_from_Inter_task), ord) = 'Switch';
+                    who_just_responded_and_is_not_a_switch = who_just_responded & (~switched_to_Inter_task & ~switched_to_OG_and_PM_from_Inter_task);
+                    responses(who_just_responded_and_is_not_a_switch, ord) = self.units{all_output_id(who_just_responded_and_is_not_a_switch)};
+                    % set their response times
+                    RTs(who_just_responded, ord) = cycle - settle_cycles;
+                    % mark that they responded
+                    responded(who_just_responded) = true;
+                    % and do some bookkeeping
+                    offsets(who_just_responded, ord) = cycles + cycle;
+
+                    % single-subject version of the stuff above
                     % update evidence accumulators (after network has
                     % settled)
+                    %{
                     if is_settled
                         act_sorted = sort(self.activation(self.output_ids), 'descend');
                         act_max = ones(n_subjects, size(self.output_ids, 2)) .* act_max;
@@ -376,9 +394,10 @@ classdef Simulator < Model
                             break;
                         end
                     end
+                    %}
                 end
-               
-                WTF BUT can do one by one nbd
+              
+                %{
                 % record response and response time
                 if switched_to_Inter_task || switched_to_OG_and_PM_from_Inter_task
                     output = 'Switch';
@@ -388,20 +407,21 @@ classdef Simulator < Model
                 offsets = [offsets; cycles + cycle];
                 responses = [responses; {output}];
                 RTs = [RTs; RT];
+                %}
                 cycles = cycles + cycle;                
                 
-                                %switched_to_PM_task = (self.activation(self.unit_id('PM Task')) > self.activation(self.unit_id('OG Task')));
+                %switched_to_PM_task = (self.activation(self.unit_id('PM Task')) > self.activation(self.unit_id('OG Task')));
                 % TODO hacky...
-                assert(length(self.resting_wm) == length(self.wm_act));
+                assert(size(self.resting_wm, 2) == size(self.wm_act, 2));
                 %switched_to_PM_task = (self.wm_act(2) > self.wm_act(1) - 0.1);
-                switched_to_PM_task = (self.wm_act(2) > self.resting_wm(2) + 0.01);
-                switched_to_Inter_task = false;
-                switched_to_OG_and_PM_from_Inter_task = false;
+                switched_to_PM_task = (self.wm_act(:, 2) > self.resting_wm(:, 2) + 0.01);
+                switched_to_Inter_task(:) = false;
+                switched_to_OG_and_PM_from_Inter_task(:) = false;
             end
             
-            activation_log(cycles:end,:) = [];
-            accumulators_log(cycles:end,:) = [];
-            net_log(cycles:end,:) = [];
+            activation_log(:cycles:end,:) = [];
+            accumulators_log(:cycles:end,:) = [];
+            net_log(:cycles:end,:) = [];
         end
     end
 end

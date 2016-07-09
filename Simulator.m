@@ -140,9 +140,9 @@ classdef Simulator < Model
             onsets = zeros(n_subjects, size(stimuli, 1));
             offsets = zeros(n_subjects, size(stimuli, 1));
             cycles = 0;
-            switched_to_PM_task = zeros(n_subjects, 1); % hacksauce
-            switched_to_Inter_task = zeros(n_subjects, 1);
-            switched_to_OG_and_PM_from_Inter_task = zeros(n_subjects, 1); % hacksauce
+            switched_to_PM_task = logical(zeros(n_subjects, 1)); % hacksauce
+            switched_to_Inter_task = logical(zeros(n_subjects, 1));
+            switched_to_OG_and_PM_from_Inter_task = logical(zeros(n_subjects, 1)); % hacksauce
             
             % for each input from the time series
             for ord=1:size(stimuli, 1)
@@ -184,7 +184,10 @@ classdef Simulator < Model
                 responded = logical(zeros(n_subjects, 1));
                 settled = logical(zeros(n_subjects, 1));
                 settle_cycles = zeros(n_subjects, 1);
+                %fprintf('ord = %d\n', ord);
                 for cycle=1:timeout
+                    %fprintf('   cycle = %d\n', cycle);
+                    
                     % set input activations
                     self.activation(:, self.input_ids) = 0;                    
                     self.activation(settled, active_ids) = self.INPUT_ACTIVATION;
@@ -196,7 +199,7 @@ classdef Simulator < Model
                     % initialize WM at beginning of block (i.e. first
                     % trial),
                     % or after a PM switch
-                    if cycle < self.INSTRUCTION_CYCLES
+                    if cycle < self.INSTRUCTION_CYLCES
                         % initial WM
                         who_needs_wm_init = ord == 1 | switched_to_OG_and_PM_from_Inter_task;
                         self.wm_act(who_needs_wm_init, :) = ones(sum(who_needs_wm_init), 1) * self.init_wm;
@@ -320,7 +323,7 @@ classdef Simulator < Model
                     % same for WM module
                     % for WM module, activation f'n is linear and
                     % thresholded between 0 and 1
-                    self.wm_act(~responded, :) = self.wm_act(~responded) + self.STEP_SIZE * self.net_input(~responded, self.wm_ids);
+                    self.wm_act(~responded, :) = self.wm_act(~responded, :) + self.STEP_SIZE * self.net_input(~responded, self.wm_ids);
                     self.wm_act(~responded, :) = min(self.wm_act(~responded, :), self.MAXIMUM_ACTIVATION);
                     self.wm_act(~responded, :) = max(self.wm_act(~responded, :), self.MINIMUM_ACTIVATION);
                     self.adapt_wm_act_to_ffwd_act();
@@ -344,11 +347,11 @@ classdef Simulator < Model
                     % basically, we subtract the max activation from everybody
                     % except from the max activation units themselves -- from them
                     % we subtract the second max activations
-                    act_to_subtract(max_linear_idx) = second_max_act;
+                    act_to_subtract(max_linear_idx) = second_act_max;
                     mu = self.EVIDENCE_ACCUM_ALPHA * (act - act_to_subtract);
                     % then we add noise proportional to that to the evidence accumulators
                     add = normrnd(mu, ones(size(mu)) * self.EVIDENCE_ACCUM_SIGMA);
-                    self.accumulators = self.accumulators + add;
+                    self.accumulators(~responded & settled, :) = self.accumulators(~responded & settled, :) + add;
 
                     % check if activation threshold is met
                     %
@@ -356,19 +359,23 @@ classdef Simulator < Model
                     % get the output id for all subjects
                     all_output_id = self.output_ids(id);
                     % see which subjects passed the response threshold (and haven't responded yet)
-                    who_just_responded = ~responded & is_settled & v > self.EVIDENCE_ACCUM_THRESHOLD;
+                    who_just_responded = ~responded & settled & v > self.EVIDENCE_ACCUM_THRESHOLD;
                     % set their output ids
                     output_id(who_just_responded) = all_output_id(who_just_responded); % TODO might have to flip
                     % record the actual response
-                    responses(who_just_responded & (switched_to_Inter_task | switched_to_OG_and_PM_from_Inter_task), ord) = 'Switch';
+                    responses(who_just_responded & (switched_to_Inter_task | switched_to_OG_and_PM_from_Inter_task), ord) = {'Switch'};
                     who_just_responded_and_is_not_a_switch = who_just_responded & (~switched_to_Inter_task & ~switched_to_OG_and_PM_from_Inter_task);
-                    responses(who_just_responded_and_is_not_a_switch, ord) = self.units{all_output_id(who_just_responded_and_is_not_a_switch)};
+                    responses(who_just_responded_and_is_not_a_switch, ord) = self.units(all_output_id(who_just_responded_and_is_not_a_switch));
                     % set their response times
                     RTs(who_just_responded, ord) = cycle - settle_cycles;
                     % mark that they responded
                     responded(who_just_responded) = true;
                     % and do some bookkeeping
                     offsets(who_just_responded, ord) = cycles + cycle;
+                    
+                    if sum(~responded) == 0
+                        break % no subjects left over
+                    end
 
                     % single-subject version of the stuff above
                     % update evidence accumulators (after network has
@@ -419,9 +426,9 @@ classdef Simulator < Model
                 switched_to_OG_and_PM_from_Inter_task(:) = false;
             end
             
-            activation_log(:cycles:end,:) = [];
-            accumulators_log(:cycles:end,:) = [];
-            net_log(:cycles:end,:) = [];
+            activation_log(:,cycles:end,:) = [];
+            accumulators_log(:,cycles:end,:) = [];
+            net_log(:,cycles:end,:) = [];
         end
     end
 end

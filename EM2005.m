@@ -86,8 +86,8 @@ if debug_mode
     %
     subjects_per_condition = 1;
     og_range = 0;
-    %focal_range = 1;
-    %emphasis_range = 0;
+    focal_range = 1;
+    emphasis_range = 0;
     %target_range = [1,6];
 elseif fitting_mode
     % when fitting, use less subjects for speed
@@ -383,10 +383,7 @@ for OG_ONLY = og_range
                     
                     % run the actual simulation
                     %
-                    [responses, RTs, act, acc, onsets, offsets, nets] = sim.trial(stimuli);
-
-                    save('shitface.mat');
-                    sdfsdf;
+                    [responses, RTs, act, acc, onsets, offsets, nets] = sim.trial(stimuli, 1);
 
                     % collect the relevant data
                     %
@@ -465,6 +462,7 @@ for OG_ONLY = og_range
                     % show picture of whole thing (for debugging)
                     % NOTE: doesn't work with parfor!! need regular forloop
                     %
+                    
                     if debug_mode
                         fprintf('   curpar(1:4) = %.3f %.3f %.3f %.3f\n', subjpar(1), subjpar(2), subjpar(3), subjpar(4));
                         %if ~OG_ONLY

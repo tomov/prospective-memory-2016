@@ -18,7 +18,7 @@ where
   ];
 %}
 
-debug_mode = false; % only run 1 subject per condition and show progress ; !!!!!IMPORTANT!!!!!!!!! must change parfor to for in EM2005
+debug_mode = true; % only run 1 subject per condition and show progress ; !!!!!IMPORTANT!!!!!!!!! must change parfor to for in EM2005
 fitting_mode = false; % used when fitting the parameters ; uses a more efficient setup that produces similar results
 
 
@@ -151,8 +151,8 @@ tic
 toc
 
 if debug_mode
-	m = Model(true, startpar([1 2 3 4 17 18 19 20 21 22]), false);
-    wm_ids = m.wm_ids;
+	%m = Model(true, startpar([1 2 3 4 17 18 19 20 21 22]), false);
+   % wm_ids = m.wm_ids;
     context_ids = m.context_ids;
     act = extra{1, 8};
     nets = extra{1, 12};

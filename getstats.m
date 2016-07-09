@@ -1,59 +1,65 @@
 function [OG_RT, OG_RT_SD, OG_Hit, PM_RT, PM_RT_SD, PM_Hit, PM_miss_OG_hit, first_PM_RT] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses, RTs, act, acc, onsets, offsets, is_target, correct, og_correct, is_inter_task, show_pics, do_print)
 
-OG_count = 0;
-PM_count = 0;
-OG_correct_RTs = [];
-PM_hit_RTs = [];
-false_alarm_RTs = [];
-OG_wrong_RTs = [];
-PM_miss_RTs = [];
-PM_miss_correct_OG_RTs = [];
-OG_timeout_RTs = [];
-PM_timeout_RTs = [];
+n_subjects = size(responses, 1);
+n_trials = size(responses, 2);
 
-for i=1:size(responses, 1)
-    if ~isempty(is_inter_task) && is_inter_task(i)
-        continue
-    end
-    if strcmp(responses{i}, correct{i}) == 1
-        % right answer
-        if is_target(i) == 0
-            % OG correct
-            OG_count = OG_count + 1;
-            OG_correct_RTs = [OG_correct_RTs; RTs(i)];
-        else
-            % PM hit
-            PM_count = PM_count + 1;
-            PM_hit_RTs = [PM_hit_RTs; RTs(i)];
+OG_count = zeros(n_subjects, 1);
+PM_count = zeros(n_subjects, 1);
+
+OG_correct_RTs = NaN(n_subjects, n_trials);
+PM_hit_RTs = NaN(n_subjects, n_trials); 
+false_alarm_RTs = NaN(n_subjects, n_trials); 
+OG_wrong_RTs = NaN(n_subjects, n_trials); 
+PM_miss_RTs = NaN(n_subjects, n_trials); 
+PM_miss_correct_OG_RTs = NaN(n_subjects, n_trials); 
+OG_timeout_RTs = NaN(n_subjects, n_trials); 
+PM_timeout_RTs = NaN(n_subjects, n_trials); 
+
+for s=1:n_subjects
+    for ord=1:n_trials
+        if ~isempty(is_inter_task) && is_inter_task(i)
+            continue
         end
-    else
-        % wrong answer
-        if is_target(i) == 0
-            OG_count = OG_count + 1;
-            % timeout
-            if strcmp(responses{i}, 'timeout') == 1
-                OG_timeout_RTs = [OG_timeout_RTs; RTs(i)];
-                continue;
-            end
-            if strcmp(responses{i}, 'PM') == 1
-                % false alarm
-                false_alarm_RTs = [false_alarm_RTs; RTs(i)];
+        if strcmp(responses{s, ord}, correct{ord}) == 1
+            % right answer
+            if is_target(ord) == 0
+                % OG correct
+                OG_count(s) = OG_count(s) + 1;
+                OG_correct_RTs(s, ord) = RTs(ord);
             else
-                % OG wrong
-                OG_wrong_RTs = [OG_wrong_RTs; RTs(i)];
+                % PM hit
+                PM_count(s) = PM_count(s) + 1;
+                PM_hit_RTs(s, ord) = RTs(ord);
             end
         else
-            PM_count = PM_count + 1;
-            % timeout
-            if strcmp(responses{i}, 'timeout') == 1
-                PM_timeout_RTs = [PM_timeout_RTs; RTs(i)];
-                continue;
-            end
-            % PM miss
-            PM_miss_RTs = [PM_miss_RTs; RTs(i)];
-            if strcmp(responses{i}, og_correct{i}) == 1
-                % but still correct OG
-                PM_miss_correct_OG_RTs = [PM_miss_correct_OG_RTs; RTs(i)];
+            % wrong answer
+            if is_target(ord) == 0
+                OG_count(s) = OG_count(s) + 1;
+                if strcmp(responses{s, ord}, 'timeout') == 1
+                    % timeout
+                    OG_timeout_RTs(s, ord) = RTs(ord);
+                    continue;
+                end
+                if strcmp(responses{s, ord}, 'PM') == 1
+                    % false alarm
+                    false_alarm_RTs(s, ord) = RTs(ord);
+                else
+                    % OG wrong
+                    OG_wrong_RTs(s, ord) = RTs(i);
+                end
+            else
+                PM_count(s) = PM_count(s) + 1;
+                if strcmp(responses{s, ord}, 'timeout') == 1
+                    % timeout
+                    PM_timeout_RTs(s, ord) = RTs(i);
+                    continue;
+                end
+                % PM miss
+                PM_miss_RTs(s, ord) = RTs(i);
+                if strcmp(responses{s, ord}, og_correct{ord}) == 1
+                    % but still correct OG
+                    PM_miss_correct_OG_RTs(s, ord) = RTs(i);
+                end
             end
         end
     end
@@ -68,55 +74,61 @@ PM_count
 %}
 
 
-if ~show_pics && do_print
-    if OG_ONLY
-        og_string = 'No PM task';
-    else
-        og_string = 'PM task';
-    end
-    if FOCAL
-        if EMPHASIS
-            fprintf('\n ----> focal, high emphasis, %s, %d target(s) ----\n', og_string, TARGETS);
+for s=1:n_subjects
+    fprintf('\n ========================= SUBJECT %d ==========================\n', s);
+    if ~show_pics && do_print
+        if OG_ONLY
+            og_string = 'No PM task';
         else
-            fprintf('\n ----> focal, low emphasis, %s, %d target(s) ----\n', og_string, TARGETS);
+            og_string = 'PM task';
         end
-    else
-        if EMPHASIS
-            fprintf('\n ----> nonfocal, high emphasis, %s, %d target(s) ----\n', og_string, TARGETS);
+        if FOCAL
+            if EMPHASIS
+                fprintf('\n ----> focal, high emphasis, %s, %d target(s) ----\n', og_string, TARGETS);
+            else
+                fprintf('\n ----> focal, low emphasis, %s, %d target(s) ----\n', og_string, TARGETS);
+            end
         else
-            fprintf('\n ----> nonfocal, low emphasis, %s, %d target(s) ----\n', og_string, TARGETS);
+            if EMPHASIS
+                fprintf('\n ----> nonfocal, high emphasis, %s, %d target(s) ----\n', og_string, TARGETS);
+            else
+                fprintf('\n ----> nonfocal, low emphasis, %s, %d target(s) ----\n', og_string, TARGETS);
+            end
         end
     end
-end
 
-if ~OG_ONLY && ~show_pics && do_print
-    fprintf('mean OG correct RTs = %.4f (%.4f)\n', mean(OG_correct_RTs), std(OG_correct_RTs));
-    fprintf('mean PM hit RTs = %.4f (%.4f)\n', mean(PM_hit_RTs), std(PM_hit_RTs));
-    fprintf('OG accuracy = %.4f%%\n', size(OG_correct_RTs, 1) / OG_count * 100);
-    fprintf('PM hit rate = %.4f%% (%.4f%% were OG correct)\n', size(PM_hit_RTs, 1) / PM_count * 100, ...
-        size(PM_miss_correct_OG_RTs, 1) / size(PM_miss_RTs, 1) * 100);
+    if ~OG_ONLY && ~show_pics && do_print
+        fprintf('mean OG correct RTs = %.4f (%.4f)\n', mean(OG_correct_RTs(s), 'omitnan'), std(OG_correct_RTs(s), 'omitnan'));
+        fprintf('mean PM hit RTs = %.4f (%.4f)\n', mean(PM_hit_RTs, 'omitnan'), std(PM_hit_RTs, 'omitnan'));
+        fprintf('OG accuracy = %.4f%%\n', sum(~isnan(OG_correct_RTs(s))) / OG_count(s) * 100);
+        fprintf('PM hit rate = %.4f%% (%.4f%% were OG correct)\n', sum(~isnan(PM_hit_RTs(s))) / PM_count(s) * 100, ...
+            sum(~isnan(PM_miss_correct_OG_RTs(s))) / sum(~isnan(PM_miss_RTs(s))) * 100);
+    end
 end
 
 
 
 % return statistics for subject
 
-OG_RT = mean(OG_correct_RTs);
+OG_RT = mean(OG_correct_RTs, 2, 'omitnan');
 % http://en.wikipedia.org/wiki/Standard_error !!!
-OG_RT_SD = std(OG_correct_RTs) / sqrt(size(OG_correct_RTs, 2));
-OG_Hit = size(OG_correct_RTs, 1) / OG_count * 100;
+OG_RT_SD = std(OG_correct_RTs, [], 2, 'omitnan') ./ sqrt(sum(~isnan(OG_correct_RTs), 2));
+OG_Hit = sum(~isnan(OG_correct_RTs), 2) ./ OG_count * 100;
 
-PM_RT = mean(PM_hit_RTs);
-if isempty(PM_hit_RTs)
+PM_RT = mean(PM_hit_RTs, 2, 'omitnan');
+for s=1:n_subjects
     first_PM_RT = NaN;
-else
-    first_PM_RT = PM_hit_RTs(1);
+    for ord=1:n_trials
+        if ~isnan(PM_hit_RTs(s, ord))
+            first_PM_RT = PM_hit_RTs(s, ord);
+            break
+    assert(sum(~isnan(PM_hit_RTs(s))) == 0 || ~isnan(first_PM_RT);
 end
 % http://en.wikipedia.org/wiki/Standard_error !!!
-PM_RT_SD = std(PM_hit_RTs) / sqrt(size(PM_hit_RTs, 2));
-PM_Hit = size(PM_hit_RTs, 1) / PM_count * 100;
+PM_RT_SD = std(PM_hit_RTs, [], 2, 'omitnan') ./ sqrt(sum(~isnan(PM_hit_RTs), 2));
+PM_Hit = sum(~isnan(PM_hit_RTs), 2) ./ PM_count * 100;
 
-PM_miss_OG_hit = size(PM_miss_correct_OG_RTs, 1) / size(PM_miss_RTs, 1) * 100;
+PM_miss_OG_hit = sum(~isnan(PM_miss_correct_OG_RTs), 2) ./ sum(~isnan(PM_miss_RTs), 2) * 100;
 
 % show figures
 
@@ -124,8 +136,9 @@ if show_pics
     figure;
 
     % TODO FIXME WTF remove for multiple subjects
-    act = squeeze(act);
-    acc = squeeze(acc);
+    s = 1;
+    act = squeeze(act(s,:,:));
+    acc = squeeze(acc(s,:,:));
     
     t_range = 1:min(5000, length(act));
     %t_range = 1:2000;

@@ -89,6 +89,8 @@ if debug_mode
     focal_range = 1;
     emphasis_range = 0;
     %target_range = [1,6];
+    trials_per_block = 20;
+    blocks_per_condition = 1;
 elseif fitting_mode
     % when fitting, use less subjects for speed
     %
@@ -383,7 +385,10 @@ for OG_ONLY = og_range
                     
                     % run the actual simulation
                     %
-                    [responses, RTs, act, acc, onsets, offsets, nets] = sim.trial(stimuli, 1);
+                    [responses, RTs, act, acc, onsets, offsets, nets] = sim.run(stimuli, 1);
+                    
+                    save('wtf.mat');
+                    sdfsdf
 
                     % collect the relevant data
                     %

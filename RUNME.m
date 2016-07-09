@@ -153,9 +153,9 @@ toc
 if debug_mode
 	%m = Model(true, startpar([1 2 3 4 17 18 19 20 21 22]), false);
    % wm_ids = m.wm_ids;
-    context_ids = m.context_ids;
-    act = extra{1, 8};
-    nets = extra{1, 12};
+   % context_ids = m.context_ids;
+   % act = extra{1, 8};
+   % nets = extra{1, 12};
    % figure;
    % plot([act(1:100, context_ids), nets(1:100, context_ids)]);
 else

@@ -122,7 +122,7 @@ classdef Simulator < Model
             %self.activation(self.wm_ids) = self.logistic(self.wm_act * 12 - 6);
         end
         
-        function [responses, RTs, activation_log, accumulators_log, onsets, offsets, net_log] = trial(self, stimuli, n_subjects)
+        function [responses, RTs, activation_log, accumulators_log, onsets, offsets, net_log] = run(self, stimuli, n_subjects)
             % initialize activations and outputs
             trial_duration = sum(cat(2, stimuli{:, 2})) * self.CYCLES_PER_SEC;
             self.accumulators = zeros(n_subjects, self.Nout);
@@ -184,7 +184,7 @@ classdef Simulator < Model
                 responded = logical(zeros(n_subjects, 1));
                 settled = logical(zeros(n_subjects, 1));
                 settle_cycles = zeros(n_subjects, 1);
-                %fprintf('ord = %d\n', ord);
+                fprintf('ord = %d\n', ord);
                 for cycle=1:timeout
                     %fprintf('   cycle = %d\n', cycle);
                     

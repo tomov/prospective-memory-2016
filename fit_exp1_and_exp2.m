@@ -7,7 +7,7 @@ fprintf('%9.5f', free_params);
 fprintf(']......\n');
 
 debug_mode = false;
-fitting_mode = true;
+fitting_mode = false;
 
 startpar = [1  0.35   1    0.3, ...     % focal, low emph     % exp1_v16, exp2_v19
             1  0.6    1    0.4, ...     % focal, high emph      % exp1_v16

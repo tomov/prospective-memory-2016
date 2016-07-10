@@ -393,9 +393,6 @@ parfor cond_id = 1:size(conditions, 1)
         subject_params(:, 2) = subject_params(:, 2) + unifrnd(-param_noise_sigma_2, param_noise_sigma_2, subjects_per_condition, 1);
     end
 
-    model_params
-    subject_params
-
     % initialize simulator (for multiple subjects)
     %
     sim = Simulator(FOCAL, model_params, subjects_per_condition, subject_params, fitting_mode);

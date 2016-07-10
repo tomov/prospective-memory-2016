@@ -100,8 +100,8 @@ if ~show_pics && do_print
         fprintf('\n ========================= SUBJECT %d ==========================\n', s);
         if ~show_pics && do_print
             fprintf('\n ----> %s ----\n', title_string);
-            fprintf('mean OG correct RTs = %.4f (%.4f)\n', mean(OG_correct_RTs(s, :), 'omitnan'), std(OG_correct_RTs(s, :), 'omitnan'));
-            fprintf('mean PM hit RTs = %.4f (%.4f)\n', mean(PM_hit_RTs(s, :), 'omitnan'), std(PM_hit_RTs(s, :), 'omitnan'));
+            fprintf('mean OG correct RTs = %.4f (%.4f)\n', nanmean(OG_correct_RTs(s, :)), nanstd(OG_correct_RTs(s, :)));
+            fprintf('mean PM hit RTs = %.4f (%.4f)\n', nanmean(PM_hit_RTs(s, :)), nanstd(PM_hit_RTs(s, :)));
             fprintf('OG accuracy = %.4f%%\n', sum(~isnan(OG_correct_RTs(s, :))) / OG_count(s, :) * 100);
             fprintf('PM hit rate = %.4f%% (%.4f%% were OG correct)\n', sum(~isnan(PM_hit_RTs(s, :))) / PM_count(s, :) * 100, ...
                 sum(~isnan(PM_miss_correct_OG_RTs(s, :))) / sum(~isnan(PM_miss_RTs(s, :))) * 100);
@@ -111,12 +111,12 @@ end
 
 % return statistics for subject
 
-OG_RT = mean(OG_correct_RTs, 2, 'omitnan');
+OG_RT = nanmean(OG_correct_RTs, 2);
 % http://en.wikipedia.org/wiki/Standard_error !!!
-OG_RT_SD = std(OG_correct_RTs, [], 2, 'omitnan') ./ sqrt(sum(~isnan(OG_correct_RTs), 2));
+OG_RT_SD = nanstd(OG_correct_RTs, [], 2) ./ sqrt(sum(~isnan(OG_correct_RTs), 2));
 OG_Hit = sum(~isnan(OG_correct_RTs), 2) ./ OG_count * 100;
 
-PM_RT = mean(PM_hit_RTs, 2, 'omitnan');
+PM_RT = nanmean(PM_hit_RTs, 2);
 for s=1:n_subjects
     for ord=1:n_trials
         if ~isnan(PM_hit_RTs(s, ord))
@@ -127,7 +127,7 @@ for s=1:n_subjects
     assert(sum(~isnan(PM_hit_RTs(s))) == 0 || ~isnan(first_PM_RT(s)));
 end
 % http://en.wikipedia.org/wiki/Standard_error !!!
-PM_RT_SD = std(PM_hit_RTs, [], 2, 'omitnan') ./ sqrt(sum(~isnan(PM_hit_RTs), 2));
+PM_RT_SD = nanstd(PM_hit_RTs, [], 2) ./ sqrt(sum(~isnan(PM_hit_RTs), 2));
 PM_Hit = sum(~isnan(PM_hit_RTs), 2) ./ PM_count * 100;
 
 PM_miss_OG_hit = sum(~isnan(PM_miss_correct_OG_RTs), 2) ./ sum(~isnan(PM_miss_RTs), 2) * 100;

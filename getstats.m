@@ -98,7 +98,7 @@ end
 if ~show_pics && do_print
     for s=1:n_subjects
         fprintf('\n ========================= SUBJECT %d ==========================\n', s);
-        if ~OG_ONLY && ~show_pics && do_print
+        if ~show_pics && do_print
             fprintf('\n ----> %s ----\n', title_string);
             fprintf('mean OG correct RTs = %.4f (%.4f)\n', mean(OG_correct_RTs(s, :), 'omitnan'), std(OG_correct_RTs(s, :), 'omitnan'));
             fprintf('mean PM hit RTs = %.4f (%.4f)\n', mean(PM_hit_RTs(s, :), 'omitnan'), std(PM_hit_RTs(s, :), 'omitnan'));
@@ -220,6 +220,7 @@ if show_pics
         line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
         %}
 
+        %
         % -- bar plots
         %{
         figure;

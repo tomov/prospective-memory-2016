@@ -149,6 +149,8 @@ classdef Model < handle
         bias
         init_wm
         target_init
+        
+        n_subjects
     end
     
     methods
@@ -196,7 +198,9 @@ classdef Model < handle
             end
         end
         
-        function self = Model(FOCAL, params)
+        function self = Model(FOCAL, model_params, n_subjects, subject_params)
+            self.n_subjects = n_subjects;
+            
             % specify unit names in each layer
             words = {
                 'tortoise', 'physics', 'crocodile', 'math', ... % words
@@ -275,17 +279,17 @@ classdef Model < handle
             self.wm_ids = [self.task_ids self.attention_ids self.context_ids];
 
             % initialize free parameters (based on PM instruction, task, etc)
-            self.init_wm = zeros(1, length(self.wm_ids));
-            self.init_wm(self.wm_ids == self.unit_id('OG Task')) = params(1);
-            self.init_wm(self.wm_ids == self.unit_id('PM Task')) = params(2);
-            self.init_wm(self.wm_ids == self.unit_id('OG features')) = params(3);
-            self.target_init = params(4);
-            self.BIAS_FOR_TASK = params(5);
-            self.BIAS_FOR_ATTENTION = params(6);
-            self.init_wm(self.wm_ids == self.unit_id('PM Context')) = params(7);
-            self.init_wm(self.wm_ids == self.unit_id('Other Context')) = params(8);
-            self.BIAS_FOR_CONTEXT = params(9);
-            self.GAMMA = params(10);
+            self.init_wm = zeros(n_subjects, length(self.wm_ids));
+            self.init_wm(:, self.wm_ids == self.unit_id('OG Task')) = repmat(model_params(1), n_subjects, 1);
+            self.init_wm(:, self.wm_ids == self.unit_id('PM Task')) = subject_params(:, 1); % prev. model_params(:, 2); -- cross-subject variability
+            self.init_wm(:, self.wm_ids == self.unit_id('OG features')) = repmat(model_params(3), n_subjects, 1);
+            self.target_init = subject_params(:, 2); % prev. model_params(:, 4); -- cross-subject variability
+            self.BIAS_FOR_TASK = model_params(5);
+            self.BIAS_FOR_ATTENTION = model_params(6);
+            self.init_wm(:, self.wm_ids == self.unit_id('PM Context')) = repmat(model_params(7), n_subjects, 1);
+            self.init_wm(:, self.wm_ids == self.unit_id('Other Context')) = repmat(model_params(8), n_subjects, 1);
+            self.BIAS_FOR_CONTEXT = model_params(9);
+            self.GAMMA = model_params(10);
 
             % ---==== specify connections between units ====---
             

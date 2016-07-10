@@ -90,7 +90,7 @@ if debug_mode
     %
     subjects_per_condition = 1;
     og_range = 0;
-    focal_range = 1;
+    focal_range = 0;
     emphasis_range = 0;
     %target_range = [1,6];
     trials_per_block = 20;
@@ -111,6 +111,11 @@ for OG_ONLY = og_range
     for FOCAL = focal_range
         for EMPHASIS = emphasis_range
             for TARGETS = target_range
+                
+                %
+                % Set up the sequence of stimuli and correct responses
+                % based on which experiment we're doing and other params
+                %
 
                 % init OG trial pool -- the 1 is the timeout in seconds
                 og_stimuli_pattern = [
@@ -302,7 +307,7 @@ for OG_ONLY = og_range
                 assert(length(is_target) == length(stimuli));
 
                 % randomize order
-                %
+                % ...not today tho
                 %{
                 idx = randperm(size(stimuli, 1))';
                 stimuli = stimuli(idx, :);
@@ -310,182 +315,194 @@ for OG_ONLY = og_range
                 correct = correct(idx, :);
                 %}
 
-                % get appropriate parameters depending on the condition
                 %
-                curpar = zeros(1,6);
-                curpar(7) = 1;
-                curpar(8) = 0;
-                curpar(5) = bias_for_task;
-                curpar(6) = bias_for_attention;
-                curpar(9) = bias_for_context;
+                % Get appropriate subject parameters depending on the condition
+                %
+                
+                model_params = zeros(1,6);
+                model_params(7) = 1;
+                model_params(8) = 0;
+                model_params(5) = bias_for_task;
+                model_params(6) = bias_for_attention;
+                model_params(9) = bias_for_context;
                 if exp_id == 6 && EMPHASIS == 0
                     % Brewer et al. 2010, low WM capacity
                     % note that we use EMPHASIS to denote high/low wm
                     % capacity #hacksauce
                     %
-                    curpar(5) = params(23); % bias for task
-                    curpar(6) = params(24); % bias for attention
-                    curpar(9) = params(25); % bias for context
+                    model_params(5) = params(23); % bias for task
+                    model_params(6) = params(24); % bias for attention
+                    model_params(9) = params(25); % bias for context
                 end
-                curpar(10) = gamma;
+                model_params(10) = gamma;
                 if OG_ONLY
-                    curpar(1:4) = [1 0 1 0];
+                    model_params(1:4) = [1 0 1 0];
                 else       
                     if FOCAL
                         if ~EMPHASIS
                             % focal, low emphasis
-                            curpar(1:4) = focal_low_init_wm;
+                            model_params(1:4) = focal_low_init_wm;
                         else
                             % focal, high emphasis
-                            curpar(1:4) = focal_high_init_wm;
+                            model_params(1:4) = focal_high_init_wm;
                         end
                     else
                         if ~EMPHASIS
                             % nonfocal, low emphasis
-                            curpar(1:4) = nonfocal_low_init_wm;
+                            model_params(1:4) = nonfocal_low_init_wm;
                         else
                             % nonfocal, high emphasis
-                            curpar(1:4) = nonfocal_high_init_wm;
+                            model_params(1:4) = nonfocal_high_init_wm;
                         end
                     end
                 end
-
-                % simulate subjects in parallel; must be serial in
-                % debug_mode (i.e. regular for)
-                %
-                for subject_id = 1:1 % TODO WTF rm -rf subjects_per_condition
-                    % optionally add cross-subject variability
-                    %
-                    subjpar = curpar;
-                    if ~OG_ONLY % TODO WTF move this in simulator
-                        subjpar(2) = subjpar(2) + unifrnd(-param_noise_sigma_1, param_noise_sigma_1);
-                        subjpar(4) = subjpar(4) + unifrnd(-param_noise_sigma_1, param_noise_sigma_2);
-                    end
-                    
-                    % initialize simulator             
-                    %
-                    sim = Simulator(FOCAL, subjpar, fitting_mode);
                 
-                    if do_print, fprintf('\nsubject %d: curpar(2,4) = %.2f %.2f curpar(5,6,9) = %.2f %.2f %.2f\n', subject_id, subjpar(2), subjpar(4), subjpar(5), subjpar(6), subjpar(9)); end
+                % personalize perception & response monitoring for each subject, optionally
+                % adding cross-subject variability
+                %
+                assert(exp_id ~= 5); % TODO WTF FIXME make 5 work (split 1k in buckets), also fix it in the Simulator (see switch_to_Inter_task stuff)
+                subject_params = repmat([model_params(2) model_params(4)], subjects_per_condition, 1);
+                if ~OG_ONLY
+                    subject_params(:, 1) = subject_params(:, 1) + unifrnd(-param_noise_sigma_1, param_noise_sigma_1, subjects_per_condition, 1);
+                    subject_params(:, 2) = subject_params(:, 2) + unifrnd(-param_noise_sigma_2, param_noise_sigma_2, subjects_per_condition, 1);
+                end
+                
+                model_params
+                subject_params
                     
-                    % PM instruction
-                    %
-                    if ~OG_ONLY
-                        if FOCAL
-                            if TARGETS == 6
-                                sim.instruction({'tortoise', 'dog', 'cat', 'kiwi', 'panda', 'monkey'}, true);
-                            else
-                                assert(TARGETS == 1);
-                                %if exp_id == 5 TODO cleanup
-                                %    sim.instruction({'tortoise'}, false);
-                                %else
-                                    sim.instruction({'tortoise'}, true);
-                                %end
-                            end
+                % initialize simulator (for multiple subjects)
+                %
+                sim = Simulator(FOCAL, model_params, subjects_per_condition, subject_params, fitting_mode);
+                
+                if do_print
+                    for s=1:subjects_per_condition
+                        temp_params = model_params;
+                        temp_params([2 4]) = subject_params(s,:);
+                        fprintf('\nsubject %d: curpar(2,4) = %.2f %.2f curpar(5,6,9) = %.2f %.2f %.2f\n', s, temp_params(2), temp_params(4), temp_params(5), temp_params(6), temp_params(9));
+                    end
+                end
+                    
+                % PM instruction
+                %
+                if ~OG_ONLY
+                    if FOCAL
+                        if TARGETS == 6
+                            sim.instruction({'tortoise', 'dog', 'cat', 'kiwi', 'panda', 'monkey'}, true);
                         else
-                            sim.instruction({'tor'}, true);
+                            assert(TARGETS == 1);
+                            %if exp_id == 5 TODO cleanup
+                            %    sim.instruction({'tortoise'}, false);
+                            %else
+                                sim.instruction({'tortoise'}, true);
+                            %end
+                        end
+                    else
+                        sim.instruction({'tor'}, true);
+                    end
+                end
+                    
+                % run the actual simulations of all subjects
+                %
+                [responses, RTs, act, acc, onsets, offsets, nets] = sim.run(stimuli);
+                    
+                % collect the relevant data
+                %
+                if exp_id == 1 || exp_id == 3 || exp_id == 4 || exp_id == 5 || exp_id == 6
+                    % for experiment 1, each subject = 1 sample
+                    %
+                    [OG_RT, ~, OG_Hit, PM_RT, ~, PM_Hit, PM_miss_OG_hit, first_PM_RT] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, ...
+                        responses, RTs, act, acc, onsets, offsets, ...
+                        is_target, correct, og_correct, is_inter_task, ...
+                        false, do_print);
+                    if exp_id == 5
+                        % extra analysis for experiment 5
+                        %
+                        it_targets = logical(is_or_was_target) & logical(is_inter_task);
+                        IT_TAR_RT = mean(RTs(it_targets));
+                        IT_TAR_SEM = std(RTs(it_targets)) / sqrt(length(RTs(it_targets)));
+                        it_non_targets = logical(~is_or_was_target) & logical(is_inter_task);
+                        IT_NONTAR_RT = mean(RTs(it_non_targets));
+                        IT_NONTAR_SEM = std(RTs(it_non_targets)) / sqrt(length(it_non_targets));
+                        if do_print, fprintf(' bonus Exp 5: target RT = %.2f (%.2f), nontarget RT = %.2f (%.2f)\n', ...
+                            IT_TAR_RT, IT_TAR_SEM, IT_NONTAR_RT, IT_NONTAR_SEM); end
+
+                        it_tar_resp = responses(it_targets);
+                        it_tar_correct = correct(it_targets);
+                        IT_TAR_HIT = sum(strcmp(it_tar_resp, it_tar_correct)) / length(it_tar_correct) * 100;
+                        if do_print, fprintf('            : accuracy on targets = %.2f\n', IT_TAR_HIT); end
+
+                        it_nontar_resp = responses(it_non_targets);
+                        it_nontar_correct = correct(it_non_targets);
+                        IT_NONTAR_HIT = sum(strcmp(it_nontar_resp, it_nontar_correct)) / length(it_nontar_correct) * 100;
+                        if do_print, fprintf('            : accuracy on non-targets = %.2f\n', IT_NONTAR_HIT); end
+                    end
+
+                    for s = 1:subjects_per_condition
+                        subject = [OG_ONLY, FOCAL, EMPHASIS, OG_RT(s,:)', OG_Hit(s,:)', PM_RT(s,:)', PM_Hit(s,:)', PM_miss_OG_hit(s,:)', TARGETS, first_PM_RT(s)];
+                        if exp_id == 5
+                            subject = [subject, IT_TAR_RT, IT_NONTAR_RT, IT_TAR_HIT, IT_NONTAR_HIT];
+                        end
+                        data = [data; subject];
+
+                        temp_params = model_params;
+                        temp_params([2 4]) = subject_params(s,:);
+                        if debug_mode
+                            subject_extra = {sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses(s,:)', RTs(s,:)', squeeze(act(s,:,:)), squeeze(acc(s,:,:)), onsets(s,:)', offsets(s,:)', squeeze(nets(s,:,:)), temp_params};
+                            extra = [extra; subject_extra];
+                        else
+                            extra = [extra; temp_params];
                         end
                     end
-                    
-                    % run the actual simulation
+                elseif exp_id == 2
+                    % for experiment 2, each block = 1 sample (i.e. 4
+                    % samples per subject)
                     %
-                    [responses, RTs, act, acc, onsets, offsets, nets] = sim.run(stimuli, 200);
-                    
-                   % save('wtf.mat');
-                   % sdfsdf
-
-                    % collect the relevant data
-                    %
-                    if exp_id == 1 || exp_id == 3 || exp_id == 4 || exp_id == 5 || exp_id == 6
-                        % for experiment 1, each subject = 1 sample
-                        %
-                        [OG_RT, ~, OG_Hit, PM_RT, ~, PM_Hit, PM_miss_OG_hit, first_PM_RT] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, ...
-                            responses, RTs, act, acc, onsets, offsets, ...
-                            is_target, correct, og_correct, is_inter_task, ...
+                    for block_id = 1:blocks_per_condition
+                        block_start = (block_id - 1) * trials_per_block + 1;
+                        block_end = block_id * trials_per_block;                    
+                        [OG_RT, ~, OG_Hit, PM_RT, ~, PM_Hit, PM_miss_OG_hit, ~] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, ...
+                            responses(:, block_start:block_end), RTs(:, block_start:block_end), [], [], [], [], ...
+                            is_target(block_start:block_end), ...
+                            correct(block_start:block_end), ...
+                            og_correct(block_start:block_end), ...
+                            [], ...
                             false, do_print);
-                        if exp_id == 5
-                            % extra analysis for experiment 5
-                            %
-                            it_targets = logical(is_or_was_target) & logical(is_inter_task);
-                            IT_TAR_RT = mean(RTs(it_targets));
-                            IT_TAR_SEM = std(RTs(it_targets)) / sqrt(length(RTs(it_targets)));
-                            it_non_targets = logical(~is_or_was_target) & logical(is_inter_task);
-                            IT_NONTAR_RT = mean(RTs(it_non_targets));
-                            IT_NONTAR_SEM = std(RTs(it_non_targets)) / sqrt(length(it_non_targets));
-                            if do_print, fprintf(' bonus Exp 5: target RT = %.2f (%.2f), nontarget RT = %.2f (%.2f)\n', ...
-                                IT_TAR_RT, IT_TAR_SEM, IT_NONTAR_RT, IT_NONTAR_SEM); end
-                        
-                            it_tar_resp = responses(it_targets);
-                            it_tar_correct = correct(it_targets);
-                            IT_TAR_HIT = sum(strcmp(it_tar_resp, it_tar_correct)) / length(it_tar_correct) * 100;
-                            if do_print, fprintf('            : accuracy on targets = %.2f\n', IT_TAR_HIT); end
-                            
-                            it_nontar_resp = responses(it_non_targets);
-                            it_nontar_correct = correct(it_non_targets);
-                            IT_NONTAR_HIT = sum(strcmp(it_nontar_resp, it_nontar_correct)) / length(it_nontar_correct) * 100;
-                            if do_print, fprintf('            : accuracy on non-targets = %.2f\n', IT_NONTAR_HIT); end
-                        end
-                     
-                        for s = 1:subjects_per_condition
-                            subject = [OG_ONLY, FOCAL, EMPHASIS, OG_RT(s,:)', OG_Hit(s,:)', PM_RT(s,:)', PM_Hit(s,:)', PM_miss_OG_hit(s,:)', TARGETS, first_PM_RT(s)];
-                            if exp_id == 5
-                                subject = [subject, IT_TAR_RT, IT_NONTAR_RT, IT_TAR_HIT, IT_NONTAR_HIT];
-                            end
-                            data = [data; subject];
-                            
-                            if debug_mode
-                                subject_extra = {sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses(s,:)', RTs(s,:)', squeeze(act(s,:,:)), squeeze(acc(s,:,:)), onsets(s,:)', offsets(s,:)', squeeze(nets(s,:,:)), subjpar};
-                                extra = [extra; subject_extra];
-                            else
-                                extra = [extra; subjpar];
-                            end
-                        end
-                    elseif exp_id == 2
-                        % for experiment 2, each block = 1 sample (i.e. 4
-                        % samples per subject)
-                        %
-                        for block_id = 1:blocks_per_condition
-                            block_start = (block_id - 1) * trials_per_block + 1;
-                            block_end = block_id * trials_per_block;                    
-                            [OG_RT, ~, OG_Hit, PM_RT, ~, PM_Hit, PM_miss_OG_hit, ~] = ...
-                                getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, ...
-                                responses(block_start:block_end), RTs(block_start:block_end), [], [], [], [], ...
-                                is_target(block_start:block_end), ...
-                                correct(block_start:block_end), ...
-                                og_correct(block_start:block_end), ...
-                                [], ...
-                                false, do_print);
 
-                            % put subject and block id's at the end to make it
-                            % compatible with the data from experiment 1
-                            %
-                            block = [OG_ONLY, FOCAL, EMPHASIS, OG_RT, OG_Hit, PM_RT, PM_Hit, PM_miss_OG_hit, subject_id, block_id];
+                        % put subject and block id's at the end to make it
+                        % compatible with the data from experiment 1
+                        %
+                        for s = 1:subjects_per_condition
+                            block = [OG_ONLY, FOCAL, EMPHASIS, OG_RT(s,:)', OG_Hit(s,:)', PM_RT(s,:)', PM_Hit(s,:)', PM_miss_OG_hit(s,:)', s, block_id];
                             data = [data; block];
+                            
+                            temp_params = model_params;
+                            temp_params([2 4]) = subject_params(s,:);
                             if debug_mode
-                                subject_extra = {sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses, RTs, act, acc, onsets, offsets, nets, subject_id, block, subjpar};
+                                subject_extra = {sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses(s,:)', RTs(s,:)', squeeze(act(s,:,:)), squeze(acc(s,:,:)), onsets(s,:)', offsets(s,:)', squeeze(nets(s,:,:)), s, block, temp_params};
                                 extra = [extra; subject_extra];
                             else
-                                extra = [extra; subjpar];
+                                extra = [extra; temp_params];
                             end
                         end
-                    end % if exp_id / elseif exp_id
-                    
-                    % show picture of whole thing (for debugging)
-                    % NOTE: doesn't work with parfor!! need regular forloop
-                    %
-                    
-                    if debug_mode
-                        fprintf('   curpar(1:4) = %.3f %.3f %.3f %.3f\n', subjpar(1), subjpar(2), subjpar(3), subjpar(4));
+                    end
+                end % if exp_id == 1, 3, 4, 5, 6 / elseif exp_id == 2
+
+                % show picture of whole thing (for debugging)
+                % NOTE: doesn't work with parfor!! need regular forloop
+                %
+                if debug_mode
+                    for s = 1:subjects_per_condition
+                        temp_params = model_params;
+                        temp_params([2 4]) = subject_params(s,:);
+                        fprintf('   curpar(1:4) = %.3f %.3f %.3f %.3f\n', temp_params(1), temp_params(2), temp_params(3), temp_params(4));
                         %if ~OG_ONLY
                             getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, ...
                                 responses, RTs, act, acc, onsets, offsets, ...
                                 is_target, correct, og_correct, is_inter_task, ...
-                                false, true);
+                                true, true);
                         %end
                     end
-                end % parfor subject_id
-            
-                
+                end
                 
             end % for TARGETS
         end % for EMPHASIS 

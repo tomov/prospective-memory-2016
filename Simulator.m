@@ -143,7 +143,7 @@ classdef Simulator < Model
                 responded = logical(zeros(self.n_subjects, 1));
                 settled = logical(zeros(self.n_subjects, 1));
                 settle_cycle = zeros(self.n_subjects, 1);
-                fprintf('ord = %d\n', ord);
+                %fprintf('ord = %d\n', ord);
                 for cycle=1:timeout
                     %fprintf('   cycle = %d\n', cycle);
                     

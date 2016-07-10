@@ -5,16 +5,17 @@ function [data, extra] = EM2005( params, exp_id, fitting_mode, debug_mode, do_pr
 
 % create parallel pool
 %
-if (strfind(version('-date'), '2013')) % rondo lives in 2013
-    if matlabpool('size') == 0
-        matlabpool;
+if ~debug_mode
+    if (strfind(version('-date'), '2013')) % rondo lives in 2013
+        if matlabpool('size') == 0
+            matlabpool;
+        end
+        fprintf('num of 2013 parallel workers = %d\n', matlabpool('size'));
+    else
+        poolobj = gcp;
+        fprintf('num of parallel workers = %d\n', poolobj.NumWorkers);
     end
-    fprintf('num of 2013 parallel workers = %d\n', matlabpool('size'));
-else
-    poolobj = gcp;
-    fprintf('num of parallel workers = %d\n', poolobj.NumWorkers);
 end
-
 
 % parse parameters
 
@@ -349,11 +350,11 @@ for OG_ONLY = og_range
                 % simulate subjects in parallel; must be serial in
                 % debug_mode (i.e. regular for)
                 %
-                for subject_id = 1:subjects_per_condition
+                for subject_id = 1:1 % TODO WTF rm -rf subjects_per_condition
                     % optionally add cross-subject variability
                     %
                     subjpar = curpar;
-                    if ~OG_ONLY
+                    if ~OG_ONLY % TODO WTF move this in simulator
                         subjpar(2) = subjpar(2) + unifrnd(-param_noise_sigma_1, param_noise_sigma_1);
                         subjpar(4) = subjpar(4) + unifrnd(-param_noise_sigma_1, param_noise_sigma_2);
                     end
@@ -385,10 +386,10 @@ for OG_ONLY = og_range
                     
                     % run the actual simulation
                     %
-                    [responses, RTs, act, acc, onsets, offsets, nets] = sim.run(stimuli, 1);
+                    [responses, RTs, act, acc, onsets, offsets, nets] = sim.run(stimuli, 2);
                     
-                    save('wtf.mat');
-                    sdfsdf
+                   % save('wtf.mat');
+                   % sdfsdf
 
                     % collect the relevant data
                     %

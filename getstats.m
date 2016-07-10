@@ -17,7 +17,7 @@ PM_timeout_RTs = NaN(n_subjects, n_trials);
 
 for s=1:n_subjects
     for ord=1:n_trials
-        if ~isempty(is_inter_task) && is_inter_task(i)
+        if ~isempty(is_inter_task) && is_inter_task(ord)
             continue
         end
         if strcmp(responses{s, ord}, correct{ord}) == 1
@@ -25,11 +25,11 @@ for s=1:n_subjects
             if is_target(ord) == 0
                 % OG correct
                 OG_count(s) = OG_count(s) + 1;
-                OG_correct_RTs(s, ord) = RTs(ord);
+                OG_correct_RTs(s, ord) = RTs(s, ord);
             else
                 % PM hit
                 PM_count(s) = PM_count(s) + 1;
-                PM_hit_RTs(s, ord) = RTs(ord);
+                PM_hit_RTs(s, ord) = RTs(s, ord);
             end
         else
             % wrong answer
@@ -37,33 +37,34 @@ for s=1:n_subjects
                 OG_count(s) = OG_count(s) + 1;
                 if strcmp(responses{s, ord}, 'timeout') == 1
                     % timeout
-                    OG_timeout_RTs(s, ord) = RTs(ord);
+                    OG_timeout_RTs(s, ord) = RTs(s, ord);
                     continue;
                 end
                 if strcmp(responses{s, ord}, 'PM') == 1
                     % false alarm
-                    false_alarm_RTs(s, ord) = RTs(ord);
+                    false_alarm_RTs(s, ord) = RTs(s, ord);
                 else
                     % OG wrong
-                    OG_wrong_RTs(s, ord) = RTs(i);
+                    OG_wrong_RTs(s, ord) = RTs(s, ord);
                 end
             else
                 PM_count(s) = PM_count(s) + 1;
                 if strcmp(responses{s, ord}, 'timeout') == 1
                     % timeout
-                    PM_timeout_RTs(s, ord) = RTs(i);
+                    PM_timeout_RTs(s, ord) = RTs(s, ord);
                     continue;
                 end
                 % PM miss
-                PM_miss_RTs(s, ord) = RTs(i);
+                PM_miss_RTs(s, ord) = RTs(s, ord);
                 if strcmp(responses{s, ord}, og_correct{ord}) == 1
                     % but still correct OG
-                    PM_miss_correct_OG_RTs(s, ord) = RTs(i);
+                    PM_miss_correct_OG_RTs(s, ord) = RTs(s, ord);
                 end
             end
         end
     end
 end
+
 
 
 %{
@@ -73,40 +74,39 @@ OG_count
 PM_count
 %}
 
-
-for s=1:n_subjects
-    fprintf('\n ========================= SUBJECT %d ==========================\n', s);
-    if ~show_pics && do_print
-        if OG_ONLY
-            og_string = 'No PM task';
-        else
-            og_string = 'PM task';
-        end
-        if FOCAL
-            if EMPHASIS
-                fprintf('\n ----> focal, high emphasis, %s, %d target(s) ----\n', og_string, TARGETS);
-            else
-                fprintf('\n ----> focal, low emphasis, %s, %d target(s) ----\n', og_string, TARGETS);
-            end
-        else
-            if EMPHASIS
-                fprintf('\n ----> nonfocal, high emphasis, %s, %d target(s) ----\n', og_string, TARGETS);
-            else
-                fprintf('\n ----> nonfocal, low emphasis, %s, %d target(s) ----\n', og_string, TARGETS);
-            end
-        end
+title_string = 'N/A';
+if OG_ONLY
+    og_string = 'No PM task';
+else
+    og_string = 'PM task';
+end
+if FOCAL
+    if EMPHASIS
+        title_string = sprintf('focal, high emphasis, %s, %d target(s)', og_string, TARGETS);
+    else
+        title_string = sprintf('focal, low emphasis, %s, %d target(s)', og_string, TARGETS);
     end
-
-    if ~OG_ONLY && ~show_pics && do_print
-        fprintf('mean OG correct RTs = %.4f (%.4f)\n', mean(OG_correct_RTs(s), 'omitnan'), std(OG_correct_RTs(s), 'omitnan'));
-        fprintf('mean PM hit RTs = %.4f (%.4f)\n', mean(PM_hit_RTs, 'omitnan'), std(PM_hit_RTs, 'omitnan'));
-        fprintf('OG accuracy = %.4f%%\n', sum(~isnan(OG_correct_RTs(s))) / OG_count(s) * 100);
-        fprintf('PM hit rate = %.4f%% (%.4f%% were OG correct)\n', sum(~isnan(PM_hit_RTs(s))) / PM_count(s) * 100, ...
-            sum(~isnan(PM_miss_correct_OG_RTs(s))) / sum(~isnan(PM_miss_RTs(s))) * 100);
+else
+    if EMPHASIS
+        title_string = sprintf('nonfocal, high emphasis, %s, %d target(s)', og_string, TARGETS);
+    else
+        title_string = sprintf('nonfocal, low emphasis, %s, %d target(s)', og_string, TARGETS);
     end
 end
 
-
+if ~show_pics && do_print
+    for s=1:n_subjects
+        fprintf('\n ========================= SUBJECT %d ==========================\n', s);
+        if ~OG_ONLY && ~show_pics && do_print
+            fprintf('\n ----> %s ----\n', title_string);
+            fprintf('mean OG correct RTs = %.4f (%.4f)\n', mean(OG_correct_RTs(s, :), 'omitnan'), std(OG_correct_RTs(s, :), 'omitnan'));
+            fprintf('mean PM hit RTs = %.4f (%.4f)\n', mean(PM_hit_RTs(s, :), 'omitnan'), std(PM_hit_RTs(s, :), 'omitnan'));
+            fprintf('OG accuracy = %.4f%%\n', sum(~isnan(OG_correct_RTs(s, :))) / OG_count(s, :) * 100);
+            fprintf('PM hit rate = %.4f%% (%.4f%% were OG correct)\n', sum(~isnan(PM_hit_RTs(s, :))) / PM_count(s, :) * 100, ...
+                sum(~isnan(PM_miss_correct_OG_RTs(s, :))) / sum(~isnan(PM_miss_RTs(s, :))) * 100);
+        end
+    end
+end
 
 % return statistics for subject
 
@@ -122,7 +122,9 @@ for s=1:n_subjects
         if ~isnan(PM_hit_RTs(s, ord))
             first_PM_RT = PM_hit_RTs(s, ord);
             break
-    assert(sum(~isnan(PM_hit_RTs(s))) == 0 || ~isnan(first_PM_RT);
+        end
+    end
+    assert(sum(~isnan(PM_hit_RTs(s))) == 0 || ~isnan(first_PM_RT));
 end
 % http://en.wikipedia.org/wiki/Standard_error !!!
 PM_RT_SD = std(PM_hit_RTs, [], 2, 'omitnan') ./ sqrt(sum(~isnan(PM_hit_RTs), 2));
@@ -133,107 +135,113 @@ PM_miss_OG_hit = sum(~isnan(PM_miss_correct_OG_RTs), 2) ./ sum(~isnan(PM_miss_RT
 % show figures
 
 if show_pics
-    figure;
+    for s=1:n_subjects
+        figure;
+        %title(sprintf('%s, subject #%d', title_string, s));
 
-    % TODO FIXME WTF remove for multiple subjects
-    s = 1;
-    act = squeeze(act(s,:,:));
-    acc = squeeze(acc(s,:,:));
-    
-    t_range = 1:min(5000, length(act));
-    %t_range = 1:2000;
-    y_lim = [sim.MINIMUM_ACTIVATION - 0.1 sim.MAXIMUM_ACTIVATION + 0.1];
-    bar_names = {'OG correct', 'PM hit', 'false alarm', 'OG wrong', 'PM miss', 'PM OG' 'OG timeout', 'PM timeout'};
-    onset_plot = onsets(onsets < t_range(end));
-    offset_plot = offsets(offsets < t_range(end));
-    % turn off onset plot if necessary
-    onset_plot = 0; offset_plot = 0;
-    
-    subplot(4, 2, 1);
-    plot(t_range, act(t_range, sim.output_ids));
-    legend(sim.units(sim.output_ids));
-    title('Outputs');
-    ylim(y_lim);
+        % TODO FIXME WTF remove for multiple subjects
+        act = squeeze(act(s,:,:));
+        acc = squeeze(acc(s,:,:));
+        
+        t_range = 1:min(5000, length(act));
+        %t_range = 1:2000;
+        y_lim = [sim.MINIMUM_ACTIVATION - 0.1 sim.MAXIMUM_ACTIVATION + 0.1];
+        bar_names = {'OG correct', 'PM hit', 'false alarm', 'OG wrong', 'PM miss', 'PM OG' 'OG timeout', 'PM timeout'};
+        onset_plot = onsets(onsets < t_range(end));
+        offset_plot = offsets(offsets < t_range(end));
+        % turn off onset plot if necessary
+        onset_plot = 0; offset_plot = 0;
+        
+        subplot(4, 2, 1);
+        plot(t_range, act(t_range, sim.output_ids));
+        legend(sim.units(sim.output_ids));
+        title('Outputs');
+        ylim(y_lim);
 
-    subplot(4, 2, 3);
-    plot(t_range, act(t_range, sim.response_ids));
-    legend(sim.units(sim.response_ids));
-    title('Responses');
-    ylim(y_lim);
+        subplot(4, 2, 3);
+        plot(t_range, act(t_range, sim.response_ids));
+        legend(sim.units(sim.response_ids));
+        title('Responses');
+        ylim(y_lim);
 
-    subplot(4, 2, 5);
-    plot(t_range, act(t_range, sim.perception_ids));
-    legend(sim.units(sim.perception_ids));
-    title('Feature Perception');
-    ylim(y_lim);
+        subplot(4, 2, 5);
+        plot(t_range, act(t_range, sim.perception_ids));
+        legend(sim.units(sim.perception_ids));
+        title('Feature Perception');
+        ylim(y_lim);
 
-    subplot(4, 2, 7);
-    plot(t_range, act(t_range, sim.input_ids));
-    legend(sim.units(sim.input_ids));
-    title('Stimulus Inputs');
-    ylim(y_lim);
+        subplot(4, 2, 7);
+        plot(t_range, act(t_range, sim.input_ids));
+        legend(sim.units(sim.input_ids));
+        title('Stimulus Inputs');
+        ylim(y_lim);
 
-    subplot(4, 2, 2);
-    plot(t_range, acc(t_range, :));
-    legend(sim.units(sim.output_ids));
-    title('Evidence Accumulation');
-    %ylim([sim.MINIMUM_ACTIVATION sim.MAXIMUM_ACTIVATION]);
+        subplot(4, 2, 2);
+        plot(t_range, acc(t_range, :));
+        legend(sim.units(sim.output_ids));
+        title('Evidence Accumulation');
+        %ylim([sim.MINIMUM_ACTIVATION sim.MAXIMUM_ACTIVATION]);
 
-    subplot(4, 2, 4);
-    plot(act(1:end, sim.task_ids));
-    legend(sim.units(sim.task_ids));
-    title('Task Representation');
-    ylim(y_lim);
-    line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
-    line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
+        subplot(4, 2, 4);
+        plot(act(1:end, sim.task_ids));
+        legend(sim.units(sim.task_ids));
+        title('Task Representation');
+        ylim(y_lim);
+        line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
+        line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
 
-    subplot(4, 2, 6);
-    plot(act(1:end, sim.attention_ids));
-    legend(sim.units(sim.attention_ids));
-    title('Feature Attention');
-    ylim(y_lim);
-    line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
-    line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
-    
-    subplot(4, 2, 8);
-    plot(act(1:end, sim.context_ids));
-    legend(sim.units(sim.context_ids));
-    title('Context');
-    ylim(y_lim);
-    line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
-    line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
-    
+        subplot(4, 2, 6);
+        plot(act(1:end, sim.attention_ids));
+        legend(sim.units(sim.attention_ids));
+        title('Feature Attention');
+        ylim(y_lim);
+        line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
+        line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
+        
+        subplot(4, 2, 8);
+        plot(act(1:end, sim.context_ids));
+        legend(sim.units(sim.context_ids));
+        title('Context');
+        ylim(y_lim);
+        line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
+        line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
+        
+        ha = axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0 1],'Box','off','Visible','off','Units','normalized', 'clipping' , 'off');
+        text(0.5, 1, sprintf('\b%s, subject #%d', title_string, s), 'HorizontalAlignment' ,'center','VerticalAlignment', 'top')
 
-    %{
-    subplot(5, 2, 10);
-    plot(act(1:end, sim.hippo_ids));
-    legend(sim.units(sim.hippo_ids));
-    title('Hippocampus');
-    ylim(y_lim);
-    line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
-    line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
-    %}
+        %{
+        subplot(5, 2, 10);
+        plot(act(1:end, sim.hippo_ids));
+        legend(sim.units(sim.hippo_ids));
+        title('Hippocampus');
+        ylim(y_lim);
+        line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
+        line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
+        %}
 
-    figure;
+        % -- bar plots
+        %{
+        figure;
 
-    subplot(1, 2, 1);
-    bar([mean(OG_correct_RTs), mean(PM_hit_RTs), ...
-        mean(false_alarm_RTs), mean(OG_wrong_RTs), ...
-        mean(PM_miss_RTs), mean(PM_miss_correct_OG_RTs), ...
-        mean(OG_timeout_RTs), mean(PM_timeout_RTs)]);
-    set(gca, 'XTickLabel', bar_names);
-    ylim([0 sim.CYCLES_PER_SEC]);
-    title('RT (cycles)', 'FontWeight','bold');
+        subplot(1, 2, 1);
+        bar([mean(OG_correct_RTs), mean(PM_hit_RTs), ...
+            mean(false_alarm_RTs), mean(OG_wrong_RTs), ...
+            mean(PM_miss_RTs), mean(PM_miss_correct_OG_RTs), ...
+            mean(OG_timeout_RTs), mean(PM_timeout_RTs)]);
+        set(gca, 'XTickLabel', bar_names);
+        ylim([0 sim.CYCLES_PER_SEC]);
+        title('RT (cycles)', 'FontWeight','bold');
 
-    subplot(1, 2, 2);
-    bar(100 * [size(OG_correct_RTs, 1) / OG_count, size(PM_hit_RTs, 1) / PM_count, ...
-        size(false_alarm_RTs, 1) / OG_count, size(OG_wrong_RTs, 1) / OG_count, ...
-        size(PM_miss_RTs, 1) / PM_count, size(PM_miss_correct_OG_RTs, 1) / size(PM_miss_RTs, 1), ...
-        size(OG_timeout_RTs, 1) / OG_count, size(PM_timeout_RTs, 1) / PM_count]);
-    set(gca, 'XTickLabel', bar_names);
-    ylim([0 100]);
-    title('Fraction of responses (%)', 'FontWeight','bold');
-    ylim([0 100]);
-
+        subplot(1, 2, 2);
+        bar(100 * [size(OG_correct_RTs, 1) / OG_count, size(PM_hit_RTs, 1) / PM_count, ...
+            size(false_alarm_RTs, 1) / OG_count, size(OG_wrong_RTs, 1) / OG_count, ...
+            size(PM_miss_RTs, 1) / PM_count, size(PM_miss_correct_OG_RTs, 1) / size(PM_miss_RTs, 1), ...
+            size(OG_timeout_RTs, 1) / OG_count, size(PM_timeout_RTs, 1) / PM_count]);
+        set(gca, 'XTickLabel', bar_names);
+        ylim([0 100]);
+        title('Fraction of responses (%)', 'FontWeight','bold');
+        ylim([0 100]);
+        %}
+    end
     
 end

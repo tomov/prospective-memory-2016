@@ -183,7 +183,7 @@ classdef Simulator < Model
                 % simulate response to stimulus
                 responded = logical(zeros(n_subjects, 1));
                 settled = logical(zeros(n_subjects, 1));
-                settle_cycles = zeros(n_subjects, 1);
+                settle_cycle = zeros(n_subjects, 1);
                 fprintf('ord = %d\n', ord);
                 for cycle=1:timeout
                     %fprintf('   cycle = %d\n', cycle);
@@ -258,7 +258,7 @@ classdef Simulator < Model
                         were_settled = settled;
                         settled = settled | (mean(m, 2) < self.SETTLE_MEAN_EPS & std(m, 0, 2) < self.SETTLE_STD_EPS);
                         just_settled = xor(were_settled, settled);
-                        settle_cycles(just_settled) = cycles;
+                        settle_cycle(just_settled) = cycle;
                         if ord == 1
                             self.resting_wm(just_settled, :) = self.wm_act(just_settled, :);
                         end
@@ -275,7 +275,7 @@ classdef Simulator < Model
                         if mean(m) < self.SETTLE_MEAN_EPS && std(m) < self.SETTLE_STD_EPS
                             % it has settled
                             is_settled = true;
-                            settle_cycles = cycle;
+                            settle_cycle = cycle;
                             if ord == 1
                                 self.resting_wm = self.wm_act;
                             end
@@ -367,7 +367,7 @@ classdef Simulator < Model
                     who_just_responded_and_is_not_a_switch = who_just_responded & (~switched_to_Inter_task & ~switched_to_OG_and_PM_from_Inter_task);
                     responses(who_just_responded_and_is_not_a_switch, ord) = self.units(all_output_id(who_just_responded_and_is_not_a_switch));
                     % set their response times
-                    RTs(who_just_responded, ord) = cycle - settle_cycles;
+                    RTs(who_just_responded, ord) = cycle - settle_cycle(who_just_responded);
                     % mark that they responded
                     responded(who_just_responded) = true;
                     % and do some bookkeeping
@@ -394,7 +394,7 @@ classdef Simulator < Model
                         if ~responded && v > self.EVIDENCE_ACCUM_THRESHOLD
                             % save response and response time
                             output_id = self.output_ids(id);
-                            RT = cycle - settle_cycles;
+                            RT = cycle - settle_cycle;
                             responded = true;
                             % a bit hacky, ALSO TODO does not work after
                             % timeout

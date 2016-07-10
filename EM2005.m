@@ -127,7 +127,9 @@ for OG_ONLY = og_range
     end
 end
 
-% For each condition (in parallel), run all subjects through the experiment
+% For each condition (in parallel), run all subjects through the
+% experiment
+% TODO add more parallellism 
 %
 parfor cond_id = 1:size(conditions, 1)
     condition = conditions(cond_id, :);
@@ -428,7 +430,7 @@ parfor cond_id = 1:size(conditions, 1)
     % run the actual simulations of all subjects
     %
     [responses, RTs, act, acc, onsets, offsets, nets] = sim.run(stimuli);
-
+    
     % collect the relevant data
     %
     if exp_id == 1 || exp_id == 3 || exp_id == 4 || exp_id == 5 || exp_id == 6
@@ -529,8 +531,6 @@ parfor cond_id = 1:size(conditions, 1)
     end
 
 end % for condition = conditions
-
-save('wtf.mat');
 
 % resuse the OG_ONLY simulation for all conditions where OG_ONLY is true
 %

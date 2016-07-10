@@ -24,7 +24,7 @@ fitting_mode = false; % used when fitting the parameters ; uses a more efficient
 
 
 
-experiment = 1; % <------------------------------- HERE --------------------------------------
+experiment = 2; % <------------------------------- HERE --------------------------------------
 
 
 
@@ -40,7 +40,7 @@ if experiment == 1
                 1  0.8    1    0.75, ...    % nonfocal, low emph   % exp2_v11
                 1  0.9    1    0.83, ...    % nonfocal, high emph  % exp1_v16 -- sorta
                 4 4 4, ... % biases -- tasks, attention, context
-		        0 0, ...   % no noise...
+		        0.15 0.15, ...   % no noise...
                 0.0004];   % gamma
             
             

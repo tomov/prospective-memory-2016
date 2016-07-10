@@ -133,7 +133,7 @@ classdef Simulator < Model
                 self.accumulators = zeros(self.n_subjects, size(self.output_ids, 2));
                 
                 % default output is timeout
-                output_id = self.unit_id('timeout') * ones(self.n_subjects, 1); % TODO repmat
+                output_id = repmat(self.unit_id('timeout'), self.n_subjects, 1);
                 RTs(:, ord) = timeout;
                 
                 %
@@ -230,10 +230,10 @@ classdef Simulator < Model
                     % calculate net inputs for all units
                     %
                     self.net_input(~responded, self.ffwd_ids) = self.activation(~responded, :) * self.weights(:, self.ffwd_ids) ...
-                        + ones(sum(~responded), 1) * self.bias(self.ffwd_ids); % TODO repmat
+                        + repmat(self.bias(self.ffwd_ids), sum(~responded), 1);
                     self.net_input(~responded, self.wm_ids) = self.activation(~responded, self.ffwd_ids) * self.weights(self.ffwd_ids, self.wm_ids) ...
                         + self.wm_act(~responded, :) * self.weights(self.wm_ids, self.wm_ids) ...
-                        + ones(sum(~responded), 1) * self.bias(self.wm_ids); % TODO repmat
+                        + repmat(self.bias(self.wm_ids), sum(~responded), 1);
                     % unless we're fitting (i.e. when doing regular
                     % simulations), add noise to the net inputs
                     %
@@ -270,7 +270,7 @@ classdef Simulator < Model
                     act(max_linear_idx) = -inf;
                     second_act_max = max(act, [], 2);
                     % scale act_max to same size as the output units
-                    act_to_subtract = act_max * ones(1, size(self.output_ids, 2)); % TODO repmat
+                    act_to_subtract = repmat(act_max, 1, size(self.output_ids, 2));
                     % restore the actual max activations
                     act(max_linear_idx) = act_max;
                     % see evidence accumulation equations in paper
@@ -280,7 +280,7 @@ classdef Simulator < Model
                     act_to_subtract(max_linear_idx) = second_act_max;
                     mu = self.EVIDENCE_ACCUM_ALPHA * (act - act_to_subtract);
                     % then we add noise proportional to that to the evidence accumulators
-                    add = normrnd(mu, ones(size(mu)) * self.EVIDENCE_ACCUM_SIGMA); % TODO repmat
+                    add = normrnd(mu, repmat(self.EVIDENCE_ACCUM_SIGMA, size(mu)));
                     self.accumulators(~responded & settled, :) = self.accumulators(~responded & settled, :) + add;
 
                     % check if response threshold is met
@@ -291,7 +291,7 @@ classdef Simulator < Model
                     % see which subjects passed the response threshold (and haven't responded yet)
                     who_just_responded = ~responded & settled & v > self.EVIDENCE_ACCUM_THRESHOLD;
                     % set their output ids
-                    output_id(who_just_responded) = all_output_id(who_just_responded); % TODO might have to flip
+                    output_id(who_just_responded) = all_output_id(who_just_responded);
                     % record the actual response
                     responses(who_just_responded & (switched_to_Inter_task | switched_to_OG_and_PM_from_Inter_task), ord) = {'Switch'};
                     who_just_responded_and_is_not_a_switch = who_just_responded & (~switched_to_Inter_task & ~switched_to_OG_and_PM_from_Inter_task);

@@ -5,6 +5,8 @@ function [data, extra] = EM2005( params, exp_id, fitting_mode, debug_mode, do_pr
 
 % create parallel pool
 %
+%{
+TODO WTF re-enable in rondo
 if ~debug_mode
     if (strfind(version('-date'), '2013')) % rondo lives in 2013
         if matlabpool('size') == 0
@@ -16,6 +18,7 @@ if ~debug_mode
         fprintf('num of parallel workers = %d\n', poolobj.NumWorkers);
     end
 end
+%}
 
 % parse parameters
 
@@ -386,7 +389,7 @@ for OG_ONLY = og_range
                     
                     % run the actual simulation
                     %
-                    [responses, RTs, act, acc, onsets, offsets, nets] = sim.run(stimuli, 1);
+                    [responses, RTs, act, acc, onsets, offsets, nets] = sim.run(stimuli, 200);
                     
                    % save('wtf.mat');
                    % sdfsdf
@@ -477,7 +480,7 @@ for OG_ONLY = og_range
                             getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, ...
                                 responses, RTs, act, acc, onsets, offsets, ...
                                 is_target, correct, og_correct, is_inter_task, ...
-                                true, true);
+                                false, true);
                         %end
                     end
                 end % parfor subject_id

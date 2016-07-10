@@ -288,18 +288,18 @@ classdef Simulator < Model
                     % calculate net inputs for all units
                     % WTF TODO ~responded insteaf of : ? faster?
                     %
-                    self.net_input(:, self.ffwd_ids) = self.activation * self.weights(:, self.ffwd_ids) ...
-                        + ones(n_subjects, 1) * self.bias(self.ffwd_ids);
-                    self.net_input(:, self.wm_ids) = self.activation(:, self.ffwd_ids) * self.weights(self.ffwd_ids, self.wm_ids) ...
-                        + self.wm_act * self.weights(self.wm_ids, self.wm_ids) ...
-                        + ones(n_subjects, 1) * self.bias(self.wm_ids);
+                    self.net_input(~responded, self.ffwd_ids) = self.activation(~responded, :) * self.weights(:, self.ffwd_ids) ...
+                        + ones(sum(~responded), 1) * self.bias(self.ffwd_ids);
+                    self.net_input(~responded, self.wm_ids) = self.activation(~responded, self.ffwd_ids) * self.weights(self.ffwd_ids, self.wm_ids) ...
+                        + self.wm_act(~responded, :) * self.weights(self.wm_ids, self.wm_ids) ...
+                        + ones(sum(~responded), 1) * self.bias(self.wm_ids);
                     % unless we're fitting (i.e. when doing regular
                     % simulations), add noise to the net inputs
                     %
                     if ~self.fitting_mode
                         % TODO parametrize the noise
-                        self.net_input(:, self.ffwd_ids) = self.net_input(:, self.ffwd_ids) + normrnd(0, 0.1, size(self.net_input(:, self.ffwd_ids)));
-                        self.net_input(:, self.wm_ids) = self.net_input(:, self.wm_ids) + normrnd(0, 0.01, size(self.net_input(:, self.wm_ids)));
+                        self.net_input(~responded, self.ffwd_ids) = self.net_input(~responded, self.ffwd_ids) + normrnd(0, 0.1, size(self.net_input(~responded, self.ffwd_ids)));
+                        self.net_input(~responded, self.wm_ids) = self.net_input(~responded, self.wm_ids) + normrnd(0, 0.01, size(self.net_input(~responded, self.wm_ids)));
                     end
                     
                     % on instruction, oscillate around initial WM
@@ -317,7 +317,7 @@ classdef Simulator < Model
                     
                     % update activation levels for feedforward part of the
                     % network
-                    self.net_input_avg(:, self.ffwd_ids) = self.TAU * self.net_input(:, self.ffwd_ids) + (1 - self.TAU) * self.net_input_avg(:, self.ffwd_ids);
+                    self.net_input_avg(~responded, self.ffwd_ids) = self.TAU * self.net_input(~responded, self.ffwd_ids) + (1 - self.TAU) * self.net_input_avg(~responded, self.ffwd_ids);
                     self.activation(~responded, self.ffwd_ids) = self.logistic(self.net_input_avg(~responded, self.ffwd_ids)); % only update activations of those who haven't responded yet
                     
                     % same for WM module
@@ -425,6 +425,8 @@ classdef Simulator < Model
                 switched_to_Inter_task(:) = false;
                 switched_to_OG_and_PM_from_Inter_task(:) = false;
             end
+            
+            fprintf('Total simulation cycles = %d', cycles');
             
             activation_log(:,cycles:end,:) = [];
             accumulators_log(:,cycles:end,:) = [];

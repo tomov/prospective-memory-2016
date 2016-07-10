@@ -14,6 +14,7 @@ PM_miss_RTs = NaN(n_subjects, n_trials);
 PM_miss_correct_OG_RTs = NaN(n_subjects, n_trials); 
 OG_timeout_RTs = NaN(n_subjects, n_trials); 
 PM_timeout_RTs = NaN(n_subjects, n_trials); 
+first_PM_RT = NaN(n_subjects, 1);
 
 for s=1:n_subjects
     for ord=1:n_trials
@@ -117,14 +118,13 @@ OG_Hit = sum(~isnan(OG_correct_RTs), 2) ./ OG_count * 100;
 
 PM_RT = mean(PM_hit_RTs, 2, 'omitnan');
 for s=1:n_subjects
-    first_PM_RT = NaN;
     for ord=1:n_trials
         if ~isnan(PM_hit_RTs(s, ord))
-            first_PM_RT = PM_hit_RTs(s, ord);
+            first_PM_RT(s) = PM_hit_RTs(s, ord);
             break
         end
     end
-    assert(sum(~isnan(PM_hit_RTs(s))) == 0 || ~isnan(first_PM_RT));
+    assert(sum(~isnan(PM_hit_RTs(s))) == 0 || ~isnan(first_PM_RT(s)));
 end
 % http://en.wikipedia.org/wiki/Standard_error !!!
 PM_RT_SD = std(PM_hit_RTs, [], 2, 'omitnan') ./ sqrt(sum(~isnan(PM_hit_RTs), 2));
@@ -134,14 +134,15 @@ PM_miss_OG_hit = sum(~isnan(PM_miss_correct_OG_RTs), 2) ./ sum(~isnan(PM_miss_RT
 
 % show figures
 
+act_all = act;
+acc_all = acc;
+
 if show_pics
     for s=1:n_subjects
         figure;
-        %title(sprintf('%s, subject #%d', title_string, s));
 
-        % TODO FIXME WTF remove for multiple subjects
-        act = squeeze(act(s,:,:));
-        acc = squeeze(acc(s,:,:));
+        act = squeeze(act_all(s,:,:));
+        acc = squeeze(acc_all(s,:,:));
         
         t_range = 1:min(5000, length(act));
         %t_range = 1:2000;

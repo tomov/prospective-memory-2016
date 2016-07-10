@@ -386,7 +386,7 @@ for OG_ONLY = og_range
                     
                     % run the actual simulation
                     %
-                    [responses, RTs, act, acc, onsets, offsets, nets] = sim.run(stimuli, 2);
+                    [responses, RTs, act, acc, onsets, offsets, nets] = sim.run(stimuli, 1);
                     
                    % save('wtf.mat');
                    % sdfsdf
@@ -423,17 +423,19 @@ for OG_ONLY = og_range
                             if do_print, fprintf('            : accuracy on non-targets = %.2f\n', IT_NONTAR_HIT); end
                         end
                      
-                        subject = [OG_ONLY, FOCAL, EMPHASIS, OG_RT, OG_Hit, PM_RT, PM_Hit, PM_miss_OG_hit, TARGETS, first_PM_RT];
-                        if exp_id == 5
-                            subject = [subject, IT_TAR_RT, IT_NONTAR_RT, IT_TAR_HIT, IT_NONTAR_HIT];
-                        end
-                        data = [data; subject];
-                        
-                        if debug_mode
-                            subject_extra = {sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses, RTs, act, acc, onsets, offsets, nets, subjpar};
-                            extra = [extra; subject_extra];
-                        else
-                            extra = [extra; subjpar];
+                        for s = 1:subjects_per_condition
+                            subject = [OG_ONLY, FOCAL, EMPHASIS, OG_RT(s,:)', OG_Hit(s,:)', PM_RT(s,:)', PM_Hit(s,:)', PM_miss_OG_hit(s,:)', TARGETS, first_PM_RT(s)];
+                            if exp_id == 5
+                                subject = [subject, IT_TAR_RT, IT_NONTAR_RT, IT_TAR_HIT, IT_NONTAR_HIT];
+                            end
+                            data = [data; subject];
+                            
+                            if debug_mode
+                                subject_extra = {sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses(s,:)', RTs(s,:)', squeeze(act(s,:,:)), squeeze(acc(s,:,:)), onsets(s,:)', offsets(s,:)', squeeze(nets(s,:,:)), subjpar};
+                                extra = [extra; subject_extra];
+                            else
+                                extra = [extra; subjpar];
+                            end
                         end
                     elseif exp_id == 2
                         % for experiment 2, each block = 1 sample (i.e. 4

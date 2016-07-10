@@ -298,8 +298,8 @@ classdef Simulator < Model
                     %
                     if ~self.fitting_mode
                         % TODO parametrize the noise
-                        self.net_input(:, self.ffwd_ids) = self.net_input(:, self.ffwd_ids) + normrnd(0, 0.1, size(self.ffwd_ids));
-                        self.net_input(:, self.wm_ids) = self.net_input(:, self.wm_ids) + normrnd(0, 0.01, size(self.wm_ids));
+                        self.net_input(:, self.ffwd_ids) = self.net_input(:, self.ffwd_ids) + normrnd(0, 0.1, size(self.net_input(:, self.ffwd_ids)));
+                        self.net_input(:, self.wm_ids) = self.net_input(:, self.wm_ids) + normrnd(0, 0.01, size(self.net_input(:, self.wm_ids)));
                     end
                     
                     % on instruction, oscillate around initial WM

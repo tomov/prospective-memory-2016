@@ -25,10 +25,11 @@ startpar(22) = free_params(9) * 10^(-3);
 error_exp1 = compute_err_exp1(data, extra);
 
 % experiment 2
-[data, extra] = EM2005(startpar, 2, fitting_mode, debug_mode, false);
-error_exp2 = compute_err_exp2(data, extra);
+% TODO UNDO
+%[data, extra] = EM2005(startpar, 2, fitting_mode, debug_mode, false);
+error_exp2 = 0; %error_exp2 = compute_err_exp2(data, extra);
 
-error = error_exp1 * 3 + error_exp2;
+error = error_exp1 + error_exp2;
 %fprintf('\n\n\n     ======================>>>>> fitting [');
 %fprintf('%8.2f', free_params);
 fprintf(', error = %f * 3 + %f = %f\n\n\n', error_exp1, error_exp2, error);

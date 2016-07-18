@@ -32,6 +32,8 @@ bias_for_context = params(19);
 param_noise_sigma_1 = params(20);
 param_noise_sigma_2 = params(21);
 gamma = params(22);
+noise_sigma_ffwd = params(23);
+noise_sigma_wm = params(24);
 
 assert(exp_id == 1 || exp_id == 2 || exp_id == 3 || exp_id == 4 || exp_id == 5 || exp_id == 6);
 
@@ -129,7 +131,8 @@ end
 
 % For each condition (in parallel), run all subjects through the
 % experiment
-% TODO add more parallellism 
+% TODO add more parallellism e.g. to run same simulation multiple times,
+% just add the conditions several times
 %
 parfor cond_id = 1:size(conditions, 1)
     condition = conditions(cond_id, :);
@@ -356,11 +359,13 @@ parfor cond_id = 1:size(conditions, 1)
         % note that we use EMPHASIS to denote high/low wm
         % capacity #hacksauce
         %
-        model_params(5) = params(23); % bias for task
-        model_params(6) = params(24); % bias for attention
-        model_params(9) = params(25); % bias for context
+        model_params(5) = params(25); % bias for task
+        model_params(6) = params(26); % bias for attention
+        model_params(9) = params(27); % bias for context
     end
     model_params(10) = gamma;
+    model_params(11) = noise_sigma_ffwd;
+    model_params(12) = noise_sigma_wm;
     if OG_ONLY
         model_params(1:4) = [1 0 1 0];
     else       
@@ -386,7 +391,7 @@ parfor cond_id = 1:size(conditions, 1)
     % personalize perception & response monitoring for each subject, optionally
     % adding cross-subject variability
     %
-    assert(exp_id ~= 5); % TODO WTF FIXME make 5 work (split 1k in buckets), also fix it in the Simulator (see switch_to_Inter_task stuff)
+    assert(exp_id ~= 5); % TODO WTF FIXME make 5 work (split 1k in buckets), also fix it in the Simulator (see switch_to_Inter_task stuff -- BIG TODO)
     subject_params = repmat([model_params(2) model_params(4)], subjects_per_condition, 1);
     if ~OG_ONLY
         subject_params(:, 1) = subject_params(:, 1) + unifrnd(-param_noise_sigma_1, param_noise_sigma_1, subjects_per_condition, 1);

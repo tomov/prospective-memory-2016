@@ -15,9 +15,9 @@ classdef Model < handle
         INSTRUCTION_CYLCES = 2/Model.TAU;
         RESET_CYCLES = Model.INSTRUCTION_CYLCES;
         SETTLE_LEEWAY = 2*Model.INSTRUCTION_CYLCES;
-        EVIDENCE_ACCUM_SIGMA = 0.05;
-        EVIDENCE_ACCUM_ALPHA = 0.05;
-        EVIDENCE_ACCUM_THRESHOLD = 1;
+        EVIDENCE_ACCUM_SIGMA = 0.05; % 0.05
+        EVIDENCE_ACCUM_ALPHA = 0.05; % 0.05
+        EVIDENCE_ACCUM_THRESHOLD = 1; % 1
         
         % activation levels
 
@@ -116,6 +116,11 @@ classdef Model < handle
         % EM parameters
         
         LEARNING_RATE = 0.01;
+        
+        % other parameters
+        
+        NOISE_SIGMA_FFWD = 0.1; % processing noise for the feedforward network
+        NOISE_SIGMA_WM = 0.01; % processing noise for the WM units (note -- must be lower b/c of the dynamics there)
                 
         % variables
         
@@ -290,6 +295,8 @@ classdef Model < handle
             self.init_wm(:, self.wm_ids == self.unit_id('Other Context')) = repmat(model_params(8), n_subjects, 1);
             self.BIAS_FOR_CONTEXT = model_params(9);
             self.GAMMA = model_params(10);
+            self.NOISE_SIGMA_FFWD = model_params(11);
+            self.NOISE_SIGMA_WM = model_params(12);
 
             % ---==== specify connections between units ====---
             

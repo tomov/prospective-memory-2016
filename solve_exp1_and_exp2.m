@@ -2,13 +2,17 @@
 %
 
          % PM Task  PM target(s) initial WM activations
-init_par = [0.35    0.3, ...     % focal, low emph 
-            0.6     0.4, ...     % focal, high emph 
-            0.8     0.75, ...    % nonfocal, low emph 
-            0.9     0.83, ...    % nonfocal, high emph
-            0.4]; % gamma * 10^-3
-min_par =  [0 0 0 0 0 0 0 0 0];
-max_par =  [1 1 1 1 1 1 1 1 1];
+init_par = [0.35   0.3, ...     % focal, low emph     % exp1_v16, exp2_v19
+            0.6    0.4, ...     % focal, high emph      % exp1_v16
+            0.8    0.75, ...    % nonfocal, low emph   % exp2_v11
+            0.9    0.83, ...    % nonfocal, high emph  % exp1_v16 -- sorta
+            0.15   0.15, ... % cross-subject init wm noise sigma -- PM task, target
+            0.4];   % gamma * 10^-3
+        
+        
+min_par =  [0 0 0 0 0 0 0 0 0 0 0];
+max_par =  [1 1 1 1 1 1 1 1 1 1 1];
+assert(length(min_par) == length(init_par));
 
 options = optimoptions(@fmincon,'Algorithm','sqp','MaxIter', 1000, 'DiffMinChange', 0.001);
 best_par = fmincon(@fit_exp1_and_exp2, init_par, [], [], [], [], min_par, max_par, [], options);

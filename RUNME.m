@@ -24,7 +24,7 @@ fitting_mode = false; % used when fitting the parameters ; uses a more efficient
 
 
 
-experiment = 1; % <------------------------------- HERE --------------------------------------
+experiment = 6; % <------------------------------- HERE --------------------------------------
 
 
 
@@ -81,7 +81,8 @@ elseif experiment == 6
 		        0 0, ...        % cross-subject init wm noise sigma -- PM task, target
                 0.0002, ...     % gamma
                 0.1 0.01, ... % ffwd noise, wm noise sigma
-                4 4 4];       % biases, low wm capacity
+                4 4 4, ...  % biases, low wm capacity BREWER ONLY
+                50];       % stimulus_to_context brewer only TODO FIXME 
             
      % biases = 3.5 3.3 4 not bad result ; nvm bad result -> features must
      % be high.... plots 1 and 2 ok

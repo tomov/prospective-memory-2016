@@ -297,6 +297,9 @@ classdef Model < handle
             self.GAMMA = model_params(10);
             self.NOISE_SIGMA_FFWD = model_params(11);
             self.NOISE_SIGMA_WM = model_params(12);
+            if model_params(13) ~= -1
+                self.HIPPO_TO_TASK = model_params(13); % BREWER ONLY TODO FIXME
+            end
 
             % ---==== specify connections between units ====---
             

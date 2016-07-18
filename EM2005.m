@@ -354,6 +354,7 @@ parfor cond_id = 1:size(conditions, 1)
     model_params(5) = bias_for_task;
     model_params(6) = bias_for_attention;
     model_params(9) = bias_for_context;
+    model_params(13) = -1; % BREWER ONLY TODO FIXMER
     if exp_id == 6 && EMPHASIS == 0
         % Brewer et al. 2010, low WM capacity
         % note that we use EMPHASIS to denote high/low wm
@@ -362,6 +363,7 @@ parfor cond_id = 1:size(conditions, 1)
         model_params(5) = params(25); % bias for task
         model_params(6) = params(26); % bias for attention
         model_params(9) = params(27); % bias for context
+        model_params(13) = params(28); % BREWER ONLY TODO FIXME
     end
     model_params(10) = gamma;
     model_params(11) = noise_sigma_ffwd;

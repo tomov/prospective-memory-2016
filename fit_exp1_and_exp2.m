@@ -8,6 +8,7 @@ fprintf(']......\n');
 
 debug_mode = false;
 fitting_mode = false;
+runs = 20; % how many times to run the experiment for each set of parameters; cost f'n is averaged
 
 startpar = [1  0.35   1    0.3, ...     % focal, low emph     % exp1_v16, exp2_v19
             1  0.6    1    0.4, ...     % focal, high emph      % exp1_v16
@@ -22,8 +23,14 @@ startpar([2 4 6 8 10 12 14 16 20 21 22]) = free_params; % set the params we're f
 startpar(22) = free_params(11) * 10^(-3);
 
 % experiment 1
-[data, extra] = EM2005(startpar, 1, fitting_mode, debug_mode, false);
-error_exp1 = compute_err_exp1(data, extra);
+[data, extra] = EM2005(startpar, 1, fitting_mode, debug_mode, false, runs);
+errors_exp1 = zeros(runs, 1);
+for run = 1:runs
+    errors_exp1(run) = compute_err_exp1(data{run}, extra);
+end
+error_exp1 = mean(errors_exp1);
+error_exp1_std = std(errors_exp1);
+fprintf('\n                   .............. AVERAGE ERROR = %.4f (std = %.4f)\n', error_exp1, error_exp1_std);
 
 % experiment 2
 % TODO UNDO

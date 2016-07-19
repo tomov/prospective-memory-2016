@@ -163,7 +163,8 @@ elseif experiment == 5
 end
 
 tic
-[data, extra] = EM2005(startpar, experiment, fitting_mode, debug_mode, true);
+[data, extra] = EM2005(startpar, experiment, fitting_mode, debug_mode, true, 2);
+data = data{2};
 toc
 
 if debug_mode

@@ -35,5 +35,5 @@ for s_id = 2:2
         set(h, 'FontSize', 10);
         ylabel('PM hit RT (ms)');
     end
-    ylim([5000 6000]);
+    ylim([5000 7000]);
 end

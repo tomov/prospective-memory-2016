@@ -1,4 +1,4 @@
-function [OG_RT, OG_RT_SD, OG_Hit, PM_RT, PM_RT_SD, PM_Hit, PM_miss_OG_hit, first_PM_RT] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses, RTs, act, acc, onsets, offsets, is_target, correct, og_correct, is_inter_task, show_pics, do_print)
+function [OG_RT, OG_RT_SD, OG_Hit, PM_RT, PM_RT_SD, PM_Hit, PM_miss_OG_RT, PM_miss_OG_hit, first_PM_RT] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses, RTs, act, acc, onsets, offsets, is_target, correct, og_correct, is_inter_task, show_pics, do_print)
 
 n_subjects = size(responses, 1);
 n_trials = size(responses, 2);
@@ -130,6 +130,7 @@ end
 PM_RT_SD = nanstd(PM_hit_RTs, [], 2) ./ sqrt(sum(~isnan(PM_hit_RTs), 2));
 PM_Hit = sum(~isnan(PM_hit_RTs), 2) ./ PM_count * 100;
 
+PM_miss_OG_RT = nanmean(PM_miss_correct_OG_RTs, 2);
 PM_miss_OG_hit = sum(~isnan(PM_miss_correct_OG_RTs), 2) ./ sum(~isnan(PM_miss_RTs), 2) * 100;
 
 % show figures

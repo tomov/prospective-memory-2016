@@ -14,6 +14,8 @@
     6 - PM_RT, 
     7 - PM_Hit,
     8 - PM_miss_OG_hit
+    11 - first_PM_RT
+    12 - PM_miss_OG_RT 
  (see EM2005 exp 2)
 %}
 

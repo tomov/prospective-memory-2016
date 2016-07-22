@@ -29,11 +29,12 @@ nonfocal_high_init_wm = params(13:16);
 bias_for_task = params(17);
 bias_for_attention = params(18);
 bias_for_context = params(19);
-param_noise_sigma_1 = params(20);
-param_noise_sigma_2 = params(21);
+init_pm_task_noise_sigma = params(20);
+init_pm_target_noise_sigma = params(21);
 gamma = params(22);
 noise_sigma_ffwd = params(23);
 noise_sigma_wm = params(24);
+wm_bias_noise_sigma = params(25);
 
 assert(exp_id == 1 || exp_id == 2 || exp_id == 3 || exp_id == 4 || exp_id == 5 || exp_id == 6);
 
@@ -364,9 +365,9 @@ parfor cond_id = 1:size(conditions, 1)
         % note that we use EMPHASIS to denote high/low wm
         % capacity #hacksauce
         %
-        model_params(5) = params(25); % bias for task
-        model_params(6) = params(26); % bias for attention
-        model_params(9) = params(27); % bias for context
+        model_params(5) = params(26); % bias for task
+        model_params(6) = params(27); % bias for attention
+        model_params(9) = params(28); % bias for context
     end
     model_params(10) = gamma;
     model_params(11) = noise_sigma_ffwd;
@@ -408,18 +409,22 @@ parfor cond_id = 1:size(conditions, 1)
     if ~OG_ONLY
         model_params(1:4)
         % PM task noise
-        subject_params(:, 1) = subject_params(:, 1) + unifrnd(-param_noise_sigma_1, param_noise_sigma_1, subjects_per_condition, 1);
-            %+ normrnd(0, param_noise_sigma_1, size(subject_params(:, 1)))
+        subject_params(:, 1) = subject_params(:, 1) + normrnd(0, init_pm_task_noise_sigma, size(subject_params(:, 1)));
+            %+ unifrnd(-init_pm_task_noise_sigma, param_noise_sigma_1, subjects_per_condition, 1);
+            %+ normrnd(0, init_pm_task_noise_sigma, size(subject_params(:, 1)))
         % PM task cannot be > OG task
         bad_ones = subject_params(:, 1) > model_params(1) - 0.05;
         subject_params(bad_ones, 1) = model_params(1) - 0.05;
         % PM target noise
-        subject_params(:, 2) = subject_params(:, 2) + unifrnd(-param_noise_sigma_2, param_noise_sigma_2, subjects_per_condition, 1);
-            %+ normrnd(0, param_noise_sigma_2, size(subject_params(:, 2)));
+        subject_params(:, 2) = subject_params(:, 2) + normrnd(0, init_pm_target_noise_sigma, size(subject_params(:, 2)));
+            % + unifrnd(-init_pm_target_noise_sigma, param_noise_sigma_2, subjects_per_condition, 1);
+            %+ normrnd(0, init_pm_target_noise_sigma, size(subject_params(:, 2)));
         % PM target cannot be > OG features
         bad_ones = subject_params(:, 2) > model_params(3) - 0.05;
         subject_params(bad_ones, 2) = model_params(3) - 0.05;
-        %subject_params(:, [3 4 5]) = subject_params(:, [3 4 5]) + normrnd(0, 0.2, size(subject_params(:, [3 4 5])));
+
+        which_biases = [3 4 5];
+        subject_params(:, which_biases) = subject_params(:, which_biases) + normrnd(0, wm_bias_noise_sigma, size(subject_params(:, which_biases)));
     end
 
     % initialize simulator (for multiple subjects)

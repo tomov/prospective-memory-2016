@@ -60,7 +60,8 @@ classdef Simulator < Model
                 target_monitor_id = self.unit_id(target_monitor_unit{1});
                 if include_in_WM
                     % make WM unit available
-                    self.bias(target_monitor_id) = self.BIAS_FOR_ATTENTION;
+                    self.bias(target_monitor_id) = self.BIAS_FOR_ATTENTION; % DEPRECATED -- see line below
+                    self.biases(:, target_monitor_id) = self.subject_bias_for_attention;
                     % and give it some initial activation (according to params)
                     self.init_wm(:, self.wm_ids == target_monitor_id) = self.target_init;
                 end
@@ -115,7 +116,8 @@ classdef Simulator < Model
                         target_monitor_unit = strcat('Monitor ', {' '}, target);
                         target_monitor_id = self.unit_id(target_monitor_unit{1});
                         % make WM unit available
-                        self.bias(target_monitor_id) = self.BIAS_FOR_ATTENTION;
+                        self.bias(target_monitor_id) = self.BIAS_FOR_ATTENTION; % DEPRECATED -- see line below
+                        self.biases(:, target_monitor_id) = self.subject_bias_for_attention;
                         % and give it some initial activation (according to params)
                         self.init_wm(:, self.wm_ids == target_monitor_id) = self.target_init;
                     end
@@ -230,10 +232,12 @@ classdef Simulator < Model
                     % calculate net inputs for all units
                     %
                     self.net_input(~responded, self.ffwd_ids) = self.activation(~responded, :) * self.weights(:, self.ffwd_ids) ...
-                        + self.bias(~responded, self.ffwd_ids);
+                        + self.biases(~responded, self.ffwd_ids);
+                        %+ repmat(self.bias(self.ffwd_ids), sum(~responded), 1);
                     self.net_input(~responded, self.wm_ids) = self.activation(~responded, self.ffwd_ids) * self.weights(self.ffwd_ids, self.wm_ids) ...
                         + self.wm_act(~responded, :) * self.weights(self.wm_ids, self.wm_ids) ...
-                        + self.bias(~responded, self.wm_ids);
+                        + self.biases(~responded, self.wm_ids);
+                        %+ repmat(self.bias(self.wm_ids), sum(~responded), 1);
                     % unless we're fitting (i.e. when doing regular
                     % simulations), add noise to the net inputs
                     %

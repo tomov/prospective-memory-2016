@@ -88,7 +88,7 @@ end
 if debug_mode
     % we show ~16 figures per subject. You don't want more than one subject
     %
-    subjects_per_condition = 1;
+    subjects_per_condition = 2;
     og_range = 0;
     focal_range = 0;
     emphasis_range = 1;
@@ -410,15 +410,16 @@ parfor cond_id = 1:size(conditions, 1)
         % PM task noise
         subject_params(:, 1) = subject_params(:, 1) + unifrnd(-param_noise_sigma_1, param_noise_sigma_1, subjects_per_condition, 1);
             %+ normrnd(0, param_noise_sigma_1, size(subject_params(:, 1)))
-        % PM target noise
-        subject_params(:, 2) = subject_params(:, 2) + unifrnd(-param_noise_sigma_2, param_noise_sigma_2, subjects_per_condition, 1);
-            %+ normrnd(0, param_noise_sigma_2, size(subject_params(:, 2)));
         % PM task cannot be > OG task
         bad_ones = subject_params(:, 1) > model_params(1) - 0.05;
         subject_params(bad_ones, 1) = model_params(1) - 0.05;
+        % PM target noise
+        subject_params(:, 2) = subject_params(:, 2) + unifrnd(-param_noise_sigma_2, param_noise_sigma_2, subjects_per_condition, 1);
+            %+ normrnd(0, param_noise_sigma_2, size(subject_params(:, 2)));
         % PM target cannot be > OG features
         bad_ones = subject_params(:, 2) > model_params(3) - 0.05;
         subject_params(bad_ones, 2) = model_params(3) - 0.05;
+        %subject_params(:, [3 4 5]) = subject_params(:, [3 4 5]) + normrnd(0, 0.2, size(subject_params(:, [3 4 5])));
     end
 
     % initialize simulator (for multiple subjects)

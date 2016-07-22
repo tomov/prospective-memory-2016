@@ -18,6 +18,19 @@ best_par = fmincon(@fit_exp1_and_exp2, init_par, [], [], [], [], min_par, max_pa
 
 best_par
 
+% Run experiment 1 and save the actual data
+%
+experiment = 1;
+
+rng('shuffle');
+runhash = randstr(10); % so we can tag the output files
+
+[data, extra] = EM2005(best_par, experiment, false, false, true, 1); 
+
+filename = sprintf('exp%d-runhash-%s.mat', experiment, runhash);
+fprintf('\n\n\nOUTPUT SAVED TO FILE %s\n', filename);
+save(filename);
+
 
 
 % SOLUTIONS FOR EXPERIMENT 1 ---

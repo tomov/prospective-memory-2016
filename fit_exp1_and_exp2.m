@@ -8,7 +8,7 @@ fprintf(']......\n');
 
 debug_mode = false;
 fitting_mode = false;
-runs = 5; % how many times to run the experiment for each set of parameters; cost f'n is averaged
+runs = 1; % how many times to run the experiment for each set of parameters; cost f'n is averaged
 
 startpar = [1  0.35   1    0.3, ...     % focal, low emph     % exp1_v16, exp2_v19
             1  0.6    1    0.4, ...     % focal, high emph      % exp1_v16

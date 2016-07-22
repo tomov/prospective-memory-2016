@@ -205,5 +205,5 @@ data = data{1};
 toc
 
 filename = sprintf('exp%d-runhash-%s.mat', experiment, runhash);
-fprintf('filename = %s\n', filename);
+fprintf('\n\n\nOUTPUT SAVED TO FILE %s\n', filename);
 save(filename);

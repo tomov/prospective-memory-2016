@@ -44,7 +44,7 @@ RT_SD_cols = [5,9]; % RT SDs. we regress those against model cycles SDs to scale
 use_M_cols = M_cols; % use all means (OG RT, OG accuracy, PM RT, PM hit rates) (notice we ignore the ones we don't know i.e. the NaNs)
 use_SD_cols = [5 9 11]; % use SD for OG RT, PM RT and PM hit rates (we don't know the OG accuracy SD's)
 use_cols    = [use_M_cols use_SD_cols]; % which columns to use in the error computation
-err_weights = [2 2 2 2 1 1 1];  % means weight more than SD's when fitting (keep in mind we're scaling them to %'s so they're all on the same scale by default)
+err_weights = [2 2 2 2 0 0 0];  % means weight more than SD's when fitting (keep in mind we're scaling them to %'s so they're all on the same scale by default)
 assert(length(use_cols) == length(err_weights));
 
 subjects_per_condition = 24;
@@ -251,5 +251,5 @@ fprintf('M + SD deviations error (scaled) =  %.4f\n', deviations_error);
 %diff_deviations = (empirical_stats([4 8],4) - empirical_stats([2 6],4)) - (simulation_stats([4 8],4) - simulation_stats([2 6],4));
 %diff_deviations = diff_deviations ./ empirical_stats([4 8], 4) .* 100;
 
-error = deviations_error + F_error / 1000; % + sum((diff_deviations.^2) .* diff_err_scalers);
+error = deviations_error ; %+ F_error / 1000; % + sum((diff_deviations.^2) .* diff_err_scalers);
 fprintf('total error =                      %.4f\n', error);

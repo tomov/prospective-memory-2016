@@ -8,19 +8,20 @@ fprintf(']......\n');
 
 debug_mode = false;
 fitting_mode = false;
-runs = 20; % how many times to run the experiment for each set of parameters; cost f'n is averaged
+runs = 5; % how many times to run the experiment for each set of parameters; cost f'n is averaged
 
 startpar = [1  0.35   1    0.3, ...     % focal, low emph     % exp1_v16, exp2_v19
             1  0.6    1    0.4, ...     % focal, high emph      % exp1_v16
             1  0.8    1    0.75, ...    % nonfocal, low emph   % exp2_v11
             1  0.9    1    0.83, ...    % nonfocal, high emph  % exp1_v16 -- sorta
             4 4 4, ... % biases -- tasks, attention, context
-            0.0 0.0, ... % cross-subject init wm noise sigma -- PM task, target
+            0.3 0.3, ... % cross-subject init wm noise sigma -- PM task, target
             0.0004,  ... % gamma
-            0.1 0.01];   % ffwd noise, wm noise sigma
+            0.1 0.01, ...   % ffwd noise, wm noise sigma
+            0.3];       % wm bias noise sigma
 
-startpar([2 4 6 8 10 12 14 16 20 21 22]) = free_params; % set the params we're fitting
-startpar(22) = free_params(11) * 10^(-3);
+startpar([2 4 6 8 10 12 14 16 22]) = free_params; % set the params we're fitting
+startpar(22) = free_params(9) * 10^(-3);
 
 % experiment 1
 [data, extra] = EM2005(startpar, 1, fitting_mode, debug_mode, false, runs);

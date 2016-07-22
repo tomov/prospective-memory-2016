@@ -91,7 +91,7 @@ if debug_mode
     subjects_per_condition = 1;
     og_range = 0;
     focal_range = 0;
-    emphasis_range = 0;
+    emphasis_range = 1;
     %target_range = [1,6];
     trials_per_block = 20;
     blocks_per_condition = 1;
@@ -137,6 +137,7 @@ end
 % TODO add more parallellism e.g. to run same simulation multiple times,
 % just add the conditions several times
 %
+% PARFOR
 parfor cond_id = 1:size(conditions, 1)
     condition = conditions(cond_id, :);
     run = condition(1);
@@ -396,10 +397,28 @@ parfor cond_id = 1:size(conditions, 1)
     % adding cross-subject variability
     %
     assert(exp_id ~= 5); % TODO WTF FIXME make 5 work (split 1k in buckets), also fix it in the Simulator (see switch_to_Inter_task stuff -- BIG TODO)
-    subject_params = repmat([model_params(2) model_params(4)], subjects_per_condition, 1);
+    % Parameters we add noise to across subjects, in order:
+    % 1. initial PM Task activation
+    % 2. initial PM target activation
+    % 3. WM tasks bias
+    % 4. WM attention bias
+    % 5. WM context bias
+    which_params_we_vary_across_subjects = [2 4 5 6 9];
+    subject_params = repmat([model_params(which_params_we_vary_across_subjects)], subjects_per_condition, 1);
     if ~OG_ONLY
+        model_params(1:4)
+        % PM task noise
         subject_params(:, 1) = subject_params(:, 1) + unifrnd(-param_noise_sigma_1, param_noise_sigma_1, subjects_per_condition, 1);
+            %+ normrnd(0, param_noise_sigma_1, size(subject_params(:, 1)))
+        % PM target noise
         subject_params(:, 2) = subject_params(:, 2) + unifrnd(-param_noise_sigma_2, param_noise_sigma_2, subjects_per_condition, 1);
+            %+ normrnd(0, param_noise_sigma_2, size(subject_params(:, 2)));
+        % PM task cannot be > OG task
+        bad_ones = subject_params(:, 1) > model_params(1) - 0.05;
+        subject_params(bad_ones, 1) = model_params(1) - 0.05;
+        % PM target cannot be > OG features
+        bad_ones = subject_params(:, 2) > model_params(3) - 0.05;
+        subject_params(bad_ones, 2) = model_params(3) - 0.05;
     end
 
     % initialize simulator (for multiple subjects)
@@ -409,7 +428,7 @@ parfor cond_id = 1:size(conditions, 1)
     if do_print
         for s=1:subjects_per_condition
             temp_params = model_params;
-            temp_params([2 4]) = subject_params(s,:);
+            temp_params(which_params_we_vary_across_subjects) = subject_params(s,:);
             fprintf('\nsubject %d: curpar(2,4) = %.2f %.2f curpar(5,6,9) = %.2f %.2f %.2f\n', s, temp_params(2), temp_params(4), temp_params(5), temp_params(6), temp_params(9));
         end
     end
@@ -443,7 +462,7 @@ parfor cond_id = 1:size(conditions, 1)
         % for experiment 1, each subject = 1 sample
         %
         [OG_RT, ~, OG_Hit, PM_RT, ~, PM_Hit, PM_miss_OG_RT, PM_miss_OG_hit, first_PM_RT] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, ...
-            responses, RTs, act, acc, onsets, offsets, ...
+            responses, RTs, act, acc, onsets, offsets, nets, ...
             is_target, correct, og_correct, is_inter_task, ...
             false, do_print);
         if exp_id == 5
@@ -478,7 +497,7 @@ parfor cond_id = 1:size(conditions, 1)
             run_ids = [run_ids; run];
 
             temp_params = model_params;
-            temp_params([2 4]) = subject_params(s,:);
+            temp_params(which_params_we_vary_across_subjects) = subject_params(s,:);
             if debug_mode
                 subject_extra = {sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses(s,:)', RTs(s,:)', squeeze(act(s,:,:)), squeeze(acc(s,:,:)), onsets(s,:)', offsets(s,:)', squeeze(nets(s,:,:)), temp_params};
                 extra = [extra; subject_extra];
@@ -494,7 +513,7 @@ parfor cond_id = 1:size(conditions, 1)
             block_start = (block_id - 1) * trials_per_block + 1;
             block_end = block_id * trials_per_block;                    
             [OG_RT, ~, OG_Hit, PM_RT, ~, PM_Hit, PM_miss_OG_RT, PM_miss_OG_hit, first_PM_RT] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, ...
-                responses(:, block_start:block_end), RTs(:, block_start:block_end), [], [], [], [], ...
+                responses(:, block_start:block_end), RTs(:, block_start:block_end), [], [], [], [], [], ...
                 is_target(block_start:block_end), ...
                 correct(block_start:block_end), ...
                 og_correct(block_start:block_end), ...
@@ -510,7 +529,7 @@ parfor cond_id = 1:size(conditions, 1)
                 run_ids = [run_ids; run];
 
                 temp_params = model_params;
-                temp_params([2 4]) = subject_params(s,:);
+                temp_params(which_params_we_vary_across_subjects) = subject_params(s,:);
                 if debug_mode
                     subject_extra = {sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses(s,:)', RTs(s,:)', squeeze(act(s,:,:)), squeze(acc(s,:,:)), onsets(s,:)', offsets(s,:)', squeeze(nets(s,:,:)), s, block, temp_params};
                     extra = [extra; subject_extra];
@@ -527,11 +546,11 @@ parfor cond_id = 1:size(conditions, 1)
     if debug_mode
         for s = 1:subjects_per_condition
             temp_params = model_params;
-            temp_params([2 4]) = subject_params(s,:);
+            temp_params(which_params_we_vary_across_subjects) = subject_params(s,:);
             fprintf('   curpar(1:4) = %.3f %.3f %.3f %.3f\n', temp_params(1), temp_params(2), temp_params(3), temp_params(4));
             %if ~OG_ONLY
                 getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, ...
-                    responses, RTs, act, acc, onsets, offsets, ...
+                    responses, RTs, act, acc, onsets, offsets, nets, ...
                     is_target, correct, og_correct, is_inter_task, ...
                     true, true);
             %end

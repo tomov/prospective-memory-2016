@@ -289,11 +289,14 @@ classdef Model < handle
             self.init_wm(:, self.wm_ids == self.unit_id('PM Task')) = subject_params(:, 1); % prev. model_params(:, 2); -- cross-subject variability
             self.init_wm(:, self.wm_ids == self.unit_id('OG features')) = repmat(model_params(3), n_subjects, 1);
             self.target_init = subject_params(:, 2); % prev. model_params(:, 4); -- cross-subject variability
-            self.BIAS_FOR_TASK = model_params(5);
+            self.BIAS_FOR_TASK = model_params(5); % DEPRECATED -- we overwrite it with the one on the next line
+            subject_bias_for_task = subject_params(:, 3);
             self.BIAS_FOR_ATTENTION = model_params(6);
+            subject_bias_for_attention = subject_params(:, 4); % DEPRECATED -- we overwrite it with the one on the next line
             self.init_wm(:, self.wm_ids == self.unit_id('PM Context')) = repmat(model_params(7), n_subjects, 1);
             self.init_wm(:, self.wm_ids == self.unit_id('Other Context')) = repmat(model_params(8), n_subjects, 1);
-            self.BIAS_FOR_CONTEXT = model_params(9);
+            self.BIAS_FOR_CONTEXT = model_params(9); % DEPRECATED -- we overwrite it with the one on the next line
+            subject_bias_for_context = subject_params(:, 5);
             self.GAMMA = model_params(10);
             self.NOISE_SIGMA_FFWD = model_params(11);
             self.NOISE_SIGMA_WM = model_params(12);
@@ -446,15 +449,25 @@ classdef Model < handle
             self.weights = sparse(self.connections(:,1), self.connections(:,2), self.connections(:,3), ...
                 self.N, self.N);
 
+            % set biases 
+            %
             self.bias = zeros(1, self.N);
             self.bias(self.perception_ids) = self.BIAS_FOR_PERCEPTION;
             self.bias(self.response_ids) = self.BIAS_FOR_RESPONSES;
             self.bias(self.output_ids) = self.BIAS_FOR_OUTPUTS;
             self.bias(self.task_ids) = self.BIAS_FOR_TASK;
             self.bias(self.attention_ids) = self.BIAS_WHEN_OFF; % all attention units don't exist by default
-                self.bias(self.unit_id('OG features')) = self.BIAS_FOR_ATTENTION; % ...except for OG features
+            self.bias(self.unit_id('OG features')) = self.BIAS_FOR_ATTENTION; % ...except for OG features
             self.bias(self.context_ids) = self.BIAS_FOR_CONTEXT;
-            self.bias(self.hippo_ids) = self.BIAS_FOR_HIPPO;            
+            self.bias(self.hippo_ids) = self.BIAS_FOR_HIPPO;
+
+            % replicate biases across subjects
+            % and vary some of them depending on the cross-subject parameters
+            %
+            self.bias = repmat(self.bias, n_subjects, 1);
+            self.bias(:, self.task_ids) = repmat(subject_bias_for_task, 1, length(self.task_ids));
+            self.bias(:, self.unit_id('OG features')) = subject_bias_for_attention;
+            self.bias(:, self.context_ids) = repmat(subject_bias_for_context, 1, length(self.context_ids));
         end
         
         function EM = print_EM(self)

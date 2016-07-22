@@ -1,4 +1,4 @@
-function [OG_RT, OG_RT_SD, OG_Hit, PM_RT, PM_RT_SD, PM_Hit, PM_miss_OG_RT, PM_miss_OG_hit, first_PM_RT] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses, RTs, act, acc, onsets, offsets, is_target, correct, og_correct, is_inter_task, show_pics, do_print)
+function [OG_RT, OG_RT_SD, OG_Hit, PM_RT, PM_RT_SD, PM_Hit, PM_miss_OG_RT, PM_miss_OG_hit, first_PM_RT] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses, RTs, act, acc, onsets, offsets, nets, is_target, correct, og_correct, is_inter_task, show_pics, do_print)
 
 n_subjects = size(responses, 1);
 n_trials = size(responses, 2);
@@ -137,6 +137,7 @@ PM_miss_OG_hit = sum(~isnan(PM_miss_correct_OG_RTs), 2) ./ sum(~isnan(PM_miss_RT
 
 act_all = act;
 acc_all = acc;
+net_all = nets;
 
 if show_pics
     for s=1:n_subjects
@@ -144,7 +145,8 @@ if show_pics
 
         act = squeeze(act_all(s,:,:));
         acc = squeeze(acc_all(s,:,:));
-        
+        net = squeeze(net_all(s,:,:));
+
         t_range = 1:min(5000, length(act));
         %t_range = 1:2000;
         y_lim = [sim.MINIMUM_ACTIVATION - 0.1 sim.MAXIMUM_ACTIVATION + 0.1];
@@ -153,38 +155,75 @@ if show_pics
         offset_plot = offsets(offsets < t_range(end));
         % turn off onset plot if necessary
         onset_plot = 0; offset_plot = 0;
+
+        %
+        % Experimental stuff
+        %
+
+        subplot(4, 3, 4);
+        unit = sim.unit_id('A Subject'); 
+        which = sim.weights(:, unit) > 0;
+        net_inputs_PM = act(:, :) .* repmat(sim.weights(:, unit)', size(act, 1), 1);
+        plot(t_range, net_inputs_PM(t_range, which));
+        legend(sim.units(which));
+        title('Net inputs to A Subject');
+
+        subplot(4, 3, 7);
+        unit = sim.unit_id('PM Response'); 
+        which = sim.weights(:, unit) > 0;
+        net_inputs_PM = act(:, :) .* repmat(sim.weights(:, unit)', size(act, 1), 1);
+        plot(t_range, net_inputs_PM(t_range, which));
+        legend(sim.units(which));
+        title('Net inputs to PM Response');
+        %self.net_input(~responded, self.ffwd_ids) = act(:, :) * self.weights(:, self.ffwd_ids) ...
+        %    + repmat(self.bias(self.ffwd_ids), sum(~responded), 1);
+
+        subplot(4, 3, 10);
+        which = [sim.unit_id('PM Response'), sim.unit_id('A Subject')];
+        plot(t_range, net(t_range, which));
+        legend(sim.units(which));
+        title('Net input');
+        ylim([-10 10]);
         
-        subplot(4, 2, 1);
+        %
+        % Stimulus-response pathways
+        %
+        
+        subplot(4, 3, 2);
         plot(t_range, act(t_range, sim.output_ids));
         legend(sim.units(sim.output_ids));
         title('Outputs');
         ylim(y_lim);
 
-        subplot(4, 2, 3);
+        subplot(4, 3, 5);
         plot(t_range, act(t_range, sim.response_ids));
         legend(sim.units(sim.response_ids));
         title('Responses');
         ylim(y_lim);
 
-        subplot(4, 2, 5);
+        subplot(4, 3, 8);
         plot(t_range, act(t_range, sim.perception_ids));
         legend(sim.units(sim.perception_ids));
         title('Feature Perception');
         ylim(y_lim);
 
-        subplot(4, 2, 7);
+        subplot(4, 3, 11);
         plot(t_range, act(t_range, sim.input_ids));
         legend(sim.units(sim.input_ids));
         title('Stimulus Inputs');
         ylim(y_lim);
 
-        subplot(4, 2, 2);
+        %
+        % WM submodule & evidence accum
+        %
+
+        subplot(4, 3, 3);
         plot(t_range, acc(t_range, :));
         legend(sim.units(sim.output_ids));
         title('Evidence Accumulation');
         %ylim([sim.MINIMUM_ACTIVATION sim.MAXIMUM_ACTIVATION]);
 
-        subplot(4, 2, 4);
+        subplot(4, 3, 6);
         plot(act(1:end, sim.task_ids));
         legend(sim.units(sim.task_ids));
         title('Task Representation');
@@ -192,7 +231,7 @@ if show_pics
         line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
         line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
 
-        subplot(4, 2, 6);
+        subplot(4, 3, 9);
         plot(act(1:end, sim.attention_ids));
         legend(sim.units(sim.attention_ids));
         title('Feature Attention');
@@ -200,7 +239,7 @@ if show_pics
         line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
         line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
         
-        subplot(4, 2, 8);
+        subplot(4, 3, 12);
         plot(act(1:end, sim.context_ids));
         legend(sim.units(sim.context_ids));
         title('Context');

@@ -230,10 +230,10 @@ classdef Simulator < Model
                     % calculate net inputs for all units
                     %
                     self.net_input(~responded, self.ffwd_ids) = self.activation(~responded, :) * self.weights(:, self.ffwd_ids) ...
-                        + repmat(self.bias(self.ffwd_ids), sum(~responded), 1);
+                        + self.bias(~responded, self.ffwd_ids);
                     self.net_input(~responded, self.wm_ids) = self.activation(~responded, self.ffwd_ids) * self.weights(self.ffwd_ids, self.wm_ids) ...
                         + self.wm_act(~responded, :) * self.weights(self.wm_ids, self.wm_ids) ...
-                        + repmat(self.bias(self.wm_ids), sum(~responded), 1);
+                        + self.bias(~responded, self.wm_ids);
                     % unless we're fitting (i.e. when doing regular
                     % simulations), add noise to the net inputs
                     %

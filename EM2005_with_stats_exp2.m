@@ -112,8 +112,9 @@ simulation_stats(:, SD_cols) = simulation_stats(:, SD_cols) / sqrt(subjects_per_
 
 empirical_RTs = empirical_stats(:, 4);
 simulation_cycles = simulation_stats(:, 4);
+notnan = ~isnan(simulation_cycles); % TODO FIXME don't fit the NaNs -- but it's still bad that we get them...
 
-p = polyfit(simulation_cycles, empirical_RTs, 1);
+p = polyfit(simulation_cycles(notnan), empirical_RTs(notnan), 1);
 RT_slope = p(1);
 RT_intercept = p(2);
 yfit = polyval(p, simulation_cycles);

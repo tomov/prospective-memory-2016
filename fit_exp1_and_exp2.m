@@ -8,6 +8,7 @@ fprintf(']......\n');
 
 debug_mode = false;
 fitting_mode = false;
+parallel_runs = false;
 
 startpar = [1  0.35   1    0.3, ...     % focal, low emph     % exp1_v16, exp2_v19
             1  0.6    1    0.4, ...     % focal, high emph      % exp1_v16
@@ -23,10 +24,19 @@ startpar([2 4 6 8 10 12 14 16 22]) = free_params; % set the params we're fitting
 startpar(22) = free_params(9) * 10^(-3);
 
 % experiment 1
-[data, extra] = EM2005(startpar, 1, fitting_mode, debug_mode, false, runs);
+if parallel_runs
+    [data, extra] = EM2005(startpar, 1, fitting_mode, debug_mode, false, runs);
+end
 errors_exp1 = zeros(runs, 1);
 for run = 1:runs
-    errors_exp1(run) = compute_err_exp1(data{run}, extra);
+    if parallel_runs
+        errors_exp1(run) = compute_err_exp1(data{run}, extra);
+    else
+        % serial runs
+        fprintf('                            ... run = %d', run);
+        [data, extra] = EM2005(startpar, 1, fitting_mode, debug_mode, false, 1);
+        errors_exp1(run) = compute_err_exp1(data{1}, extra);
+    end
 end
 error_exp1 = mean(errors_exp1);
 error_exp1_std = std(errors_exp1);

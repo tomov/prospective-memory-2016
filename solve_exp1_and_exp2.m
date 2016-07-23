@@ -1,7 +1,10 @@
+function solve_exp1_and_exp2(runs)
+
 % Find the best set of free parameters
 %
 
-runs = 1; % how many times to run the experiment for each set of parameters; cost f'n is averaged
+runs = str2num(runs); % how many times to run the experiment for each set of parameters; cost f'n is averaged
+fprintf('RUNS = %d', runs);
 
          % PM Task  PM target(s) initial WM activations
 init_par = [0.35   0.3, ...     % focal, low emph     % exp1_v16, exp2_v19
@@ -22,7 +25,7 @@ best_par = fmincon(fit, init_par, [], [], [], [], min_par, max_par, [], options)
 
 best_par
 
-% Run experiment 1 and save the actual data
+% Re-run experiment 1 with best params and save the actual data
 %
 experiment = 1;
 

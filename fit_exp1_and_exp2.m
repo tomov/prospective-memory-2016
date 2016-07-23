@@ -33,7 +33,7 @@ for run = 1:runs
         errors_exp1(run) = compute_err_exp1(data{run}, extra);
     else
         % serial runs
-        fprintf('                            ... run = %d', run);
+        fprintf('                            ... run = %d\n', run);
         [data, extra] = EM2005(startpar, 1, fitting_mode, debug_mode, false, 1);
         errors_exp1(run) = compute_err_exp1(data{1}, extra);
     end

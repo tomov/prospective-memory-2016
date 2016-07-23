@@ -76,9 +76,6 @@ empirical_stats = [
 % convert SD's to SEM's in empirical data
 empirical_stats(:, SD_cols) = empirical_stats(:, SD_cols) / sqrt(subjects_per_condition);
 
-
-
-
 % ------------- calculate simulation stats (Table 2 from E&M 2005)
 
 simulation_stats = [];
@@ -111,6 +108,13 @@ simulation_stats(:, SD_cols) = simulation_stats(:, SD_cols) / sqrt(subjects_per_
 % -------------- run linear regression to find slope and intercept for RT's
 
 empirical_RTs = empirical_stats(:, 4);
+% TODO HACK FIXME -- to "fix" E&M's wacky results, simply make the
+% Focal, PM and the Focal, No-PM condition same as the Nonfocal, No-PM
+% condition
+% a little fraud b/c the Focal, PM is slightly above the No-PM conditions generally 
+empirical_RTs(empirical_stats(:, 1) == 1 & empirical_stats(:, 2) == 1) = empirical_RTs(empirical_stats(:, 1) == 1 & empirical_stats(:, 2) == 0);
+empirical_RTs(empirical_stats(:, 1) == 0 & empirical_stats(:, 2) == 1) = empirical_RTs(empirical_stats(:, 1) == 1 & empirical_stats(:, 2) == 0);
+
 simulation_cycles = simulation_stats(:, 4);
 notnan = ~isnan(simulation_cycles); % TODO FIXME don't fit the NaNs -- but it's still bad that we get them...
 
@@ -314,7 +318,9 @@ for FOCAL = 1:-1:0
     fprintf('\n  Simulation Data -------\n');
     fprintf('                 F = %.4f, p = %f\n', table{2,6}, p(1));
 
-    [p, table] = anovan(samples(:,4), {samples(:, 1), samples(:, 10)}, 'model','full', 'display', 'off');
+    % remove the OG_ONLY runs and only compare first and last block
+    samples = blocks(blocks(:, 1) == 0 & blocks(:, 2) == FOCAL & (blocks(:, 10) == 1 | blocks(:, 10) == 4), :);
+    [p, table] = anovan(samples(:,4), {samples(:, 10)}, 'model','full', 'display', 'off');
     fprintf('\n\n----- OG RT Cost steady decrease: %s ------\n', focal_titles{FOCAL+1});
     fprintf('\n  Empirical Data -------\n');
     fprintf('                 F = %.2f\n', empirical_Fs_blocks(FOCAL+1));

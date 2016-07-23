@@ -77,7 +77,7 @@ elseif experiment == 2
                 1  0.8    1    0.78, ...    % nonfocal, low emph   % exp2_v11
                 1  0.9    1    0.83, ...    % nonfocal, high emph  % exp1_v16 -- sorta
                 4 4 4, ...    % biases -- tasks, attention, context
-		        0.0 0.0, ...  % cross-subject init wm noise sigma -- PM task, target
+		        0.2 0.2, ...  % cross-subject init wm noise sigma -- PM task, target
                 0.0004, ...   % gamma
                 0.1 0.01, ... % ffwd noise, wm noise sigma
                 0.0];         % wm bias noise sigma

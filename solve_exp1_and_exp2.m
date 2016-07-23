@@ -1,6 +1,8 @@
 % Find the best set of free parameters
 %
 
+runs = 1; % how many times to run the experiment for each set of parameters; cost f'n is averaged
+
          % PM Task  PM target(s) initial WM activations
 init_par = [0.35   0.3, ...     % focal, low emph     % exp1_v16, exp2_v19
             0.6    0.4, ...     % focal, high emph      % exp1_v16
@@ -13,8 +15,10 @@ min_par =  [0 0 0 0 0 0 0 0 0];
 max_par =  [1 1 1 1 1 1 1 1 1];
 assert(length(min_par) == length(init_par));
 
+fit = @(free_params) fit_exp1_and_exp2(free_params, runs);
+
 options = optimoptions(@fmincon,'Algorithm','sqp','MaxIter', 1000, 'DiffMinChange', 0.001);
-best_par = fmincon(@fit_exp1_and_exp2, init_par, [], [], [], [], min_par, max_par, [], options);
+best_par = fmincon(fit, init_par, [], [], [], [], min_par, max_par, [], options);
 
 best_par
 

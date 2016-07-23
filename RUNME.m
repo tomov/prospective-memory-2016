@@ -23,7 +23,7 @@ where
   ];
 %}
 
-debug_mode = true; % only run 1 subject per condition and show progress ; !!!!!IMPORTANT!!!!!!!!! must change parfor to for in EM2005
+debug_mode = false; % only run 1 subject per condition and show progress ; !!!!!IMPORTANT!!!!!!!!! must change parfor to for in EM2005
 fitting_mode = false; % used when fitting the parameters ; uses a more efficient setup that produces similar results
 
 
@@ -45,37 +45,11 @@ if experiment == 1
                 1  0.8    1    0.75, ...    % nonfocal, low emph   % exp2_v11
                 1  0.9    1    0.83, ...    % nonfocal, high emph  % exp1_v16 -- sorta
                 4 4 4, ... % biases -- tasks, attention, context
-		        0.0 0.0, ... % cross-subject init wm noise sigma -- PM task, target
+		        0.3 0.3, ... % cross-subject init wm noise sigma -- PM task, target
                 0.0004,  ... % gamma
                 0.1 0.01, ...  % ffwd noise, wm noise sigma
                 0.0];        % wm bias noise sigma
 
-            %{
-    
-           % BETTER BETTER !! 
-    startpar = [1  0.35   1    0.3, ...     % focal, low emph     % exp1_v16, exp2_v19
-                1  0.6    1    0.4, ...     % focal, high emph      % exp1_v16
-                1  0.8    1    0.75, ...    % nonfocal, low emph   % exp2_v11
-                1  0.9    1    0.83, ...    % nonfocal, high emph  % exp1_v16 -- sorta
-                4 4 4, ... % biases -- tasks, attention, context
-		        0.4 0, ... % cross-subject init wm noise sigma -- PM task, target
-                0.0004,  ... % gamma
-                0.1 0.01];   % ffwd noise, wm noise sigma
-                
-                
-      % BEAUTIFUL BEAUTIFUL -- only OG task needs work
-    startpar = [1  0.35   1    0.3, ...     % focal, low emph     % exp1_v16, exp2_v19
-                1  0.6    1    0.4, ...     % focal, high emph      % exp1_v16
-                1  0.8    1    0.75, ...    % nonfocal, low emph   % exp2_v11
-                1  0.9    1    0.83, ...    % nonfocal, high emph  % exp1_v16 -- sorta
-                4 4 4, ... % biases -- tasks, attention, context
-		        0.4 0.4, ... % cross-subject init wm noise sigma -- PM task, target
-                0.0004,  ... % gamma
-                0.1 0.01];   % ffwd noise, wm noise sigma
-            %}
-            
-            
-            
    %  startpar([2 4 6 8 10 12 14 16 22])  =  [0.3425    0.2937    0.5865    0.4131    0.7830  0.7332    0.9019 0.8114    0.4131 / 1000];
   %   startpar([2 4 6 8 10 12 14 16 20 21 22])  =  [0.3027    0.2594    0.5188    0.3459    0.6918    0.6486    0.7783 0.7177    0.2121    0.1297    0.3459 / 1000] % M * 2 + SD + F / 1000
   %   startpar([2 4 6 8 10 12 14 16 22]) = [0.3744    0.2865    0.5731 ...
@@ -204,6 +178,8 @@ tic
 data = data{1};
 toc
 
-filename = sprintf('exp%d-runhash-%s.mat', experiment, runhash);
-fprintf('\n\n\nOUTPUT SAVED TO FILE %s\n', filename);
-save(filename);
+if ~debug_mode
+    filename = sprintf('exp%d-runhash-%s.mat', experiment, runhash);
+    fprintf('\n\n\nOUTPUT SAVED TO FILE %s\n', filename);
+    save(filename);
+end

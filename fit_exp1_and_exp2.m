@@ -1,4 +1,4 @@
-function error = fit_exp1_and_exp2( free_params )
+function error = fit_exp1_and_exp2( free_params, runs )
 % the error function to fit with fmincon or whatever which takes only a set of "free" parameters
 % and returns the computed error 
 
@@ -8,7 +8,6 @@ fprintf(']......\n');
 
 debug_mode = false;
 fitting_mode = false;
-runs = 1; % how many times to run the experiment for each set of parameters; cost f'n is averaged
 
 startpar = [1  0.35   1    0.3, ...     % focal, low emph     % exp1_v16, exp2_v19
             1  0.6    1    0.4, ...     % focal, high emph      % exp1_v16
@@ -18,7 +17,7 @@ startpar = [1  0.35   1    0.3, ...     % focal, low emph     % exp1_v16, exp2_v
             0.3 0.3, ... % cross-subject init wm noise sigma -- PM task, target
             0.0004,  ... % gamma
             0.1 0.01, ...   % ffwd noise, wm noise sigma
-            0.3];       % wm bias noise sigma
+            0.0];       % wm bias noise sigma
 
 startpar([2 4 6 8 10 12 14 16 22]) = free_params; % set the params we're fitting
 startpar(22) = free_params(9) * 10^(-3);

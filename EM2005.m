@@ -139,7 +139,7 @@ end
 % just add the conditions several times
 %
 % PARFOR
-for cond_id = 1:size(conditions, 1)
+parfor cond_id = 1:size(conditions, 1)
     condition = conditions(cond_id, :);
     run = condition(1);
     OG_ONLY = condition(2);
@@ -419,10 +419,11 @@ for cond_id = 1:size(conditions, 1)
         % PM target cannot be > OG features
         bad_ones = subject_params(:, 2) > model_params(3) - 0.07;
         subject_params(bad_ones, 2) = model_params(3) - 0.07;
-
-        which_biases = [3 4 5];
-        subject_params(:, which_biases) = subject_params(:, which_biases) + normrnd(0, wm_bias_noise_sigma, size(subject_params(:, which_biases)));
     end
+    % WM bias noise across subjects
+    % IMPORTANT -- make sure noise term is the same for all 3 biases for a given subject
+    which_biases = [3 4 5];
+    subject_params(:, which_biases) = subject_params(:, which_biases) + repmat(normrnd(0, wm_bias_noise_sigma, size(subject_params, 1), 1), 1, length(which_biases));
 
     % initialize simulator (for multiple subjects)
     %

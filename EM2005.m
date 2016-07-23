@@ -72,10 +72,10 @@ if debug_mode
     % we show ~16 figures per subject. You don't want more than one subject
     %
     subjects_per_condition = 1;
-    og_range = 0;
-    focal_range = 0;
-    emphasis_range = 0;
-    %target_range = [1,6];
+    og_range = 1;
+    focal_range = 1;
+    emphasis_range = 1;
+    target_range = [1];
     trials_per_block = 20;
     blocks_per_condition = 10;
 elseif fitting_mode
@@ -100,7 +100,6 @@ for run = 1:experiment_runs
             % regardless of the other conditions; so run only 1 simulation for
             % OG_ONLY and then resuse it for all other OG_ONLY conditions
             %
-            assert(~debug_mode); % not working yet b/c of extra (see end)
             og_only_condition = [OG_ONLY focal_range(1) emphasis_range(1) target_range(1)];
             conditions = [conditions; run og_only_condition];
         else
@@ -158,7 +157,6 @@ end
 for run = 1:experiment_runs
     for OG_ONLY = og_range
         if OG_ONLY
-            assert(~debug_mode);
             og_only_rows = data(:, 1) == OG_ONLY & run_ids(:) == run;
             data_og_only = data(og_only_rows, :);
             extra_og_only = extra(og_only_rows, :);
@@ -186,7 +184,10 @@ for run = 1:experiment_runs
 end
 
 data_reshaped = cell(experiment_runs, 1);
+extra_reshaped = cell(experiment_runs, 1);
 for run = 1:experiment_runs
     data_reshaped{run} = data(run_ids(:) == run, :);
+    extra_reshaped{run} = extra(run_ids(:) == run, :);
 end
 data = data_reshaped;
+extra = extra_reshaped;

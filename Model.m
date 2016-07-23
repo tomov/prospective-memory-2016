@@ -140,6 +140,8 @@ classdef Model < handle
         input_ids
         perception_ids
         response_ids
+        og_response_ids
+        pm_response_ids
         output_ids
         task_ids
         attention_ids
@@ -285,6 +287,8 @@ classdef Model < handle
             self.input_ids = cellfun(@self.unit_id, self.input_units);
             self.perception_ids = cellfun(@self.unit_id, self.perception_units);
             self.response_ids = cellfun(@self.unit_id, self.response_units);
+            self.og_response_ids = cellfun(@self.unit_id, {'A Subject', 'An Animal', 'No Match 1', 'No Match 2'});
+            self.pm_response_ids = cellfun(@self.unit_id, {'PM Response'});
             self.output_ids = cellfun(@self.unit_id, self.output_units);
             self.task_ids = cellfun(@self.unit_id, self.task_units);
             self.attention_ids = cellfun(@self.unit_id, self.attention_units);
@@ -472,6 +476,7 @@ classdef Model < handle
             self.bias(self.response_ids) = self.BIAS_FOR_RESPONSES;
             self.bias(self.output_ids) = self.BIAS_FOR_OUTPUTS;
             self.bias(self.task_ids) = self.BIAS_FOR_TASK;
+            %self.bias(self.og_response_ids) = self.bias(self.og_response_ids) * 0.5;
             self.bias(self.attention_ids) = self.BIAS_WHEN_OFF; % all attention units don't exist by default
             self.bias(self.unit_id('OG features')) = self.BIAS_FOR_ATTENTION; % ...except for OG features
             self.bias(self.context_ids) = self.BIAS_FOR_CONTEXT;

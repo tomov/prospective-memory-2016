@@ -287,7 +287,7 @@ subject_params = repmat(model_params(which_params_we_vary_across_subjects), subj
 if ~OG_ONLY
     % PM task noise
     %subject_params(:, 1) = subject_params(:, 1) + unifrnd(-init_pm_task_noise_sigma, init_pm_task_noise_sigma, subjects_per_condition, 1);
-    subject_params(:, 1) = subject_params(:, 1) + normrnd(0, init_pm_task_noise_sigma, size(subject_params(:, 1)))
+    subject_params(:, 1) = subject_params(:, 1) + normrnd(0, init_pm_task_noise_sigma, size(subject_params(:, 1)));
     % PM task cannot be > OG task
     bad_ones = subject_params(:, 1) > model_params(1) - 0.07;
     subject_params(bad_ones, 1) = model_params(1) - 0.07;

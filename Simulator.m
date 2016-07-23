@@ -7,7 +7,8 @@ classdef Simulator < Model
         wm_capacity = 2;
         attention_factor = 0; % obsolete... for now
         next_available_hippo_id = 1;
-        resting_wm;
+        resting_wm;   % snapshot of wm activations at start of the experiment
+        last_trial_wm; % snapshot of wm activations at start of previous trial
         net_input;
         net_input_avg;
         accumulators; % the evidence accumulators
@@ -40,22 +41,33 @@ classdef Simulator < Model
             act = 1 ./ (1 + exp(-net));
         end
         
-        function threewayEM(self, stimulus, context, response)
-            assert(self.next_available_hippo_id <= length(self.hippo_ids));
+        function threewayEM(self, stimulus, context, task, opposite_task)
+            assert(self.next_available_hippo_id + 1 <= length(self.hippo_ids));
+            % stimulus + context => task
+            %
             stimulus_id = self.unit_id(stimulus);
             context_id = self.unit_id(context);
-            response_id = self.unit_id(response);
+            task_id = self.unit_id(task);
             hippo_id = self.hippo_ids(self.next_available_hippo_id);
             self.weights(stimulus_id, hippo_id) = self.STIMULUS_TO_HIPPO;
             self.weights(context_id, hippo_id) = self.CONTEXT_TO_HIPPO;
-            self.weights(hippo_id, response_id) = self.HIPPO_TO_TASK;
+            self.weights(hippo_id, task_id) = self.HIPPO_TO_TASK;
+            self.next_available_hippo_id = self.next_available_hippo_id + 1;
+
+            % context => opposite task (so it gets same amount of baseline excitation)
+            % TODO HACK FIXME WTF
+            %
+            opposite_task_id = self.unit_id(opposite_task);
+            hippo_id = self.hippo_ids(self.next_available_hippo_id);
+            self.weights(context_id, hippo_id) = self.CONTEXT_TO_HIPPO;
+            self.weights(hippo_id, opposite_task_id) = self.HIPPO_TO_TASK;
             self.next_available_hippo_id = self.next_available_hippo_id + 1;
         end
         
         function instruction(self, targets, include_in_WM)
             for target = targets
                 target_unit = strcat('see', {' '}, target); % get perception unit name
-                self.threewayEM(target_unit{1}, 'PM Context', 'PM Task');
+                self.threewayEM(target_unit{1}, 'PM Context', 'PM Task', 'OG Task');
                 target_monitor_unit = strcat('Monitor ', {' '}, target);
                 target_monitor_id = self.unit_id(target_monitor_unit{1});
                 if include_in_WM
@@ -88,6 +100,7 @@ classdef Simulator < Model
             self.wm_act = zeros(self.n_subjects, size(self.wm_ids, 2));
             self.wm_net = zeros(self.n_subjects, size(self.wm_ids, 2));
             self.resting_wm = self.wm_act;
+            self.last_trial_wm = self.wm_act;
             responses = cell(self.n_subjects, size(stimuli, 1));
             RTs = zeros(self.n_subjects, size(stimuli, 1));
             onsets = zeros(self.n_subjects, size(stimuli, 1));
@@ -170,8 +183,8 @@ classdef Simulator < Model
                         % BIG TODO WTF -- see below
 
                         % switched to PM task
-                        self.wm_act(switched_to_PM_task, self.wm_ids == self.unit_id('OG Task')) = self.init_wm(switched_to_PM_task, self.wm_ids == self.unit_id('OG Task'));
-                        self.wm_act(switched_to_PM_task, self.wm_ids == self.unit_id('PM Task')) = self.init_wm(switched_to_PM_task, self.wm_ids == self.unit_id('PM Task'));
+                        self.wm_act(switched_to_PM_task, self.wm_ids == self.unit_id('OG Task')) = self.last_trial_wm(switched_to_PM_task, self.wm_ids == self.unit_id('OG Task'));
+                        self.wm_act(switched_to_PM_task, self.wm_ids == self.unit_id('PM Task')) = self.last_trial_wm(switched_to_PM_task, self.wm_ids == self.unit_id('PM Task'));
 
                         self.adapt_wm_act_to_ffwd_act();
                     end
@@ -221,11 +234,12 @@ classdef Simulator < Model
                         m = abs(mean(m, 3));
                         were_settled = settled;
                         settled = settled | (mean(m, 2) < self.SETTLE_MEAN_EPS & std(m, 0, 2) < self.SETTLE_STD_EPS);
-                        just_settled = xor(were_settled, settled);
+                        just_settled = xor(were_settled, settled); % only update subjects whose activations have settled
                         settle_cycle(just_settled) = cycle;
                         if ord == 1
                             self.resting_wm(just_settled, :) = self.wm_act(just_settled, :);
                         end
+                        self.last_trial_wm(just_settled, :) = self.wm_act(just_settled, :);
                         onsets(just_settled, ord) = cycles + cycle;
                     end
                     

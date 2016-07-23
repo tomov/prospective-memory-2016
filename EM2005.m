@@ -89,13 +89,13 @@ end
 if debug_mode
     % we show ~16 figures per subject. You don't want more than one subject
     %
-    subjects_per_condition = 2;
+    subjects_per_condition = 1;
     og_range = 0;
     focal_range = 0;
-    emphasis_range = 1;
+    emphasis_range = 0;
     %target_range = [1,6];
     trials_per_block = 20;
-    blocks_per_condition = 1;
+    blocks_per_condition = 10;
 elseif fitting_mode
     % when fitting, use less subjects for speed
     %
@@ -139,7 +139,7 @@ end
 % just add the conditions several times
 %
 % PARFOR
-parfor cond_id = 1:size(conditions, 1)
+for cond_id = 1:size(conditions, 1)
     condition = conditions(cond_id, :);
     run = condition(1);
     OG_ONLY = condition(2);
@@ -222,7 +222,7 @@ parfor cond_id = 1:size(conditions, 1)
                 % testing; not used in any of E&M's experiments
                 %
                 for i = 1:length(stimuli)
-                    if mod(i,4) == 0
+                    if mod(i,40) == 0
                         target_id = mod(i, size(pm_targets_pattern, 1)) + 1;
                         middle = i;
                         stimuli(middle,:) = pm_targets_pattern(target_id, :);
@@ -355,8 +355,8 @@ parfor cond_id = 1:size(conditions, 1)
     %
 
     model_params = zeros(1,6);
-    model_params(7) = 1;
-    model_params(8) = 0;
+    model_params(7) = 1; % init PM context
+    model_params(8) = 0; % init Other context
     model_params(5) = bias_for_task;
     model_params(6) = bias_for_attention;
     model_params(9) = bias_for_context;
@@ -407,21 +407,18 @@ parfor cond_id = 1:size(conditions, 1)
     which_params_we_vary_across_subjects = [2 4 5 6 9];
     subject_params = repmat(model_params(which_params_we_vary_across_subjects), subjects_per_condition, 1);
     if ~OG_ONLY
-        model_params(1:4)
         % PM task noise
-        subject_params(:, 1) = subject_params(:, 1) + unifrnd(-init_pm_task_noise_sigma, init_pm_task_noise_sigma, subjects_per_condition, 1);
-        %+ unifrnd(-init_pm_task_noise_sigma, init_pm_task_noise_sigma, subjects_per_condition, 1);
-            %+ normrnd(0, init_pm_task_noise_sigma, size(subject_params(:, 1)))
+        %subject_params(:, 1) = subject_params(:, 1) + unifrnd(-init_pm_task_noise_sigma, init_pm_task_noise_sigma, subjects_per_condition, 1);
+        subject_params(:, 1) = subject_params(:, 1) + normrnd(0, init_pm_task_noise_sigma, size(subject_params(:, 1)))
         % PM task cannot be > OG task
-        bad_ones = subject_params(:, 1) > model_params(1) - 0.05;
-        subject_params(bad_ones, 1) = model_params(1) - 0.05;
+        bad_ones = subject_params(:, 1) > model_params(1) - 0.07;
+        subject_params(bad_ones, 1) = model_params(1) - 0.07;
         % PM target noise
-        subject_params(:, 2) = subject_params(:, 2) + unifrnd(-init_pm_target_noise_sigma, init_pm_target_noise_sigma, subjects_per_condition, 1);
-            % + unifrnd(-init_pm_target_noise_sigma, init_pm_target_noise_sigma, subjects_per_condition, 1);
-            %+ normrnd(0, init_pm_target_noise_sigma, size(subject_params(:, 2)));
+        %subject_params(:, 2) = subject_params(:, 2) + unifrnd(-init_pm_target_noise_sigma, init_pm_target_noise_sigma, subjects_per_condition, 1);
+        subject_params(:, 2) = subject_params(:, 2) + normrnd(0, init_pm_target_noise_sigma, size(subject_params(:, 2)));
         % PM target cannot be > OG features
-        bad_ones = subject_params(:, 2) > model_params(3) - 0.05;
-        subject_params(bad_ones, 2) = model_params(3) - 0.05;
+        bad_ones = subject_params(:, 2) > model_params(3) - 0.07;
+        subject_params(bad_ones, 2) = model_params(3) - 0.07;
 
         which_biases = [3 4 5];
         subject_params(:, which_biases) = subject_params(:, which_biases) + normrnd(0, wm_bias_noise_sigma, size(subject_params(:, which_biases)));

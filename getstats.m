@@ -147,12 +147,14 @@ if show_pics
         acc = squeeze(acc_all(s,:,:));
         net = squeeze(net_all(s,:,:));
 
+        save('getstats.mat'); % so we can debug more easily; note only last subject is saved
+
         t_range = 1:min(5000, length(act));
         %t_range = 1:2000;
         y_lim = [sim.MINIMUM_ACTIVATION - 0.1 sim.MAXIMUM_ACTIVATION + 0.1];
         bar_names = {'OG correct', 'PM hit', 'false alarm', 'OG wrong', 'PM miss', 'PM OG' 'OG timeout', 'PM timeout'};
-        onset_plot = onsets(onsets < t_range(end));
-        offset_plot = offsets(offsets < t_range(end));
+        onset_plot = onsets(onsets < t_range(end))';
+        offset_plot = offsets(offsets < t_range(end))';
         % turn off onset plot if necessary
         onset_plot = 0; offset_plot = 0;
 
@@ -160,31 +162,39 @@ if show_pics
         % Experimental stuff
         %
 
+        subplot(4, 3, 1);
+        plot(act(1:end, sim.hippo_ids));
+        legend(sim.units(sim.hippo_ids));
+        title('Hippocampus');
+        ylim(y_lim);
+        line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
+        line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
+
         subplot(4, 3, 4);
-        unit = sim.unit_id('A Subject'); 
-        which = sim.weights(:, unit) > 0;
-        net_inputs_PM = act(:, :) .* repmat(sim.weights(:, unit)', size(act, 1), 1);
-        plot(t_range, net_inputs_PM(t_range, which));
+        unit = sim.unit_id('PM Task'); 
+        which = sim.weights(:, unit) ~= 0;
+        net_inputs = act(:, :) .* repmat(sim.weights(:, unit)', size(act, 1), 1);
+        plot(t_range, net_inputs(t_range, which));
         legend(sim.units(which));
-        title('Net inputs to A Subject');
+        title('Net inputs to PM Task');
 
         subplot(4, 3, 7);
-        unit = sim.unit_id('PM Response'); 
-        which = sim.weights(:, unit) > 0;
-        net_inputs_PM = act(:, :) .* repmat(sim.weights(:, unit)', size(act, 1), 1);
-        plot(t_range, net_inputs_PM(t_range, which));
+        unit = sim.unit_id('Monitor tor'); 
+        which = sim.weights(:, unit) ~= 0;
+        net_inputs = act(:, :) .* repmat(sim.weights(:, unit)', size(act, 1), 1);
+        plot(t_range, net_inputs(t_range, which));
         legend(sim.units(which));
-        title('Net inputs to PM Response');
+        title('Net inputs to Monitor tor');
         %self.net_input(~responded, self.ffwd_ids) = act(:, :) * self.weights(:, self.ffwd_ids) ...
         %    + repmat(self.bias(self.ffwd_ids), sum(~responded), 1);
 
         subplot(4, 3, 10);
-        which = [sim.unit_id('PM Response'), sim.unit_id('A Subject')];
+        which = [sim.unit_id('PM Task'), sim.unit_id('hippo 1')];
         plot(t_range, net(t_range, which));
         legend(sim.units(which));
         title('Net input');
         ylim([-10 10]);
-        
+
         %
         % Stimulus-response pathways
         %
@@ -246,19 +256,10 @@ if show_pics
         ylim(y_lim);
         line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
         line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
-        
-        ha = axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0 1],'Box','off','Visible','off','Units','normalized', 'clipping' , 'off');
-        text(0.5, 1, sprintf('\b%s, subject #%d', title_string, s), 'HorizontalAlignment' ,'center','VerticalAlignment', 'top')
 
-        %{
-        subplot(5, 2, 10);
-        plot(act(1:end, sim.hippo_ids));
-        legend(sim.units(sim.hippo_ids));
-        title('Hippocampus');
-        ylim(y_lim);
-        line([onset_plot onset_plot],y_lim,'Color',[0.5 0.5 0.5])
-        line([offset_plot offset_plot],y_lim, 'LineStyle', '--', 'Color',[0.5 0.5 0.5])
-        %}
+        % UG can't move things around with this on top...
+%        ha = axes('Position',[0 0 1 1],'Xlim',[0 1],'Ylim',[0 1],'Box','off','Visible','off','Units','normalized', 'clipping' , 'off');
+%        text(0.5, 1, sprintf('\b%s, subject #%d', title_string, s), 'HorizontalAlignment' ,'center','VerticalAlignment', 'top')
 
         %
         % -- bar plots

@@ -29,7 +29,7 @@ fitting_mode = false; % used when fitting the parameters ; uses a more efficient
 
 
 
-experiment = 4; % <------------------------------- HERE --------------------------------------
+experiment = 6; % <------------------------------- HERE --------------------------------------
 
 
 
@@ -98,12 +98,12 @@ elseif experiment == 6
                 1  0.8    1    0.70, ...    % nonfocal, low emph   % exp2_v11
                 1  0.9    1    0.83, ...    % nonfocal, high emph  % exp1_v16 -- sorta
                 4.5   4.5   4.5, ...  % biases, high wm capacity -- tasks, attention, context
-		        0 0, ...        % cross-subject init wm noise sigma -- PM task, target
+		        0.1 0.1, ...        % cross-subject init wm noise sigma -- PM task, target
                 0.0002, ...     % gamma
                 0.1 0.01, ... % ffwd noise, wm noise sigma
                 0.0, ...    % wm bias noise sigma
                 0.0, ...    % OG weights noise
-                4 4 4];       % biases, low wm capacity
+                3.9 3.9 3.9];       % biases, low wm capacity
             
      % biases = 3.5 3.3 4 not bad result ; nvm bad result -> features must
      % be high.... plots 1 and 2 ok

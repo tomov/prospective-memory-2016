@@ -63,7 +63,7 @@ empirical_stats(:, SD_cols) = empirical_stats(:, SD_cols) / sqrt(subjects_per_co
 % now it means whether it's "low cost" (0) or "high cost" (1) group
 
 % first step -- clear the nan's
-assert(sum(isnan(subjects(:, 4))) < 6); % don't want too many nan's
+assert(sum(isnan(subjects(:, 4))) <= 13); % don't want too many nan's
 subjects = subjects(~isnan(subjects(:, 4)), :);
 
 for OG_ONLY = 1:-1:0

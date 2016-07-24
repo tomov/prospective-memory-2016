@@ -35,6 +35,7 @@ gamma = params(22);
 noise_sigma_ffwd = params(23);
 noise_sigma_wm = params(24);
 wm_bias_noise_sigma = params(25);
+og_weights_noise_factor = params(26);
 
 assert(exp_id == 1 || exp_id == 2 || exp_id == 3 || exp_id == 4 || exp_id == 5 || exp_id == 6);
 
@@ -364,13 +365,14 @@ parfor cond_id = 1:size(conditions, 1)
         % note that we use EMPHASIS to denote high/low wm
         % capacity #hacksauce
         %
-        model_params(5) = params(26); % bias for task
-        model_params(6) = params(27); % bias for attention
-        model_params(9) = params(28); % bias for context
+        model_params(5) = params(27); % bias for task
+        model_params(6) = params(28); % bias for attention
+        model_params(9) = params(29); % bias for context
     end
     model_params(10) = gamma;
     model_params(11) = noise_sigma_ffwd;
     model_params(12) = noise_sigma_wm;
+    model_params(13) = og_weights_noise_factor;
     if OG_ONLY
         model_params(1:4) = [1 0 1 0];
     else       

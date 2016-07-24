@@ -147,10 +147,6 @@ classdef Simulator < Model
                 % reset response, output, and monitoring activations
                 self.accumulators = zeros(self.n_subjects, size(self.output_ids, 2));
                 
-                % default output is timeout
-                output_id = repmat(self.unit_id('timeout'), self.n_subjects, 1);
-                RTs(:, ord) = timeout;
-                
                 %
                 % simulate response to given stimulus i.e. a trial
                 % for all subjects simultaneously (woohoo)
@@ -325,6 +321,10 @@ classdef Simulator < Model
                     end
                 end
               
+                % whoever didn't respond is a timeout
+                responses(~responded, ord) = {'timeout'};
+                RTs(~responded, ord) = timeout;
+
                 %{
                 % record response and response time
                 if switched_to_Inter_task || switched_to_OG_and_PM_from_Inter_task

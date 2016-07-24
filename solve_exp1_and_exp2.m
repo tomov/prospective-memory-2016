@@ -32,7 +32,8 @@ experiment = 1;
 rng('shuffle');
 runhash = randstr(10); % so we can tag the output files
 
-[data, extra] = EM2005(best_par, experiment, false, false, true, 1); 
+startpar = free_params_to_params(best_par);
+[data, extra] = EM2005(startpar, experiment, false, false, true, 1); 
 
 filename = sprintf('exp%d-runhash-%s.mat', experiment, runhash);
 fprintf('\n\n\nOUTPUT SAVED TO FILE %s\n', filename);

@@ -29,7 +29,7 @@ fitting_mode = false; % used when fitting the parameters ; uses a more efficient
 
 
 
-experiment = 1; % <------------------------------- HERE --------------------------------------
+experiment = 3; % <------------------------------- HERE --------------------------------------
 
 
 
@@ -123,12 +123,12 @@ elseif experiment == 3
                 NaN NaN   NaN  NaN, ...    % INVALID nonfocal, low emph   % exp2_v11
                 NaN NaN   NaN  NaN, ...    % INVALID nonfocal, high emph  % exp1_v16 -- sorta
                 4 4 4, ...   % biases -- tasks, attention, context
-         		0 0, ...     % cross-subject init wm noise sigma -- PM task, target
+         		0.0 0.0, ...     % cross-subject init wm noise sigma -- PM task, target
                 0.0004, ...  % gamma
                 0.1 0.01, ...   % ffwd noise, wm noise sigma
                 0.0];     % wm bias noise sigma
             
-    startpar([2 4 20 21]) = [0    0.1368    0.7049    0.5319];
+   % startpar([2 4 20 21]) = [0    0.1368    0.7049    0.5319];
      % startpar([2 4 20 21 22]) = [ 0.0155         0    1.0000         0         0 / 1000 ]; % probabilistic -- sometimes work sometimes not so well (b/c of the randomness in monitoring)
 % from git hash a460e3a5c78a0492811b42a831f37c8b7023e364  --->     [0.2428    1.0000    1.0000    1.0000]
 elseif experiment == 4  

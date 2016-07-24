@@ -92,8 +92,8 @@ if debug_mode
     subjects_per_condition = 1;
     og_range = 1;
     focal_range = 1;
-    emphasis_range = 1;
-    target_range = [1];
+    emphasis_range = 0;
+    target_range = [6];
     trials_per_block = 20;
     blocks_per_condition = 10;
 elseif fitting_mode
@@ -441,7 +441,15 @@ parfor cond_id = 1:size(conditions, 1)
     if ~OG_ONLY
         if FOCAL
             if TARGETS == 6
+                % TODO FIXME DISCUSS -- we don't rely on holding all of
+                % these in WM (see Jon's comment in thesis). Instead, have
+                % 1 unit which means "Monitor for PM features" which
+                % coincide with the OG features -> they complement each
+                % other (just like the previous examples)
+                % STILL USEFUL e.g. FOR NONFOCAL -- there we would have ot
+                % keep them in WM
                 sim.instruction({'tortoise', 'dog', 'cat', 'kiwi', 'panda', 'monkey'}, true);
+                %sim.instruction({'tortoise'}, true);
             else
                 assert(TARGETS == 1);
                 %if exp_id == 5 TODO cleanup

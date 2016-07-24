@@ -476,11 +476,13 @@ classdef Model < handle
             self.bias(self.response_ids) = self.BIAS_FOR_RESPONSES;
             self.bias(self.output_ids) = self.BIAS_FOR_OUTPUTS;
             self.bias(self.task_ids) = self.BIAS_FOR_TASK;
-            %self.bias(self.og_response_ids) = self.bias(self.og_response_ids) * 0.5;
             self.bias(self.attention_ids) = self.BIAS_WHEN_OFF; % all attention units don't exist by default
             self.bias(self.unit_id('OG features')) = self.BIAS_FOR_ATTENTION; % ...except for OG features
             self.bias(self.context_ids) = self.BIAS_FOR_CONTEXT;
             self.bias(self.hippo_ids) = self.BIAS_FOR_HIPPO;
+            
+            % OG noise for exp 3
+            %self.bias(self.og_response_ids) = self.bias(self.og_response_ids) - 5;
 
             % replicate biases across subjects
             % and vary some of them depending on the cross-subject parameters

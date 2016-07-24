@@ -147,8 +147,6 @@ if show_pics
         acc = squeeze(acc_all(s,:,:));
         net = squeeze(net_all(s,:,:));
 
-        save('getstats.mat'); % so we can debug more easily; note only last subject is saved
-
         t_range = 1:min(5000, length(act));
         %t_range = 1:2000;
         y_lim = [sim.MINIMUM_ACTIVATION - 0.1 sim.MAXIMUM_ACTIVATION + 0.1];
@@ -157,6 +155,8 @@ if show_pics
         offset_plot = offsets(offsets < t_range(end))';
         % turn off onset plot if necessary
         onset_plot = 0; offset_plot = 0;
+
+        save('getstats.mat'); % so we can debug more easily; note only last subject is saved
 
         %
         % Experimental stuff
@@ -179,17 +179,17 @@ if show_pics
         title('Net inputs to PM Task');
 
         subplot(4, 3, 7);
-        unit = sim.unit_id('Monitor tor'); 
+        unit = sim.unit_id('PM Response'); 
         which = sim.weights(:, unit) ~= 0;
         net_inputs = act(:, :) .* repmat(sim.weights(:, unit)', size(act, 1), 1);
         plot(t_range, net_inputs(t_range, which));
         legend(sim.units(which));
-        title('Net inputs to Monitor tor');
+        title('Net inputs to PM Response');
         %self.net_input(~responded, self.ffwd_ids) = act(:, :) * self.weights(:, self.ffwd_ids) ...
         %    + repmat(self.bias(self.ffwd_ids), sum(~responded), 1);
 
         subplot(4, 3, 10);
-        which = [sim.unit_id('PM Task'), sim.unit_id('hippo 1')];
+        which = [sim.unit_id('A Subject'), sim.unit_id('An Animal'), sim.unit_id('PM Response')];
         plot(t_range, net(t_range, which));
         legend(sim.units(which));
         title('Net input');

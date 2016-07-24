@@ -17,10 +17,10 @@ plot_all_conditions_exp3(simulation_stats(:, [1 12 3 4 5]), 4500, 5500, RT_slope
 
 subplot(3, 2, 3);
 ylabel('OG Accuracy (%)');
-plot_all_conditions_exp3(empirical_stats(:, [1 12 3 6 7]), 40, 100, 1, 0, false);
+plot_all_conditions_exp3(empirical_stats(:, [1 12 3 6 7]), 0, 100, 1, 0, false);
 
 subplot(3, 2, 4);
-plot_all_conditions_exp3(simulation_stats(:, [1 12 3 6 7]), 40, 100, 1, 0, false);
+plot_all_conditions_exp3(simulation_stats(:, [1 12 3 6 7]), 0, 100, 1, 0, false);
 
 subplot(3, 2, 5);
 ylabel('PM Hit Rate (%)');

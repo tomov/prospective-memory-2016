@@ -147,7 +147,7 @@ if show_pics
         acc = squeeze(acc_all(s,:,:));
         net = squeeze(net_all(s,:,:));
 
-        t_range = 1:min(5000, length(act));
+        t_range = 1:min(10000, length(act));
         %t_range = 1:2000;
         y_lim = [sim.MINIMUM_ACTIVATION - 0.1 sim.MAXIMUM_ACTIVATION + 0.1];
         bar_names = {'OG correct', 'PM hit', 'false alarm', 'OG wrong', 'PM miss', 'PM OG' 'OG timeout', 'PM timeout'};

@@ -95,28 +95,25 @@ elseif experiment == 6
     % OG task, PM task, OG features, target(s)
     startpar = [1  0.35   1    0.3, ...     % focal, low emph     % exp1_v16, exp2_v19
                 1  0.6    1    0.4, ...     % focal, high emph      % exp1_v16
-                1  0.8    1    0.70, ...    % nonfocal, low emph   % exp2_v11
+                1  0.8    1    0.75, ...    % nonfocal, low emph   % exp2_v11
                 1  0.9    1    0.83, ...    % nonfocal, high emph  % exp1_v16 -- sorta
-                4.5   4.5   4.5, ...  % biases, high wm capacity -- tasks, attention, context
+                4.2  4.2  4.2, ...  % biases, high wm capacity -- tasks, attention, context
 		        0.1 0.1, ...        % cross-subject init wm noise sigma -- PM task, target
-                0.0002, ...     % gamma
+                0.0004, ...     % gamma
                 0.1 0.01, ... % ffwd noise, wm noise sigma
-                0.0, ...    % wm bias noise sigma
+                0.1, ...    % wm bias noise sigma
                 0.0, ...    % OG weights noise
-                3.9 3.9 3.9];       % biases, low wm capacity
+                3.8 3.8 3.8];       % biases, low wm capacity
             
      % biases = 3.5 3.3 4 not bad result ; nvm bad result -> features must
      % be high.... plots 1 and 2 ok
      % biases = 3.5 4 4 => plots 2 and 4 ok
      % 
-     startpar([2 4 6 8 10 12 14 16 22])  =  [0.3425    0.2937    0.5865    0.4131    0.7830  0.7332    0.9019 0.8114    0.4131 / 1000]; % from experiment 1
-     
-     startpar([5 6 7 8]) = startpar([1 2 3 4]); % high emphasis = low emphasis (b/c we use it to mean "wm capacity" #hacksauce)
-     startpar([13 14 15 16]) = startpar([9 10 11 12]); % high emphasis = low emphasis (b/c we use it to mean "wm capacity" #hacksauce)
- %   startpar([2 4 6 8 10 12 14 16 22])  =  [ 0.3728    0.2708    0.5854    0.4157    0.7403    0.7339    0.8124    0.8061    0.4180 / 1000];
-         % [0.2453    0.3713    0.5446    0.4261    0.8402    0.7132
-         % 0.7766    0.8729]; % best par from solve.m for experiment 1
-    
+     %startpar([2 4 6 8 10 12 14 16 22])  =  [0.3425    0.2937    0.5865    0.4131    0.7830  0.7332    0.9019 0.9114    0.4131 / 1000]; % from experiment 1
+
+     % !!!!!IMPORTANT!!!!!!
+    % startpar([5 6 7 8]) = startpar([1 2 3 4]); % high emphasis = low emphasis (b/c we use it to mean "wm capacity" #hacksauce)
+    % startpar([13 14 15 16]) = startpar([9 10 11 12]); % high emphasis = low emphasis (b/c we use it to mean "wm capacity" #hacksauce)
 elseif experiment == 3 
     % 6 targets => slower OG in 6 vs. 1 target
     %

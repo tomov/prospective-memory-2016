@@ -14,6 +14,7 @@
     7 - PM_Hit,
     8 - PM_miss_OG_hit
     10 - first_PM_RT
+    11 - PM miss OG RT
  (see EM2005 exp 2)
 %}
 
@@ -48,7 +49,7 @@ empirical_stats = [
     % low WM capacity
     1 1 0, 696.39,  17.65,        97, 2, NaN,  NaN,  NaN, NaN, 1,  NaN,     NaN;  % baseline, 
     0 1 0, 698.47,  16.31,        97, 2, NaN,  NaN,  88,   3,  1,  780.81,  159.71;  % PM, focal, 
-    0 0 0, 779.32,  26.00,        97, 2, NaN,  NaN,  68,   7,  1,  1489.72, 208.40;  % PM, non-non-focal,
+    0 0 0, 779.32,  26.00,        97, 2, NaN,  NaN,  68,   7,  1,  1489.72, 208.40;  % PM, non-focal,
     
     % high WM capacity
     1 1 1, 726.96,  27.24,        97, 2, NaN,  NaN,  NaN, NaN, 1,  NaN,     NaN;  % baseline,
@@ -109,8 +110,8 @@ empirical_RTs = empirical_stats(:, 4);
 simulation_cycles = simulation_stats(:, 4);
 
 p = polyfit(simulation_cycles, empirical_RTs, 1);
-RT_slope = p(1);
-RT_intercept = p(2);
+RT_slope = 10; %p(1);
+RT_intercept = 205; %p(2);
 yfit = polyval(p, simulation_cycles);
 
 yresid = empirical_RTs - yfit;

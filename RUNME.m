@@ -29,7 +29,7 @@ fitting_mode = false; % used when fitting the parameters ; uses a more efficient
 
 
 
-experiment = 2; % <------------------------------- HERE --------------------------------------
+experiment = 4; % <------------------------------- HERE --------------------------------------
 
 
 
@@ -118,15 +118,15 @@ elseif experiment == 3
     % 6 targets => slower OG in 6 vs. 1 target
     %
     % OG task, PM task, OG features, target(s)
-    startpar = [1  0.0    1    0.6, ...     %  0.0  0.6  focal, low emph     % exp1_v16, exp2_v19
-                NaN NaN   NaN  NaN, ...    % INVALID focal, high emph      % exp1_v16
-                NaN NaN   NaN  NaN, ...    % INVALID nonfocal, low emph   % exp2_v11
-                NaN NaN   NaN  NaN, ...    % INVALID nonfocal, high emph  % exp1_v16 -- sorta
+    startpar = [1  0.0    1    0.6, ...     %  0.0  0.6  focal, low emph
+                NaN NaN   NaN  NaN, ...    % INVALID focal, high emph
+                NaN NaN   NaN  NaN, ...    % INVALID nonfocal, low emph
+                NaN NaN   NaN  NaN, ...    % INVALID nonfocal, high emph
                 4 4 4, ...   % biases -- tasks, attention, context
-         		0.0 0.0, ...     % cross-subject init wm noise sigma -- PM task, target
+         		0.1 0.1, ...     % cross-subject init wm noise sigma -- PM task, target
                 0.0004, ...  % gamma
                 0.1 0.01, ...   % ffwd noise, wm noise sigma
-                0.0, ...    % wm bias noise sigma
+                0.1, ...    % wm bias noise sigma
                 0.5];       % OG weights noise 
             
    % startpar([2 4 20 21]) = [0    0.1368    0.7049    0.5319];
@@ -138,18 +138,18 @@ elseif experiment == 4
     % same design as experiment 3
     %
     % OG task, PM task, OG features, target(s)
-    startpar = [1  0.0    1    0.6, ...     % focal, low emph     % exp1_v16, exp2_v19
-                NaN NaN   NaN  NaN, ...    % INVALID focal, high emph      % exp1_v16
-                NaN NaN   NaN  NaN, ...    % INVALID nonfocal, low emph   % exp2_v11
-                NaN NaN   NaN  NaN, ...    % INVALID nonfocal, high emph  % exp1_v16 -- sorta
+    startpar = [1  0.0    1    0.6, ...     % focal, low emph
+                NaN NaN   NaN  NaN, ...    % INVALID focal, high emph
+                NaN NaN   NaN  NaN, ...    % INVALID nonfocal, low emph
+                NaN NaN   NaN  NaN, ...    % INVALID nonfocal, high emph
                 4 4 4, ...   % biases -- tasks, attention, context
-         		0 0, ... %1 0.8, ...   % cross-subject init wm noise sigma -- PM task, target
+         		0.3 0.3, ... %1 0.8, ...   % cross-subject init wm noise sigma -- PM task, target
                 0.0004, ...  % gamma
                 0.1 0.01, ... % ffwd noise, wm noise sigma
-                0.0, ...     % wm bias noise sigma
+                0.1, ...     % wm bias noise sigma
                 0.5];        % OG weights noise
 
-    startpar([2 4 20 21]) = [0    0.1368    0.7049    0.5319];            
+   % startpar([2 4 20 21]) = [0    0.1368    0.7049    0.5319];            
 %    startpar([2 4 20 21 22]) = [ 0.0155         0    1.0000         0         0 / 1000 ];
 % from git hash a460e3a5c78a0492811b42a831f37c8b7023e364  --->     [0.2428
 % 1.0000    1.0000    1.0000] ..... also wtf [0    0.0818         0

@@ -20,7 +20,7 @@ for FOCAL = 1:-1:0
         OG_RT_SEM = nanstd(OG_RTs) / sqrt(subjects_per_condition); % SD -> SEM
         PM_miss_RTs = data(data(:, 1) == 0 & data(:, 2) == FOCAL & data(:, 3) == EMPHASIS, 11) * RT_slope + RT_intercept;
         PM_miss_RT_M = nanmean(PM_miss_RTs);
-        PM_miss_RT_SEM = nanmean(PM_miss_RTs) / sqrt(subjects_per_condition); % SD -> SEM
+        PM_miss_RT_SEM = nanstd(PM_miss_RTs) / sqrt(subjects_per_condition); % SD -> SEM
 
         Ms = [Ms; OG_RT_M PM_miss_RT_M];
         SEMs = [SEMs; OG_RT_SEM PM_miss_RT_SEM];
@@ -33,5 +33,5 @@ barweb(Ms, SEMs, 1, {'Foc,Lo', 'Foc,Hi', 'Nonfoc,Lo', 'Nonfoc,Hi'}, ...
 h = legend({'OG', 'PM miss'});
 set(h, 'FontSize', 10);
 ylabel('RT (msec)');
-ylim([500 2700]);
+ylim([500 1700]);
 

@@ -29,7 +29,7 @@ fitting_mode = false; % used when fitting the parameters ; uses a more efficient
 
 
 
-experiment = 1; % <------------------------------- HERE --------------------------------------
+experiment = 2; % <------------------------------- HERE --------------------------------------
 
 
 
@@ -72,19 +72,19 @@ elseif experiment == 2
     % free param -- gamma = 0.0004
     % same design as experiment 1
     %
-    % OG task, PM task, OG features, target(s)
-    startpar = [1  0.35   1    0.3, ...     % focal, low emph     % exp1_v16, exp2_v19
-                1  0.6    1    0.4, ...     % focal, high emph      % exp1_v16
-                1  0.8    1    0.78, ...    % nonfocal, low emph   % exp2_v11
-                1  0.9    1    0.83, ...    % nonfocal, high emph  % exp1_v16 -- sorta
-                4 4 4, ...    % biases -- tasks, attention, context
-		        0.2 0.2, ...  % cross-subject init wm noise sigma -- PM task, target
-                0.0004, ...   % gamma
-                0.1 0.01, ... % ffwd noise, wm noise sigma
-                0.0, ...      % wm bias noise sigma
-                0.0];         % OG weights noise
-
-     startpar([2 4 6 8 10 12 14 16 22])  =  [0.3425    0.2937    0.5865    0.4131    0.7830  0.7332    0.9019 0.8114    0.4131 / 1000];
+    % OG task, PM task, OG features, target(s)    
+    startpar = [1  0.35   1    0.3, ...     % focal, low emph
+                1  0.6    1    0.6, ...     % focal, high emph
+                1  0.8    1    0.7, ...    % nonfocal, low emph
+                1  0.9    1    0.9, ...    % nonfocal, high emph
+                4 4 4, ...   % biases -- tasks, attention, context
+		        0.2 0.2, ... % cross-subject init wm noise sigma -- PM task, target
+                0.0004,  ... % gamma
+                0.1 0.01, ...% ffwd noise, wm noise sigma
+                0.1, ...     % wm bias noise sigma
+                0.0];        % OG weights noise
+            
+  %   startpar([2 4 6 8 10 12 14 16 22])  =  [0.3425    0.2937    0.5865    0.4131    0.7830  0.7332    0.9019 0.8114    0.4131 / 1000];
 %    startpar([2 4 6 8 10 12 14 16 22])  =  [ 0.3728    0.2708    0.5854    0.4157    0.7403    0.7339    0.8124    0.8061    0.4180 / 1000];
  % from git hash a460e3a5c78a0492811b42a831f37c8b7023e364  ---> [0.3425    0.2937    0.5865    0.4131    0.7830  0.7332    0.9019 0.8114    0.4131]
 elseif experiment == 6

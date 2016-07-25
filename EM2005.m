@@ -108,17 +108,19 @@ elseif fitting_mode
     end
 end
 
+% optimization -- the OG_ONLY case is essentially the same
+% regardless of the other conditions; so maybe run only 1 simulation for
+% OG_ONLY and then resuse it for all other OG_ONLY conditions
+%
+run_og_only_only_once = false;
+
 % List out all PM conditions
 %
 conditions = [];
 og_only_condition = [];
 for run = 1:experiment_runs
     for OG_ONLY = og_range
-        if OG_ONLY
-            % optimization -- the OG_ONLY case is essentially the same
-            % regardless of the other conditions; so run only 1 simulation for
-            % OG_ONLY and then resuse it for all other OG_ONLY conditions
-            %
+        if OG_ONLY && run_og_only_only_once
             og_only_condition = [OG_ONLY focal_range(1) emphasis_range(1) target_range(1)];
             conditions = [conditions; run og_only_condition];
         else
@@ -574,28 +576,30 @@ end % for condition = conditions
 
 % resuse the OG_ONLY simulation for all conditions where OG_ONLY is true
 %
-for run = 1:experiment_runs
-    for OG_ONLY = og_range
-        if OG_ONLY
-            og_only_rows = data(:, 1) == OG_ONLY & run_ids(:) == run;
-            data_og_only = data(og_only_rows, :);
-            extra_og_only = extra(og_only_rows, :);
-            run_ids_og_only = run_ids(og_only_rows, :);
-            for FOCAL = focal_range
-                for EMPHASIS = emphasis_range
-                    for TARGETS = target_range
-                        if sum([OG_ONLY FOCAL EMPHASIS TARGETS] == og_only_condition) == length(og_only_condition)
-                            continue % skip the one OG_ONLY condition we actually simulated
+if run_og_only_only_once
+    for run = 1:experiment_runs
+        for OG_ONLY = og_range
+            if OG_ONLY
+                og_only_rows = data(:, 1) == OG_ONLY & run_ids(:) == run;
+                data_og_only = data(og_only_rows, :);
+                extra_og_only = extra(og_only_rows, :);
+                run_ids_og_only = run_ids(og_only_rows, :);
+                for FOCAL = focal_range
+                    for EMPHASIS = emphasis_range
+                        for TARGETS = target_range
+                            if sum([OG_ONLY FOCAL EMPHASIS TARGETS] == og_only_condition) == length(og_only_condition)
+                                continue % skip the one OG_ONLY condition we actually simulated
+                            end
+                            % set the other condition variables
+                            data_og_only(:, 1) = OG_ONLY;
+                            data_og_only(:, 2) = FOCAL;
+                            data_og_only(:, 3) = EMPHASIS;
+                            data_og_only(:, 9) = TARGETS;
+                            % append the OG_ONLY responses as a new condition
+                            data = [data; data_og_only];
+                            extra = [extra; extra_og_only];
+                            run_ids = [run_ids; run_ids_og_only];
                         end
-                        % set the other condition variables
-                        data_og_only(:, 1) = OG_ONLY;
-                        data_og_only(:, 2) = FOCAL;
-                        data_og_only(:, 3) = EMPHASIS;
-                        data_og_only(:, 9) = TARGETS;
-                        % append the OG_ONLY responses as a new condition
-                        data = [data; data_og_only];
-                        extra = [extra; extra_og_only];
-                        run_ids = [run_ids; run_ids_og_only];
                     end
                 end
             end

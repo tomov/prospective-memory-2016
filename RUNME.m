@@ -29,7 +29,7 @@ fitting_mode = false; % used when fitting the parameters ; uses a more efficient
 
 
 
-experiment = 4; % <------------------------------- HERE --------------------------------------
+experiment = 6; % <------------------------------- HERE --------------------------------------
 
 
 
@@ -93,10 +93,10 @@ elseif experiment == 6
     % same design as experiment 1
     %
     % OG task, PM task, OG features, target(s)
-    startpar = [1  0.35   1    0.3, ...     % focal, low emph     % exp1_v16, exp2_v19
-                1  0.6    1    0.4, ...     % focal, high emph      % exp1_v16
-                1  0.8    1    0.75, ...    % nonfocal, low emph   % exp2_v11
-                1  0.9    1    0.83, ...    % nonfocal, high emph  % exp1_v16 -- sorta
+    startpar = [1  0.35   1    0.3, ...     % focal, low emph
+                1  0.6    1    0.6, ...     % focal, high emph
+                1  0.8    1    0.7, ...    % nonfocal, low emph
+                1  0.9    1    0.9, ...    % nonfocal, high emph
                 4.2  4.2  4.2, ...  % biases, high wm capacity -- tasks, attention, context
 		        0.1 0.1, ...        % cross-subject init wm noise sigma -- PM task, target
                 0.0004, ...     % gamma

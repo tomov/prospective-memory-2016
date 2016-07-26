@@ -341,6 +341,17 @@ classdef Model < handle
                 self.unit_id('see an animal')                  , self.unit_id('An Animal')          , self.PERCEPTION_TO_RESPONSE * (1 - self.OG_weights_noise_factor);
                 self.unit_id('see a subject')                  , self.unit_id('No Match 1')         , self.PERCEPTION_TO_RESPONSE * (1 - self.OG_weights_noise_factor);
                 self.unit_id('see an animal')                  , self.unit_id('No Match 2')         , self.PERCEPTION_TO_RESPONSE * (1 - self.OG_weights_noise_factor);
+                % Optionally, make the OG task difficult by narrowing the
+                % gap between the weights wired to the correct response vs.
+                % the incorrect one. Gotta be careful to make sure the sum
+                % is the same so as not to give the PM response an edge.
+                % Backprop normally would make this much easier.
+                %
+                % -- categories to categories
+                self.unit_id('see a subject')                  , self.unit_id('An Animal')          , self.PERCEPTION_TO_RESPONSE * self.OG_weights_noise_factor;
+                self.unit_id('see an animal')                  , self.unit_id('A Subject')          , self.PERCEPTION_TO_RESPONSE * self.OG_weights_noise_factor;
+                self.unit_id('see a subject')                  , self.unit_id('No Match 2')         , self.PERCEPTION_TO_RESPONSE * self.OG_weights_noise_factor;
+                self.unit_id('see an animal')                  , self.unit_id('No Match 1')         , self.PERCEPTION_TO_RESPONSE * self.OG_weights_noise_factor;
 
                 % -- animals to matching categories
                 self.unit_id('see physics')                , self.unit_id('A Subject')         , self.PERCEPTION_TO_RESPONSE * (1 - self.OG_weights_noise_factor);
@@ -352,7 +363,6 @@ classdef Model < handle
                 self.unit_id('see panda')                  , self.unit_id('An Animal')         , self.PERCEPTION_TO_RESPONSE * (1 - self.OG_weights_noise_factor);
                 self.unit_id('see kiwi')                   , self.unit_id('An Animal')         , self.PERCEPTION_TO_RESPONSE * (1 - self.OG_weights_noise_factor);
                 self.unit_id('see monkey')                 , self.unit_id('An Animal')         , self.PERCEPTION_TO_RESPONSE * (1 - self.OG_weights_noise_factor);
-
                 % Optionally, make the OG task difficult by narrowing the
                 % gap between the weights wired to the correct response vs.
                 % the incorrect one. Gotta be careful to make sure the sum
@@ -372,15 +382,32 @@ classdef Model < handle
                 self.unit_id('see monkey')                 , self.unit_id('A Subject')         , self.PERCEPTION_TO_RESPONSE * self.OG_weights_noise_factor;
                 
                 % -- default response is No Match
-                self.unit_id('see physics')                , self.unit_id('No Match 2')         , self.PERCEPTION_TO_RESPONSE;
-                self.unit_id('see math')                   , self.unit_id('No Match 2')         , self.PERCEPTION_TO_RESPONSE;
-                self.unit_id('see tortoise')               , self.unit_id('No Match 1')         , self.PERCEPTION_TO_RESPONSE;
-                self.unit_id('see crocodile')              , self.unit_id('No Match 1')         , self.PERCEPTION_TO_RESPONSE;
-                self.unit_id('see dog')                    , self.unit_id('No Match 1')         , self.PERCEPTION_TO_RESPONSE;
-                self.unit_id('see cat')                    , self.unit_id('No Match 1')         , self.PERCEPTION_TO_RESPONSE;
-                self.unit_id('see panda')                  , self.unit_id('No Match 1')         , self.PERCEPTION_TO_RESPONSE;
-                self.unit_id('see kiwi')                   , self.unit_id('No Match 1')         , self.PERCEPTION_TO_RESPONSE;
-                self.unit_id('see monkey')                 , self.unit_id('No Match 1')         , self.PERCEPTION_TO_RESPONSE;
+                self.unit_id('see physics')                , self.unit_id('No Match 2')         , self.PERCEPTION_TO_RESPONSE * (1 - self.OG_weights_noise_factor);
+                self.unit_id('see math')                   , self.unit_id('No Match 2')         , self.PERCEPTION_TO_RESPONSE * (1 - self.OG_weights_noise_factor);
+                self.unit_id('see tortoise')               , self.unit_id('No Match 1')         , self.PERCEPTION_TO_RESPONSE * (1 - self.OG_weights_noise_factor);
+                self.unit_id('see crocodile')              , self.unit_id('No Match 1')         , self.PERCEPTION_TO_RESPONSE * (1 - self.OG_weights_noise_factor);
+                self.unit_id('see dog')                    , self.unit_id('No Match 1')         , self.PERCEPTION_TO_RESPONSE * (1 - self.OG_weights_noise_factor);
+                self.unit_id('see cat')                    , self.unit_id('No Match 1')         , self.PERCEPTION_TO_RESPONSE * (1 - self.OG_weights_noise_factor);
+                self.unit_id('see panda')                  , self.unit_id('No Match 1')         , self.PERCEPTION_TO_RESPONSE * (1 - self.OG_weights_noise_factor);
+                self.unit_id('see kiwi')                   , self.unit_id('No Match 1')         , self.PERCEPTION_TO_RESPONSE * (1 - self.OG_weights_noise_factor);
+                self.unit_id('see monkey')                 , self.unit_id('No Match 1')         , self.PERCEPTION_TO_RESPONSE * (1 - self.OG_weights_noise_factor);
+                % Optionally, make the OG task difficult by narrowing the
+                % gap between the weights wired to the correct response vs.
+                % the incorrect one. Gotta be careful to make sure the sum
+                % is the same so as not to give the PM response an edge.
+                % Backprop normally would make this much easier.
+                %
+                % difficult OG task => "noisy" connections; wrong
+                % answers get some optional weight too
+                self.unit_id('see physics')                , self.unit_id('No Match 1')         , self.PERCEPTION_TO_RESPONSE * self.OG_weights_noise_factor;
+                self.unit_id('see math')                   , self.unit_id('No Match 1')         , self.PERCEPTION_TO_RESPONSE * self.OG_weights_noise_factor;
+                self.unit_id('see tortoise')               , self.unit_id('No Match 2')         , self.PERCEPTION_TO_RESPONSE * self.OG_weights_noise_factor;
+                self.unit_id('see crocodile')              , self.unit_id('No Match 2')         , self.PERCEPTION_TO_RESPONSE * self.OG_weights_noise_factor;
+                self.unit_id('see dog')                    , self.unit_id('No Match 2')         , self.PERCEPTION_TO_RESPONSE * self.OG_weights_noise_factor;
+                self.unit_id('see cat')                    , self.unit_id('No Match 2')         , self.PERCEPTION_TO_RESPONSE * self.OG_weights_noise_factor;
+                self.unit_id('see panda')                  , self.unit_id('No Match 2')         , self.PERCEPTION_TO_RESPONSE * self.OG_weights_noise_factor;
+                self.unit_id('see kiwi')                   , self.unit_id('No Match 2')         , self.PERCEPTION_TO_RESPONSE * self.OG_weights_noise_factor;
+                self.unit_id('see monkey')                 , self.unit_id('No Match 2')         , self.PERCEPTION_TO_RESPONSE * self.OG_weights_noise_factor;
 
                 % perception to response mapping (Interleaved task)
                 % notice all is *2 b/c there's only 1 input per response =>

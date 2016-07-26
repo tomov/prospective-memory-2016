@@ -107,18 +107,20 @@ simulation_stats(:, SD_cols) = simulation_stats(:, SD_cols) / sqrt(subjects_per_
 
 % -------------- run linear regression to find slope and intercept for RT's
 
+simulation_cycles = simulation_stats(:, 4);
 empirical_RTs = empirical_stats(:, 4);
+
 % TODO HACK FIXME -- to "fix" E&M's wacky results, simply make the
 % Focal, PM and the Focal, No-PM condition same as the Nonfocal, No-PM
 % condition
 % a little fraud b/c the Focal, PM is slightly above the No-PM conditions generally 
-empirical_RTs(empirical_stats(:, 1) == 1 & empirical_stats(:, 2) == 1) = empirical_RTs(empirical_stats(:, 1) == 1 & empirical_stats(:, 2) == 0);
-empirical_RTs(empirical_stats(:, 1) == 0 & empirical_stats(:, 2) == 1) = empirical_RTs(empirical_stats(:, 1) == 1 & empirical_stats(:, 2) == 0);
+RTs_to_ignore_when_fitting = ...
+    (empirical_stats(:, 1) == 1 & empirical_stats(:, 2) == 1) ...
+    | (empirical_stats(:, 1) == 0 & empirical_stats(:, 2) == 1);
+%empirical_RTs = empirical_RTs(~RTs_to_ignore_when_fitting);
+%simulation_cycles = simulation_cycles(~RTs_to_ignore_when_fitting);
 
-simulation_cycles = simulation_stats(:, 4);
-notnan = ~isnan(simulation_cycles); % TODO FIXME don't fit the NaNs -- but it's still bad that we get them...
-
-p = polyfit(simulation_cycles(notnan), empirical_RTs(notnan), 1);
+p = polyfit(simulation_cycles, empirical_RTs, 1);
 RT_slope = p(1);
 RT_intercept = p(2);
 yfit = polyval(p, simulation_cycles);

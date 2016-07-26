@@ -92,8 +92,8 @@ if debug_mode
     %
     subjects_per_condition = 1;
     og_range = 0;
-    focal_range = 0;
-    emphasis_range = 1;
+    focal_range = 1;
+    emphasis_range = 0;
     target_range = [1];
     trials_per_block = 20;
     blocks_per_condition = 10;
@@ -141,7 +141,7 @@ end
 % just add the conditions several times
 %
 % PARFOR
-parfor cond_id = 1:size(conditions, 1)
+for cond_id = 1:size(conditions, 1)
     condition = conditions(cond_id, :);
     run = condition(1);
     OG_ONLY = condition(2);
@@ -224,7 +224,7 @@ parfor cond_id = 1:size(conditions, 1)
                 % testing; not used in any of E&M's experiments
                 %
                 for i = 1:length(stimuli)
-                    if mod(i,5) == 0
+                    if mod(i,20) == 0
                         target_id = mod(i, size(pm_targets_pattern, 1)) + 1;
                         middle = i;
                         stimuli(middle,:) = pm_targets_pattern(target_id, :);

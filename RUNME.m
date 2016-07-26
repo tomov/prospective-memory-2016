@@ -23,13 +23,13 @@ where
   ];
 %}
 
-debug_mode = false; % only run 1 subject per condition and show progress ; !!!!!IMPORTANT!!!!!!!!! must change parfor to for in EM2005
+debug_mode = true; % only run 1 subject per condition and show progress ; !!!!!IMPORTANT!!!!!!!!! must change parfor to for in EM2005
 fitting_mode = false; % used when fitting the parameters ; uses a more efficient setup that produces similar results
 
 
 
 
-experiment = 6; % <------------------------------- HERE --------------------------------------
+experiment = 3; % <------------------------------- HERE --------------------------------------
 
 
 
@@ -123,7 +123,7 @@ elseif experiment == 3
                 NaN NaN   NaN  NaN, ...    % INVALID nonfocal, low emph
                 NaN NaN   NaN  NaN, ...    % INVALID nonfocal, high emph
                 4 4 4, ...   % biases -- tasks, attention, context
-         		0.1 0.1, ...     % cross-subject init wm noise sigma -- PM task, target
+         		0.8 0.8, ...     % cross-subject init wm noise sigma -- PM task, target
                 0.0004, ...  % gamma
                 0.1 0.01, ...   % ffwd noise, wm noise sigma
                 0.1, ...    % wm bias noise sigma

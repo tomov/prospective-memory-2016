@@ -98,7 +98,7 @@ elseif experiment == 6
                 1  0.8    1    0.7, ...    % nonfocal, low emph
                 1  0.9    1    0.9, ...    % nonfocal, high emph
                 4.2  4.2  4.2, ...  % biases, high wm capacity -- tasks, attention, context
-		        0.1 0.1, ...        % cross-subject init wm noise sigma -- PM task, target
+		        0.2 0.2, ...        % cross-subject init wm noise sigma -- PM task, target
                 0.0004, ...     % gamma
                 0.1 0.01, ... % ffwd noise, wm noise sigma
                 0.1, ...    % wm bias noise sigma
@@ -112,8 +112,8 @@ elseif experiment == 6
      %startpar([2 4 6 8 10 12 14 16 22])  =  [0.3425    0.2937    0.5865    0.4131    0.7830  0.7332    0.9019 0.9114    0.4131 / 1000]; % from experiment 1
 
      % !!!!!IMPORTANT!!!!!!
-    % startpar([5 6 7 8]) = startpar([1 2 3 4]); % high emphasis = low emphasis (b/c we use it to mean "wm capacity" #hacksauce)
-    % startpar([13 14 15 16]) = startpar([9 10 11 12]); % high emphasis = low emphasis (b/c we use it to mean "wm capacity" #hacksauce)
+     %startpar([5 6 7 8]) = startpar([1 2 3 4]); % high emphasis = low emphasis (b/c we use it to mean "wm capacity" #hacksauce)
+     %startpar([13 14 15 16]) = startpar([9 10 11 12]); % high emphasis = low emphasis (b/c we use it to mean "wm capacity" #hacksauce)
 elseif experiment == 3 
     % 6 targets => slower OG in 6 vs. 1 target
     %

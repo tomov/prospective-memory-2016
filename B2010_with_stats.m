@@ -106,12 +106,54 @@ simulation_stats(:, SD_cols) = simulation_stats(:, SD_cols) / sqrt(subjects_per_
 
 % -------------- run linear regression to find slope and intercept for RT's
 
-empirical_RTs = empirical_stats(:, 4);
-simulation_cycles = simulation_stats(:, 4);
+% OG RT's
+%
+
+empirical_OG_RTs = empirical_stats(:, 4);
+simulation_OG_cycles = simulation_stats(:, 4);
+
+OG_p = polyfit(simulation_OG_cycles, empirical_OG_RTs, 1);
+OG_RT_slope = OG_p(1); % 10 from Exp 1
+OG_RT_intercept = OG_p(2);  % 205 from Exp 1
+OG_yfit = polyval(OG_p, simulation_OG_cycles);
+
+OG_yresid = empirical_OG_RTs - OG_yfit;
+OG_SSresid = sum(OG_yresid.^2);
+OG_SStotal = (length(empirical_OG_RTs)-1) * var(empirical_OG_RTs);
+OG_rsq = 1 - OG_SSresid/OG_SStotal;
+
+OG_RT_label_cycles_to_msec = sprintf('OG RT (msec = cycles * %.1f + %.1f)', OG_RT_slope, OG_RT_intercept)
+
+% PM RTs
+%
+
+empirical_PM_RTs = empirical_stats(:, 13);
+simulation_PM_cycles = simulation_stats(:, 13);
+pm_conditions = ~isnan(empirical_PM_RTs); % no PM RT's in OG_ONLY case
+empirical_PM_RTs = empirical_PM_RTs(pm_conditions);
+simulation_PM_cycles = simulation_PM_cycles(pm_conditions);
+
+PM_p = polyfit(simulation_PM_cycles, empirical_PM_RTs, 1);
+PM_RT_slope = PM_p(1);
+PM_RT_intercept = PM_p(2);
+PM_yfit = polyval(PM_p, simulation_PM_cycles);
+
+PM_yresid = empirical_PM_RTs - PM_yfit;
+PM_SSresid = sum(PM_yresid.^2);
+PM_SStotal = (length(empirical_PM_RTs)-1) * var(empirical_PM_RTs);
+PM_rsq = 1 - PM_SSresid/PM_SStotal;
+
+PM_RT_label_cycles_to_msec = sprintf('PM RT (msec = cycles * %.1f + %.1f)', PM_RT_slope, PM_RT_intercept)
+
+% ALL RT's
+%
+
+empirical_RTs = [empirical_OG_RTs; empirical_PM_RTs];
+simulation_cycles = [simulation_OG_cycles; simulation_PM_cycles];
 
 p = polyfit(simulation_cycles, empirical_RTs, 1);
-RT_slope = 10; %p(1);
-RT_intercept = 205; %p(2);
+RT_slope = p(1); % 10 from Exp 1
+RT_intercept = p(2);  % 205 from Exp 1
 yfit = polyval(p, simulation_cycles);
 
 yresid = empirical_RTs - yfit;
@@ -119,5 +161,6 @@ SSresid = sum(yresid.^2);
 SStotal = (length(empirical_RTs)-1) * var(empirical_RTs);
 rsq = 1 - SSresid/SStotal;
 
+RT_label_cycles_to_msec = sprintf('OG + PM RT (msec = cycles * %.1f + %.1f)', RT_slope, RT_intercept)
 
-OG_RT_label_cycles_to_msec = sprintf('OG RT (msec = cycles * %.1f + %.1f)', RT_slope, RT_intercept)
+

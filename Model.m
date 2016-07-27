@@ -161,6 +161,7 @@ classdef Model < handle
         subject_bias_for_attention
         subject_bias_for_context
         OG_weights_noise_factor
+        OG_weights_noise_factor_2
         
         n_subjects
     end
@@ -321,7 +322,8 @@ classdef Model < handle
             self.GAMMA = model_params(10);
             self.NOISE_SIGMA_FFWD = model_params(11);
             self.NOISE_SIGMA_WM = model_params(12);
-            self.OG_weights_noise_factor = model_params(13);
+            self.OG_weights_noise_factor = 0;
+            self.OG_weights_noise_factor_2 = model_params(13);
 
             % ---==== specify connections between units ====---
 
@@ -514,6 +516,11 @@ classdef Model < handle
             % generate weight matrix from defined connections
             self.weights = sparse(self.connections(:,1), self.connections(:,2), self.connections(:,3), ...
                 self.N, self.N);
+
+            % some random weights noise
+            self.weights(self.response_ids, self.output_ids) = ...
+                (1 - self.weights(self.response_ids, self.output_ids)) * self.OG_weights_noise_factor_2 + ...
+                self.weights(self.response_ids, self.output_ids) * (1 - self.OG_weights_noise_factor_2);
 
             % set biases 
             %

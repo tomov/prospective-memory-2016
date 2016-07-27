@@ -93,8 +93,8 @@ if debug_mode
     subjects_per_condition = 1;
     og_range = 0;
     focal_range = 1;
-    emphasis_range = 1;
-    target_range = [1];
+    emphasis_range = 0;
+    target_range = [6];
     trials_per_block = 16;
     blocks_per_condition = 10;
 elseif fitting_mode

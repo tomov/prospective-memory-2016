@@ -29,7 +29,7 @@ fitting_mode = false; % used when fitting the parameters ; uses a more efficient
 
 
 
-experiment = 6; % <------------------------------- HERE --------------------------------------
+experiment = 4; % <------------------------------- HERE --------------------------------------
 
 
 
@@ -94,9 +94,9 @@ elseif experiment == 6
     %
     % OG task, PM task, OG features, target(s)
     startpar = [1  0.35   1    0.3, ...     % focal, low emph
-                1  0.6    1    0.6, ...     % focal, high emph
+                NaN  NaN  NaN  NaN, ...     % focal, high emph
                 1  0.8    1    0.7, ...    % nonfocal, low emph
-                1  0.9    1    0.9, ...    % nonfocal, high emph
+                NaN  NaN  NaN  NaN, ...    % nonfocal, high emph
                 4.2  4.2  4.2, ...  % biases, high wm capacity -- tasks, attention, context
 		        0.1 0.1, ...        % cross-subject init wm noise sigma -- PM task, target
                 0.0004, ...     % gamma
@@ -127,7 +127,7 @@ elseif experiment == 3
                 0.0004, ...  % gamma
                 0.1 0.01, ...   % ffwd noise, wm noise sigma
                 0.1, ...    % wm bias noise sigma
-                0.4];       % OG weights noise 
+                0.0];       % OG weights noise
             
    % startpar([2 4 20 21]) = [0    0.1368    0.7049    0.5319];
      % startpar([2 4 20 21 22]) = [ 0.0155         0    1.0000         0         0 / 1000 ]; % probabilistic -- sometimes work sometimes not so well (b/c of the randomness in monitoring)
@@ -143,11 +143,11 @@ elseif experiment == 4
                 NaN NaN   NaN  NaN, ...    % INVALID nonfocal, low emph
                 NaN NaN   NaN  NaN, ...    % INVALID nonfocal, high emph
                 4 4 4, ...   % biases -- tasks, attention, context
-         		0.3 0.3, ... %1 0.8, ...   % cross-subject init wm noise sigma -- PM task, target
+         		1 0.8, ... %1 0.8, ...   % cross-subject init wm noise sigma -- PM task, target
                 0.0004, ...  % gamma
                 0.1 0.01, ... % ffwd noise, wm noise sigma
                 0.1, ...     % wm bias noise sigma
-                0.5];        % OG weights noise
+                0.0];        % OG weights noise
 
    % startpar([2 4 20 21]) = [0    0.1368    0.7049    0.5319];            
 %    startpar([2 4 20 21 22]) = [ 0.0155         0    1.0000         0         0 / 1000 ];

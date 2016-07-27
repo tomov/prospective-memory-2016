@@ -36,7 +36,7 @@ titles = {'', 'Simulation Data'};
             set(h, 'FontSize', 15);
             ylabel('PM hit RT (ms)');
         end
-        ylim([6000 7000]);
+        ylim([6000 8000]);
     end
     h = get(gca, 'xlabel');
     set(h, 'FontSize', 15);

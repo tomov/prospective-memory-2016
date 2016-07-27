@@ -88,6 +88,7 @@ for BLOCK = 1:4
             stat = [OG_ONLY, FOCAL, EMPHASIS];
             for col = 4:7
                 samples = blocks(blocks(:, 1) == OG_ONLY & blocks(:, 2) == FOCAL & blocks(:, 10) == BLOCK, col);
+                %assert(sum(isnan(samples)) == 0);
                 %samples = samples(~isnan(samples));
                 M = mean(samples);
                 SD = std(samples);
@@ -117,8 +118,8 @@ empirical_RTs = empirical_stats(:, 4);
 RTs_to_ignore_when_fitting = ...
     (empirical_stats(:, 1) == 1 & empirical_stats(:, 2) == 1) ...
     | (empirical_stats(:, 1) == 0 & empirical_stats(:, 2) == 1);
-%empirical_RTs = empirical_RTs(~RTs_to_ignore_when_fitting);
-%simulation_cycles = simulation_cycles(~RTs_to_ignore_when_fitting);
+empirical_RTs = empirical_RTs(~RTs_to_ignore_when_fitting);
+simulation_cycles = simulation_cycles(~RTs_to_ignore_when_fitting);
 
 p = polyfit(simulation_cycles, empirical_RTs, 1);
 RT_slope = p(1);

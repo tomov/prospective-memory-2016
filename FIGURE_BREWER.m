@@ -4,6 +4,14 @@ B2010_with_stats
 
 figure;
 
+fit_as_experiment_1 = false;
+if fit_as_experiment_1
+    OG_RT_slope = 10;
+    OG_RT_intercept = 205;
+    PM_RT_slope = OG_RT_slope;
+    PM_RT_intercept = OG_RT_intercept;
+end
+
 subplot(4, 2, 1);
 title('Empirical Data');
 ylabel('PM Hit Rate (%)');

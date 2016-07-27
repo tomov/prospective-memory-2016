@@ -29,7 +29,7 @@ fitting_mode = false; % used when fitting the parameters ; uses a more efficient
 
 
 
-experiment = 6; % <------------------------------- HERE --------------------------------------
+experiment = 2; % <------------------------------- HERE --------------------------------------
 
 
 
@@ -112,8 +112,8 @@ elseif experiment == 6
      %startpar([2 4 6 8 10 12 14 16 22])  =  [0.3425    0.2937    0.5865    0.4131    0.7830  0.7332    0.9019 0.9114    0.4131 / 1000]; % from experiment 1
 
      % !!!!!IMPORTANT!!!!!!
-     %startpar([5 6 7 8]) = startpar([1 2 3 4]); % high emphasis = low emphasis (b/c we use it to mean "wm capacity" #hacksauce)
-     %startpar([13 14 15 16]) = startpar([9 10 11 12]); % high emphasis = low emphasis (b/c we use it to mean "wm capacity" #hacksauce)
+     startpar([5 6 7 8]) = startpar([1 2 3 4]); % high emphasis = low emphasis (b/c we use it to mean "wm capacity" #hacksauce)
+     startpar([13 14 15 16]) = startpar([9 10 11 12]); % high emphasis = low emphasis (b/c we use it to mean "wm capacity" #hacksauce)
 elseif experiment == 3 
     % 6 targets => slower OG in 6 vs. 1 target
     %

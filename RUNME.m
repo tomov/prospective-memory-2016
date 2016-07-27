@@ -127,7 +127,7 @@ elseif experiment == 3
                 0.0004, ...  % gamma
                 0.1 0.01, ...   % ffwd noise, wm noise sigma
                 0.1, ...    % wm bias noise sigma
-                0.0];       % OG weights noise
+                0.0];       % OG weights noise (e.g. 0.4)
             
    % startpar([2 4 20 21]) = [0    0.1368    0.7049    0.5319];
      % startpar([2 4 20 21 22]) = [ 0.0155         0    1.0000         0         0 / 1000 ]; % probabilistic -- sometimes work sometimes not so well (b/c of the randomness in monitoring)
@@ -143,7 +143,7 @@ elseif experiment == 4
                 NaN NaN   NaN  NaN, ...    % INVALID nonfocal, low emph
                 NaN NaN   NaN  NaN, ...    % INVALID nonfocal, high emph
                 4 4 4, ...   % biases -- tasks, attention, context
-         		1 0.8, ... %1 0.8, ...   % cross-subject init wm noise sigma -- PM task, target
+         		0.2 0.2, ... %1 0.8, ...   % cross-subject init wm noise sigma -- PM task, target
                 0.0004, ...  % gamma
                 0.1 0.01, ... % ffwd noise, wm noise sigma
                 0.1, ...     % wm bias noise sigma

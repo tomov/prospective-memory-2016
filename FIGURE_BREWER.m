@@ -4,12 +4,18 @@ B2010_with_stats
 
 figure;
 
+fit_with_same_RTs = false;
 fit_as_experiment_1 = false;
 if fit_as_experiment_1
     OG_RT_slope = 10;
     OG_RT_intercept = 205;
     PM_RT_slope = OG_RT_slope;
     PM_RT_intercept = OG_RT_intercept;
+elseif fit_with_same_RTs
+    OG_RT_slope = RT_slope;
+    OG_RT_intercept = RT_intercept;
+    PM_RT_slope = RT_slope;
+    PM_RT_intercept = RT_intercept;
 end
 
 subplot(4, 2, 1);
@@ -28,7 +34,7 @@ ylabel('OG RT (msec)');
 plot_all_conditions_brewer(empirical_stats(:, [1:3 4 5]), 650, 850, 1, 0, false);
 
 subplot(4, 2, 4);
-plot_all_conditions_brewer(simulation_stats(:, [1:3 4 5]), 650, 850, OG_RT_slope, OG_RT_intercept, false);
+plot_all_conditions_brewer(simulation_stats(:, [1:3 4 5]), 650 + fit_as_experiment_1 * 200, 850 + fit_as_experiment_1 * 700, OG_RT_slope, OG_RT_intercept, false);
 
 
 subplot(4, 2, 5);

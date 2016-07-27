@@ -77,7 +77,7 @@ classdef Model < handle
         
         ATTENTION_TO_TASK = -1;
         
-        HIPPO_TO_TASK = 10 + 20;
+        HIPPO_TO_TASK = 10;
         %PERCEPTION_TO_TASK = 1.2;  % EM = speed of task switch --
         %DEPRECATEd; see hippo
         
@@ -105,7 +105,7 @@ classdef Model < handle
         BIAS_FOR_HIPPO = -23; %-32;  % must be < -10, o/w tasks drift b/c of (super small) input current from hippo
         
         % FUTURE 20, 12
-        STIMULUS_TO_HIPPO = 16 + 4; % 30
+        STIMULUS_TO_HIPPO = 16; % 30
         CONTEXT_TO_HIPPO = 16;  % 20
         
         %OUTPUT_TO_SELF = 0; % makes response->output more like copying rather than integration

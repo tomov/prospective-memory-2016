@@ -29,7 +29,7 @@ fitting_mode = false; % used when fitting the parameters ; uses a more efficient
 
 
 
-experiment = 6; % <------------------------------- HERE --------------------------------------
+experiment = 4; % <------------------------------- HERE --------------------------------------
 
 
 

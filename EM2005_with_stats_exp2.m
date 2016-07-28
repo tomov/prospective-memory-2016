@@ -116,8 +116,8 @@ empirical_RTs = empirical_stats(:, 4);
 % condition
 % a little fraud b/c the Focal, PM is slightly above the No-PM conditions generally 
 RTs_to_ignore_when_fitting = ...
-    (empirical_stats(:, 1) == 1 & empirical_stats(:, 2) == 1) ...
-    | (empirical_stats(:, 1) == 0 & empirical_stats(:, 2) == 1);
+    (empirical_stats(:, 1) == 1 & empirical_stats(:, 2) == 1); %...
+   % | (empirical_stats(:, 1) == 0 & empirical_stats(:, 2) == 1);
 empirical_RTs = empirical_RTs(~RTs_to_ignore_when_fitting);
 simulation_cycles = simulation_cycles(~RTs_to_ignore_when_fitting);
 

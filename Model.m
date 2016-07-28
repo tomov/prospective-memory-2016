@@ -6,7 +6,7 @@ classdef Model < handle
         % PDP model parameters
         
         NOISE_SIGMA = 0.1; % TODO -- ??
-        STEP_SIZE = 0.05;
+        STEP_SIZE = 0.05; % more appropriately called WM dt
         DECAY = 0.01;
         CYCLES_PER_SEC = 500; % CANNOT be lower, e.g. 200...
         SETTLE_MEAN_EPS = 1e-3; % adjust these when you add noise to the model
@@ -26,7 +26,7 @@ classdef Model < handle
         
         INPUT_ACTIVATION = 1;
         
-        EM_GAIN = 10; % gain for the EM units -> higher makes their activation functions more step-like
+        EM_GAIN = 1; % gain for the EM units -> higher makes their activation functions more step-like
     end
 
     
@@ -104,11 +104,11 @@ classdef Model < handle
         % hippocampus
         
         % FUTURE -20
-        BIAS_FOR_HIPPO = -10; %-32;  % must be < -10, o/w tasks drift b/c of (super small) input current from hippo
+        BIAS_FOR_HIPPO = -23; %-32;  % must be < -10, o/w tasks drift b/c of (super small) input current from hippo
         
         % FUTURE 20, 12
-        STIMULUS_TO_HIPPO = 20; % 30
-        CONTEXT_TO_HIPPO = 4;  % 20
+        STIMULUS_TO_HIPPO = 16; % 30
+        CONTEXT_TO_HIPPO = 16;  % 20
         
         %OUTPUT_TO_SELF = 0; % makes response->output more like copying rather than integration
         %RESPONSE_TO_SELF = 0;

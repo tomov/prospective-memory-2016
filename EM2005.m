@@ -141,7 +141,7 @@ end
 % just add the conditions several times
 %
 % PARFOR
-for cond_id = 1:size(conditions, 1)
+parfor cond_id = 1:size(conditions, 1)
     condition = conditions(cond_id, :);
     run = condition(1);
     OG_ONLY = condition(2);
@@ -409,24 +409,26 @@ for cond_id = 1:size(conditions, 1)
     % 5. WM context bias
     which_params_we_vary_across_subjects = [2 4 5 6 9];
     subject_params = repmat(model_params(which_params_we_vary_across_subjects), subjects_per_condition, 1);
-    if ~OG_ONLY && ~debug_mode
-        % PM task noise
-        %subject_params(:, 1) = subject_params(:, 1) + unifrnd(-init_pm_task_noise_sigma, init_pm_task_noise_sigma, subjects_per_condition, 1);
-        subject_params(:, 1) = subject_params(:, 1) + normrnd(0, init_pm_task_noise_sigma, size(subject_params(:, 1)))
-        % PM task cannot be > OG task
-        bad_ones = subject_params(:, 1) > model_params(1) - 0.07;
-        subject_params(bad_ones, 1) = model_params(1) - 0.07;
-        % PM target noise
-        %subject_params(:, 2) = subject_params(:, 2) + unifrnd(-init_pm_target_noise_sigma, init_pm_target_noise_sigma, subjects_per_condition, 1);
-        subject_params(:, 2) = subject_params(:, 2) + normrnd(0, init_pm_target_noise_sigma, size(subject_params(:, 2)));
-        % PM target cannot be > OG features
-        bad_ones = subject_params(:, 2) > model_params(3) - 0.07;
-        subject_params(bad_ones, 2) = model_params(3) - 0.07;
+    if ~debug_mode % no cross-subject noise in debug mode
+        if ~OG_ONLY
+            % PM task noise
+            %subject_params(:, 1) = subject_params(:, 1) + unifrnd(-init_pm_task_noise_sigma, init_pm_task_noise_sigma, subjects_per_condition, 1);
+            subject_params(:, 1) = subject_params(:, 1) + normrnd(0, init_pm_task_noise_sigma, size(subject_params(:, 1)))
+            % PM task cannot be > OG task
+            bad_ones = subject_params(:, 1) > model_params(1) - 0.07;
+            subject_params(bad_ones, 1) = model_params(1) - 0.07;
+            % PM target noise
+            %subject_params(:, 2) = subject_params(:, 2) + unifrnd(-init_pm_target_noise_sigma, init_pm_target_noise_sigma, subjects_per_condition, 1);
+            subject_params(:, 2) = subject_params(:, 2) + normrnd(0, init_pm_target_noise_sigma, size(subject_params(:, 2)));
+            % PM target cannot be > OG features
+            bad_ones = subject_params(:, 2) > model_params(3) - 0.07;
+            subject_params(bad_ones, 2) = model_params(3) - 0.07;
+        end
+        % WM bias noise across subjects
+        % IMPORTANT -- make sure noise term is the same for all 3 biases for a given subject
+        which_biases = [3 4 5];
+        subject_params(:, which_biases) = subject_params(:, which_biases) + repmat(normrnd(0, wm_bias_noise_sigma, size(subject_params, 1), 1), 1, length(which_biases));
     end
-    % WM bias noise across subjects
-    % IMPORTANT -- make sure noise term is the same for all 3 biases for a given subject
-    which_biases = [3 4 5];
-    subject_params(:, which_biases) = subject_params(:, which_biases) + repmat(normrnd(0, wm_bias_noise_sigma, size(subject_params, 1), 1), 1, length(which_biases));
 
     % initialize simulator (for multiple subjects)
     %

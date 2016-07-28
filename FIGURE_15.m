@@ -3,9 +3,11 @@
 EM2005_with_stats_exp2
 
 
-
-
-
+fit_as_experiment_1 = false;
+if fit_as_experiment_1
+    RT_slope = 10;
+    RT_intercept = 205;
+end
 
 figure;
 

@@ -523,6 +523,11 @@ classdef Model < handle
             % generate weight matrix from defined connections
             self.weights = sparse(self.connections(:,1), self.connections(:,2), self.connections(:,3), ...
                 self.N, self.N);
+            
+            % HACK TODO PARAM FIXME
+            % to counteract the stimulation coming from the hippocampus
+            self.weights(self.unit_id('PM Context'), self.unit_id('PM Task')) = ...
+                self.weights(self.unit_id('PM Context'), self.unit_id('PM Task')) - 0.005;
 
             % some random weights noise
             self.weights(self.response_ids, self.output_ids) = ...

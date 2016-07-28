@@ -262,7 +262,7 @@ classdef Simulator < Model
                     self.activation(~responded, self.ffwd_ids) = self.logistic(self.net_input_avg(~responded, self.ffwd_ids));
                     self.activation(~responded, self.em_ids) = self.logistic(self.EM_GAIN * self.net_input_avg(~responded, self.em_ids)); % the sigmoid gain makes EM activation more step-like (all-or-nothing)
                     em = self.activation(~responded, self.em_ids); % TODO HACK FIXME --> artifically thresholding the sigmoid
-                    em(em < 0.05) = 0; % TODO PARAM
+                    em(em < 0.01) = 0; % TODO PARAM
                     self.activation(~responded, self.em_ids) = em;
                     
                     % same for WM module

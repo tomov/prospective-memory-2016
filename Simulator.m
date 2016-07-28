@@ -59,8 +59,8 @@ classdef Simulator < Model
             %
             opposite_task_id = self.unit_id(opposite_task);
             hippo_id = self.hippo_ids(self.next_available_hippo_id);
-            self.weights(context_id, hippo_id) = self.CONTEXT_TO_HIPPO;
-            self.weights(hippo_id, opposite_task_id) = self.HIPPO_TO_TASK;
+            %self.weights(context_id, hippo_id) = self.CONTEXT_TO_HIPPO;
+            %self.weights(hippo_id, opposite_task_id) = self.HIPPO_TO_TASK;
             self.next_available_hippo_id = self.next_available_hippo_id + 1;
         end
         
@@ -141,8 +141,8 @@ classdef Simulator < Model
                 
                 % reset feedforward part of the network
                 % but not today...
-                %self.activation(self.ffwd_ids) = 0;
-                %self.net_input_avg(self.ffwd_ids) = -10;
+                %self.activation(self.ffwd_and_em_ids) = 0;
+                %self.net_input_avg(self.ffwd_and_em_ids) = -10;
                 
                 % reset response, output, and monitoring activations
                 self.accumulators = zeros(self.n_subjects, size(self.output_ids, 2));
@@ -241,10 +241,10 @@ classdef Simulator < Model
                     
                     % calculate net inputs for all units
                     %
-                    self.net_input(~responded, self.ffwd_ids) = self.activation(~responded, :) * self.weights(:, self.ffwd_ids) ...
-                        + self.biases(~responded, self.ffwd_ids);
-                        %+ repmat(self.bias(self.ffwd_ids), sum(~responded), 1);
-                    self.net_input(~responded, self.wm_ids) = self.activation(~responded, self.ffwd_ids) * self.weights(self.ffwd_ids, self.wm_ids) ...
+                    self.net_input(~responded, self.ffwd_and_em_ids) = self.activation(~responded, :) * self.weights(:, self.ffwd_and_em_ids) ...
+                        + self.biases(~responded, self.ffwd_and_em_ids);
+                        %+ repmat(self.bias(self.ffwd_and_em_ids), sum(~responded), 1);
+                    self.net_input(~responded, self.wm_ids) = self.activation(~responded, self.ffwd_and_em_ids) * self.weights(self.ffwd_and_em_ids, self.wm_ids) ...
                         + self.wm_act(~responded, :) * self.weights(self.wm_ids, self.wm_ids) ...
                         + self.biases(~responded, self.wm_ids);
                         %+ repmat(self.bias(self.wm_ids), sum(~responded), 1);
@@ -252,14 +252,15 @@ classdef Simulator < Model
                     % simulations), add noise to the net inputs
                     %
                     if ~self.fitting_mode
-                        self.net_input(~responded, self.ffwd_ids) = self.net_input(~responded, self.ffwd_ids) + normrnd(0, self.NOISE_SIGMA_FFWD, size(self.net_input(~responded, self.ffwd_ids)));
+                        self.net_input(~responded, self.ffwd_and_em_ids) = self.net_input(~responded, self.ffwd_and_em_ids) + normrnd(0, self.NOISE_SIGMA_FFWD, size(self.net_input(~responded, self.ffwd_and_em_ids)));
                         self.net_input(~responded, self.wm_ids) = self.net_input(~responded, self.wm_ids) + normrnd(0, self.NOISE_SIGMA_WM, size(self.net_input(~responded, self.wm_ids)));
                     end
                                         
-                    % update activation levels for feedforward part of the
-                    % network
-                    self.net_input_avg(~responded, self.ffwd_ids) = self.TAU * self.net_input(~responded, self.ffwd_ids) + (1 - self.TAU) * self.net_input_avg(~responded, self.ffwd_ids);
-                    self.activation(~responded, self.ffwd_ids) = self.logistic(self.net_input_avg(~responded, self.ffwd_ids)); % only update activations of those who haven't responded yet
+                    % update activation levels for feedforward part of the network
+                    % only update activations of those who haven't responded yet
+                    self.net_input_avg(~responded, self.ffwd_and_em_ids) = self.TAU * self.net_input(~responded, self.ffwd_and_em_ids) + (1 - self.TAU) * self.net_input_avg(~responded, self.ffwd_and_em_ids);
+                    self.activation(~responded, self.ffwd_ids) = self.logistic(self.net_input_avg(~responded, self.ffwd_ids));
+                    self.activation(~responded, self.em_ids) = self.logistic(self.EM_GAIN * self.net_input_avg(~responded, self.em_ids)); % the sigmoid gain makes EM activation more step-like (all-or-nothing)
                     
                     % same for WM module
                     % for WM module, activation f'n is linear and

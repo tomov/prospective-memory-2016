@@ -92,9 +92,9 @@ if debug_mode
     %
     subjects_per_condition = 1;
     og_range = 0;
-    focal_range = 1;
+    focal_range = 0;
     emphasis_range = 0;
-    target_range = [6];
+    target_range = [1];
     trials_per_block = 16;
     blocks_per_condition = 10;
 elseif fitting_mode
@@ -141,7 +141,7 @@ end
 % just add the conditions several times
 %
 % PARFOR
-parfor cond_id = 1:size(conditions, 1)
+for cond_id = 1:size(conditions, 1)
     condition = conditions(cond_id, :);
     run = condition(1);
     OG_ONLY = condition(2);
@@ -409,7 +409,7 @@ parfor cond_id = 1:size(conditions, 1)
     % 5. WM context bias
     which_params_we_vary_across_subjects = [2 4 5 6 9];
     subject_params = repmat(model_params(which_params_we_vary_across_subjects), subjects_per_condition, 1);
-    if ~OG_ONLY
+    if ~OG_ONLY && ~debug_mode
         % PM task noise
         %subject_params(:, 1) = subject_params(:, 1) + unifrnd(-init_pm_task_noise_sigma, init_pm_task_noise_sigma, subjects_per_condition, 1);
         subject_params(:, 1) = subject_params(:, 1) + normrnd(0, init_pm_task_noise_sigma, size(subject_params(:, 1)))
@@ -546,7 +546,7 @@ parfor cond_id = 1:size(conditions, 1)
                 temp_params = model_params;
                 temp_params(which_params_we_vary_across_subjects) = subject_params(s,:);
                 if debug_mode
-                    subject_extra = {sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses(s,:)', RTs(s,:)', squeeze(act(s,:,:)), squeze(acc(s,:,:)), onsets(s,:)', offsets(s,:)', squeeze(nets(s,:,:)), s, block, temp_params};
+                    subject_extra = {sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses(s,:)', RTs(s,:)', squeeze(act(s,:,:)), squeeze(acc(s,:,:)), onsets(s,:)', offsets(s,:)', squeeze(nets(s,:,:)), s, block, temp_params};
                     extra = [extra; subject_extra];
                 else
                     extra = [extra; temp_params];

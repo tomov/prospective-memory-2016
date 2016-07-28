@@ -25,6 +25,8 @@ classdef Model < handle
         MINIMUM_ACTIVATION = 0;
         
         INPUT_ACTIVATION = 1;
+        
+        EM_GAIN = 10; % gain for the EM units -> higher makes their activation functions more step-like
     end
 
     
@@ -102,11 +104,11 @@ classdef Model < handle
         % hippocampus
         
         % FUTURE -20
-        BIAS_FOR_HIPPO = -23; %-32;  % must be < -10, o/w tasks drift b/c of (super small) input current from hippo
+        BIAS_FOR_HIPPO = -10; %-32;  % must be < -10, o/w tasks drift b/c of (super small) input current from hippo
         
         % FUTURE 20, 12
-        STIMULUS_TO_HIPPO = 16; % 30
-        CONTEXT_TO_HIPPO = 16;  % 20
+        STIMULUS_TO_HIPPO = 20; % 30
+        CONTEXT_TO_HIPPO = 4;  % 20
         
         %OUTPUT_TO_SELF = 0; % makes response->output more like copying rather than integration
         %RESPONSE_TO_SELF = 0;
@@ -148,8 +150,10 @@ classdef Model < handle
         context_ids
         hippo_ids
         
-        wm_ids   % nodes in the WM part of the mode (the top-down attentional modulation)
         ffwd_ids % nodes in the feed-forward part of the model (the bottom-up stimulus-response pathway)
+        em_ids   % nodes in the EM part of the model (for PM target->PM task associations)
+        wm_ids   % nodes in the WM part of the model (the top-down attentional modulation)
+        ffwd_and_em_ids % = [ffwd_ids em_ids], for convenience since they have similar dynamics and similar update equations
         
         connections
         weights
@@ -297,13 +301,16 @@ classdef Model < handle
             self.context_ids = cellfun(@self.unit_id, self.context_units);
             self.hippo_ids = cellfun(@self.unit_id, self.hippo_units);
             
+            % lists of nodes from the three modules
+            %
             self.ffwd_ids = [
                 self.input_ids ...
                 self.perception_ids ...
                 self.response_ids ...
-                self.output_ids ...
-                self.hippo_ids];
+                self.output_ids];
+            self.em_ids = [self.hippo_ids];
             self.wm_ids = [self.task_ids self.attention_ids self.context_ids];
+            self.ffwd_and_em_ids = [self.ffwd_ids self.em_ids];
 
             % initialize free parameters (based on PM instruction, task, etc)
             self.init_wm = zeros(n_subjects, length(self.wm_ids));

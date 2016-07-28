@@ -27,7 +27,7 @@ plot_all_conditions_exp2(simulation_stats(:, [1:3 6 7 12]), 20, 100, 1, 0, false
 
 subplot(3, 2, 5);
 ylabel('PM Hit Rate (%)');
-plot_all_conditions_exp2(empirical_stats(:, [1:3 10 11 12]), 20, 100, 1, 0, false, [0]);
+plot_all_conditions_exp2(empirical_stats(:, [1:3 10 11 12]), 0, 100, 1, 0, false, [0]);
 
 subplot(3, 2, 6);
-plot_all_conditions_exp2(simulation_stats(:, [1:3 10 11 12]), 20, 100, 1, 0, false, [0]);
+plot_all_conditions_exp2(simulation_stats(:, [1:3 10 11 12]), 0, 100, 1, 0, false, [0]);

@@ -262,7 +262,7 @@ classdef Simulator < Model
                     self.activation(~responded, self.ffwd_ids) = self.logistic(self.net_input_avg(~responded, self.ffwd_ids));
                     self.activation(~responded, self.em_ids) = self.logistic(self.EM_GAIN * self.net_input_avg(~responded, self.em_ids)); % the sigmoid gain makes EM activation more step-like (all-or-nothing)
                     em = self.activation(~responded, self.em_ids); % TODO HACK FIXME --> artifically thresholding the sigmoid
-                    %em(em < 0.01) = 0; % TODO PARAM
+                    em(em < 0.01) = 0; % TODO PARAM
                     self.activation(~responded, self.em_ids) = em;
                     
                     % same for WM module
@@ -345,7 +345,6 @@ classdef Simulator < Model
                 %switched_to_PM_task = (self.wm_act(2) > self.wm_act(1) -
                 %0.1); <--- DOESN'T quite work (partial switch)
                 switched_to_PM_task = (self.wm_act(:, 2) > self.resting_wm(:, 2) + 0.01);
-                %fprintf('resting wm = %.4f\n', self.resting_wm(1, 2));
                 switched_to_Inter_task(:) = false;
                 switched_to_OG_and_PM_from_Inter_task(:) = false;
             end

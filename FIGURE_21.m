@@ -1,4 +1,4 @@
-% load('exp3-data.mat')
+%  load('exp3-data.mat')
 
 EM2005_with_stats_exp3
 

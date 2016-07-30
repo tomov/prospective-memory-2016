@@ -84,15 +84,16 @@ classdef Simulator < Model
             %self.activation(self.wm_ids) = self.logistic(self.wm_act * 12 - 6);
         end
         
-        function [responses, RTs, activation_log, accumulators_log, onsets, offsets, net_log] = run(self, stimuli)
+        function [responses, RTs, activation_log, accumulators_log, onsets, offsets, net_log] = run(self, stimuli, debug_mode)
             % initialize activations and outputs
-            trial_duration = sum(cat(2, stimuli{:, 2})) * self.CYCLES_PER_SEC;
+            experiment_duration = sum(cat(2, stimuli{:, 2})) * self.CYCLES_PER_SEC;
             self.accumulators = zeros(self.n_subjects, self.Nout);
             self.net_input = zeros(self.n_subjects, self.N);
             self.net_input_avg = zeros(self.n_subjects, self.N);
-            activation_log = zeros(self.n_subjects, trial_duration, self.N);
-            accumulators_log = zeros(self.n_subjects, trial_duration, self.Nout);
-            net_log = zeros(self.n_subjects, trial_duration, self.N);
+            activation_log = zeros(self.n_subjects, experiment_duration, self.N);
+            trial_act_log = zeros(self.n_subjects, self.CYCLES_PER_SEC, self.N);
+            accumulators_log = zeros(self.n_subjects, experiment_duration, self.Nout);
+            net_log = zeros(self.n_subjects, experiment_duration, self.N);
             self.activation = zeros(self.n_subjects, self.N);
             self.wm_act = zeros(self.n_subjects, size(self.wm_ids, 2));
             self.wm_net = zeros(self.n_subjects, size(self.wm_ids, 2));
@@ -203,28 +204,35 @@ classdef Simulator < Model
                         self.adapt_wm_act_to_ffwd_act();
                     end
 
-                    % log activation for plotting TODO debug_mode only?
+                    % log stuff for debugging
                     %
-                    activation_log(:, cycles + cycle, :) = self.activation;
-                    accumulators_log(:, cycles + cycle, :) = self.accumulators;
-                    net_log(:, cycles + cycle, :) = self.net_input;
+                    if debug_mode
+                        activation_log(:, cycles + cycle, :) = self.activation;
+                        accumulators_log(:, cycles + cycle, :) = self.accumulators;
+                        net_log(:, cycles + cycle, :) = self.net_input;
+                    end
                    
                     % see if network has settled
                     %
-                    if cycle > self.SETTLE_LEEWAY
-                        from = cycles + cycle - self.SETTLE_LEEWAY + 1;
-                        to = cycles + cycle - 1;
-                        m = activation_log(:, from:to, :) - activation_log(:, from-1:to-1, :);
-                        m = abs(mean(m, 3));
-                        were_settled = settled;
-                        settled = settled | (mean(m, 2) < self.SETTLE_MEAN_EPS & std(m, 0, 2) < self.SETTLE_STD_EPS);
-                        just_settled = xor(were_settled, settled); % only update subjects whose activations have settled
-                        settle_cycle(just_settled) = cycle;
-                        if ord == 1
-                            self.resting_wm(just_settled, :) = self.wm_act(just_settled, :);
+                    if sum(~settled) > 0
+                        % some subjects' networks still haven't settled
+                        %
+                        trial_act_log(:, cycle, :) = self.activation;
+                        if cycle > self.SETTLE_LEEWAY
+                            from = cycle - self.SETTLE_LEEWAY + 1;
+                            to = cycle - 1;
+                            m = trial_act_log(:, from:to, :) - trial_act_log(:, from-1:to-1, :);
+                            m = abs(mean(m, 3));
+                            were_settled = settled;
+                            settled = settled | (mean(m, 2) < self.SETTLE_MEAN_EPS & std(m, 0, 2) < self.SETTLE_STD_EPS);
+                            just_settled = xor(were_settled, settled); % only update subjects whose activations have settled
+                            settle_cycle(just_settled) = cycle;
+                            if ord == 1
+                                self.resting_wm(just_settled, :) = self.wm_act(just_settled, :);
+                            end
+                            self.last_trial_wm(just_settled, :) = self.wm_act(just_settled, :);
+                            onsets(just_settled, ord) = cycles + cycle;
                         end
-                        self.last_trial_wm(just_settled, :) = self.wm_act(just_settled, :);
-                        onsets(just_settled, ord) = cycles + cycle;
                     end
                     
                     % calculate net inputs for all units
@@ -334,10 +342,12 @@ classdef Simulator < Model
             end
             
             fprintf('Total simulation cycles = %d', cycles');
-            
-            activation_log(:,cycles:end,:) = [];
-            accumulators_log(:,cycles:end,:) = [];
-            net_log(:,cycles:end,:) = [];
+           
+            if debug_mode
+                activation_log(:,cycles:end,:) = [];
+                accumulators_log(:,cycles:end,:) = [];
+                net_log(:,cycles:end,:) = [];
+            end
         end
     end
 end

@@ -455,7 +455,7 @@ parfor cond_id = 1:size(conditions, 1)
 
         % run the actual simulations for all subjects in the given condition
         %
-        [responses, RTs, act, acc, onsets, offsets, nets] = sim.run(stimuli{OG_ONLY + 1});
+        [responses, RTs, act, acc, onsets, offsets, nets] = sim.run(stimuli{OG_ONLY + 1}, false);
         
         % collect the relevant data
         %
@@ -587,6 +587,19 @@ end % for condition = conditions
 %
 % Post-simulation stuffs
 %
+
+% sanity check -- % ensure the ordering by checking things that vary across subjects always (even in
+% the OG_ONLY half), e.g. the WM bias
+% ...mostly relevant for experiment 4
+
+% Since we split the subject pool into several smaller subject pools (for faster evaluation),
+% we now have to merge them. This is a bit tricky --
+% remember, because of the way we do things, for each condition,
+% the OG_ONLY = 0 and OG_ONLY = 1 entries should correspond to the two
+% experiment halves for same sequences of subjects.
+% But this order is not guarandeed across the conditions, and not even across the different subject pools
+% => we reorder them here and then make sure we didn't screw up the ordering
+
 
 % sanity check -- because of the way we do things, for each condition,
 % the OG_ONLY = 0 and OG_ONLY = 1 entries should correspond to the two

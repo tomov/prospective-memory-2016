@@ -2,6 +2,9 @@ function error = fit_exp3_and_exp4( free_params )
 % the error function to fit with fmincon or whatever which takes only a set of "free" parameters
 % and returns the computed error 
 
+runs = 1; % TODO parametrize those 
+max_subjects_per_pool = 500;
+
 fprintf('\n\n\n     ======================>>>>> fitting [');
 fprintf('%5.5f', free_params);
 fprintf(']......\n');
@@ -19,11 +22,11 @@ startpar = [1  0.0    1    0.6, ...     %  0.0  0.6  focal, low emph     % exp1_
 startpar([2 4 20 21]) = free_params; % set the params we're fitting
 
 % experiment 3
-[data, extra] = EM2005(startpar, 3, debug_mode, false);
+[data, extra] = EM2005(startpar, 3, debug_mode, false, runs, max_subjects_per_pool);
 error_exp3 = compute_err_exp3(data, extra);
 
 % experiment 4
-[data, extra] = EM2005(startpar, 4, debug_mode, false);
+[data, extra] = EM2005(startpar, 4, debug_mode, false, runs, max_subjects_per_pool);
 error_exp4 = compute_err_exp4(data, extra);
 
 error = error_exp3 * 2 + error_exp4;

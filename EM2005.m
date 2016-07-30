@@ -1,4 +1,4 @@
-function [data, extra] = EM2005( params, exp_id, debug_mode, do_print, experiment_runs)
+function [data, extra] = EM2005( params, exp_id, debug_mode, do_print, experiment_runs, max_subjects_per_pool)
 % run a simulation of the E&M with certain parameters and spit out the data
 % for all subjects
 
@@ -62,6 +62,7 @@ subjects_per_condition = subjects_per_condition(exp_id);
 data = []; 
 extra = [];
 run_ids = [];
+subject_pool_ids =[];
 
 % Set up different experimental conditions
 %
@@ -106,14 +107,30 @@ if debug_mode
     blocks_per_condition = 1;
 end
 
-% List out all PM conditions
+% For each condition, split subjects into separate subject pools 
+% which we can parallelize for faster computation. Special care must be taken
+% in the end when we join the pools together for each condition.
+%
+n_subject_pools = double(idivide(int32(subjects_per_condition), max_subjects_per_pool, 'floor'));
+subject_pool_sizes = ones(n_subject_pools, 1) * max_subjects_per_pool;
+remainder = mod(subjects_per_condition, max_subjects_per_pool);
+if remainder > 0
+    n_subject_pools = n_subject_pools + 1;
+    subject_pool_sizes = [subject_pool_sizes; remainder];
+end
+subject_pool_sizes
+
+
+% List out all PM conditions. We parallelize them
 %
 conditions = [];
 for run = 1:experiment_runs
     for FOCAL = focal_range
         for EMPHASIS = emphasis_range
             for TARGETS = target_range
-                conditions = [conditions; run FOCAL EMPHASIS TARGETS];
+                for subject_pool_id = 1:n_subject_pools
+                    conditions = [conditions; run FOCAL EMPHASIS TARGETS subject_pool_id];
+                end
             end
         end
     end
@@ -315,6 +332,12 @@ parfor cond_id = 1:size(conditions, 1)
     FOCAL = condition(2);
     EMPHASIS = condition(3);
     TARGETS = condition(4);
+    subject_pool_id = condition(5);
+    subject_pool_size = subject_pool_sizes(subject_pool_id);
+
+    if do_print
+        fprintf('--------------------------------- parfor condition %d %d %d %d %d (%d) ------------------------------\n', run, FOCAL, EMPHASIS, TARGETS, subject_pool_id, subject_pool_size);
+    end
 
     % randomize order
     % ...not today tho
@@ -363,9 +386,9 @@ parfor cond_id = 1:size(conditions, 1)
     % 5. WM context bias
     which_params_we_vary_across_subjects = [2 4 5 6 9];
     subject_params_noise = [...
-        normrnd(0, init_pm_task_noise_sigma, subjects_per_condition, 1) ... % init PM task noise
-        normrnd(0, init_pm_target_noise_sigma, subjects_per_condition, 1) ... % init PM target noise
-        repmat(normrnd(0, wm_bias_noise_sigma, subjects_per_condition, 1), 1, 3) ... % WM bias noise IMPORTANT -- make sure noise term is the same for all 3 WM biases for a given subject
+        normrnd(0, init_pm_task_noise_sigma, subject_pool_size, 1) ... % init PM task noise
+        normrnd(0, init_pm_target_noise_sigma, subject_pool_size, 1) ... % init PM target noise
+        repmat(normrnd(0, wm_bias_noise_sigma, subject_pool_size, 1), 1, 3) ... % WM bias noise IMPORTANT -- make sure noise term is the same for all 3 WM biases for a given subject
     ];
 
     % Run the PM half (OG_ONLY = 0) and control half (OG_ONLY = 1) of the experiment for each subject.
@@ -397,7 +420,7 @@ parfor cond_id = 1:size(conditions, 1)
        
         % Replicate parameters across the subjects and add cross-subject variability
         %
-        subject_params = repmat(model_params(which_params_we_vary_across_subjects), subjects_per_condition, 1);
+        subject_params = repmat(model_params(which_params_we_vary_across_subjects), subject_pool_size, 1);
 
         if ~debug_mode % no cross-subject noise in debug mode
             if ~OG_ONLY
@@ -416,10 +439,10 @@ parfor cond_id = 1:size(conditions, 1)
 
         % initialize simulator (for all subjects in the given condition)
         %
-        sim = Simulator(FOCAL, model_params, subjects_per_condition, subject_params);
+        sim = Simulator(FOCAL, model_params, subject_pool_size, subject_params);
 
         if do_print
-            for s=1:subjects_per_condition
+            for s=1:subject_pool_size
                 temp_params = model_params;
                 temp_params(which_params_we_vary_across_subjects) = subject_params(s,:);
                 fprintf('\nsubject %d: curpar(2,4) = %.2f %.2f curpar(5,6,9) = %.2f %.2f %.2f\n', s, temp_params(2), temp_params(4), temp_params(5), temp_params(6), temp_params(9));
@@ -471,7 +494,7 @@ parfor cond_id = 1:size(conditions, 1)
             
             % add each sample separately
             %
-            for s = 1:subjects_per_condition
+            for s = 1:subject_pool_size
                 % IMPORTANT -- ordering here is critical. If you change stuff, you need to also change EM2005_with_stats*.m and B2010_with_stats.m
                 %
                 subject = [OG_ONLY, FOCAL, EMPHASIS, OG_RT(s,:)', OG_Hit(s,:)', PM_RT(s,:)', PM_Hit(s,:)', PM_miss_OG_hit(s,:)', TARGETS, first_PM_RT(s), PM_miss_OG_RT(s,:)'];
@@ -511,6 +534,7 @@ parfor cond_id = 1:size(conditions, 1)
 
                 data = [data; subject];
                 run_ids = [run_ids; run];
+                subject_pool_ids = [subject_pool_ids; subject_pool_id];
 
                 temp_params = model_params;
                 temp_params(which_params_we_vary_across_subjects) = subject_params(s,:);
@@ -539,10 +563,11 @@ parfor cond_id = 1:size(conditions, 1)
                 % put subject and block id's at the end to make it
                 % compatible with the data from experiment 1
                 %
-                for s = 1:subjects_per_condition
+                for s = 1:subject_pool_size
                     block = [OG_ONLY, FOCAL, EMPHASIS, OG_RT(s,:)', OG_Hit(s,:)', PM_RT(s,:)', PM_Hit(s,:)', PM_miss_OG_hit(s,:)', s, block_id, first_PM_RT(s), PM_miss_OG_RT(s,:)'];
                     data = [data; block];
                     run_ids = [run_ids; run];
+                    subject_pool_ids = [subject_pool_ids; subject_pool_id];
 
                     temp_params = model_params;
                     temp_params(which_params_we_vary_across_subjects) = subject_params(s,:);
@@ -560,7 +585,7 @@ parfor cond_id = 1:size(conditions, 1)
         % NOTE: doesn't work with parfor!! need regular forloop
         %
         if debug_mode
-            for s = 1:subjects_per_condition
+            for s = 1:subject_pool_size
                 temp_params = model_params;
                 temp_params(which_params_we_vary_across_subjects) = subject_params(s,:);
                 fprintf('   curpar(1:4) = %.3f %.3f %.3f %.3f\n', temp_params(1), temp_params(2), temp_params(3), temp_params(4));
@@ -599,7 +624,13 @@ end % for condition = conditions
 % experiment halves for same sequences of subjects.
 % But this order is not guarandeed across the conditions, and not even across the different subject pools
 % => we reorder them here and then make sure we didn't screw up the ordering
-
+%
+data_pools_joined = [];
+extra_pools_joined = [];
+for subject_pool_id = 1:n_subject_pools
+    data_pools_joined = [data_pools_joined; data(subject_pool_ids(:) == subject_pool_id, :)];
+    extra_pools_joined = [extra_pools_joined; extra(subject_pool_ids(:) == subject_pool_id, :)];
+end
 
 % sanity check -- because of the way we do things, for each condition,
 % the OG_ONLY = 0 and OG_ONLY = 1 entries should correspond to the two

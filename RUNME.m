@@ -28,7 +28,7 @@ debug_mode = false; % only run 1 subject per condition and show progress ; !!!!!
 
 
 
-experiment = 1; % <------------------------------- HERE --------------------------------------
+experiment = 5; % <------------------------------- HERE --------------------------------------
 
 
 
@@ -181,7 +181,7 @@ elseif experiment == 5
 end
 
 tic
-[data, extra] = EM2005(startpar, experiment, debug_mode, true, 1);
+[data, extra] = EM2005(startpar, experiment, debug_mode, true, 1, 500);
 data = data{1};
 toc
 

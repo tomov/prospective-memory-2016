@@ -1,4 +1,4 @@
-function error = fit_exp1_and_exp2( free_params, runs )
+function error = fit_exp1_and_exp2( free_params, runs, max_subjects_per_pool )
 % the error function to fit with fmincon or whatever which takes only a set of "free" parameters
 % and returns the computed error 
 
@@ -13,7 +13,7 @@ startpar = free_params_to_params(free_params);
 
 % experiment 1
 if parallel_runs
-    [data, extra] = EM2005(startpar, 1, debug_mode, false, runs);
+    [data, extra] = EM2005(startpar, 1, debug_mode, false, runs, max_subjects_per_pool);
 end
 errors_exp1 = zeros(runs, 1);
 for run = 1:runs
@@ -22,7 +22,7 @@ for run = 1:runs
     else
         % serial runs
         fprintf('                            ... run = %d\n', run);
-        [data, extra] = EM2005(startpar, 1, debug_mode, false, 1);
+        [data, extra] = EM2005(startpar, 1, debug_mode, false, 1, max_subjects_per_pool);
         errors_exp1(run) = compute_err_exp1(data{1}, extra);
     end
 end
@@ -32,7 +32,7 @@ fprintf('\n                   .............. AVERAGE ERROR = %.4f (std = %.4f)\n
 
 % experiment 2
 % TODO UNDO
-%[data, extra] = EM2005(startpar, 2, debug_mode, false);
+%[data, extra] = EM2005(startpar, 2, debug_mode, false, max_subjects_per_pool);
 error_exp2 = 0; %error_exp2 = compute_err_exp2(data, extra);
 
 error = error_exp1 + error_exp2;

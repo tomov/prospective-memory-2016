@@ -561,6 +561,25 @@ parfor cond_id = 1:size(conditions, 1)
 
 end % for condition = conditions
 
+% sanity check -- because of the way we do things, for each condition,
+% the OG_ONLY = 0 and OG_ONLY = 1 entries should correspond to the two
+% experiment halves for same sequences of subjects.
+% check this by checking things that vary across subjects always (even in
+% the OG_ONLY half), e.g. the WM bias
+%
+for cond_id = 1:size(conditions, 1)
+    condition = conditions(cond_id, :);
+    run = condition(1);
+    FOCAL = condition(2);
+    EMPHASIS = condition(3);
+    TARGETS = condition(4);
+    
+    wm_bias_params = [5 6 9];
+    og_wm_biases = extra(run_ids(:) == run & data(:, 1) == 1 & data(:, 2) == FOCAL & data(:, 3) == EMPHASIS & data(:, 9) == TARGETS, wm_bias_params);
+    pm_wm_biases = extra(run_ids(:) == run & data(:, 1) == 0 & data(:, 2) == FOCAL & data(:, 3) == EMPHASIS & data(:, 9) == TARGETS, wm_bias_params);
+    assert(sum(sum(og_wm_biases - pm_wm_biases)) == 0);
+end
+
 % reshape the data so its a cell array, one cell for each run (only relevant when fitting)
 %
 data_reshaped = cell(experiment_runs, 1);

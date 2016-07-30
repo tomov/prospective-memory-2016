@@ -7,14 +7,13 @@ fprintf('%9.5f', free_params);
 fprintf(']......\n');
 
 debug_mode = false;
-fitting_mode = false;
 parallel_runs = false;
 
 startpar = free_params_to_params(free_params);
 
 % experiment 1
 if parallel_runs
-    [data, extra] = EM2005(startpar, 1, fitting_mode, debug_mode, false, runs);
+    [data, extra] = EM2005(startpar, 1, debug_mode, false, runs);
 end
 errors_exp1 = zeros(runs, 1);
 for run = 1:runs
@@ -23,7 +22,7 @@ for run = 1:runs
     else
         % serial runs
         fprintf('                            ... run = %d\n', run);
-        [data, extra] = EM2005(startpar, 1, fitting_mode, debug_mode, false, 1);
+        [data, extra] = EM2005(startpar, 1, debug_mode, false, 1);
         errors_exp1(run) = compute_err_exp1(data{1}, extra);
     end
 end
@@ -33,7 +32,7 @@ fprintf('\n                   .............. AVERAGE ERROR = %.4f (std = %.4f)\n
 
 % experiment 2
 % TODO UNDO
-%[data, extra] = EM2005(startpar, 2, fitting_mode, debug_mode, false);
+%[data, extra] = EM2005(startpar, 2, debug_mode, false);
 error_exp2 = 0; %error_exp2 = compute_err_exp2(data, extra);
 
 error = error_exp1 + error_exp2;

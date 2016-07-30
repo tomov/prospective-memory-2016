@@ -24,7 +24,6 @@ where
 %}
 
 debug_mode = false; % only run 1 subject per condition and show progress ; !!!!!IMPORTANT!!!!!!!!! must change parfor to for in EM2005
-fitting_mode = false; % used when fitting the parameters ; uses a more efficient setup that produces similar results
 
 
 
@@ -177,7 +176,7 @@ elseif experiment == 5
 end
 
 tic
-[data, extra] = EM2005(startpar, experiment, fitting_mode, debug_mode, true, 1);
+[data, extra] = EM2005(startpar, experiment, debug_mode, true, 1);
 data = data{1};
 toc
 

@@ -16,15 +16,12 @@ classdef Simulator < Model
         wm_act;
         wm_net;
         Nout;
-        
-        fitting_mode; % are we just fitting parameters? use more efficient setup
     end
     
     methods
-        function self = Simulator(FOCAL, model_params, n_subjects, subject_params, fitting_mode)
+        function self = Simulator(FOCAL, model_params, n_subjects, subject_params)
             self = self@Model(FOCAL, model_params, n_subjects, subject_params);
             self.Nout = size(self.output_ids, 2);
-            self.fitting_mode = fitting_mode;
         end
         
         function ids = string_to_ids(self, stimulus)
@@ -248,13 +245,8 @@ classdef Simulator < Model
                         + self.wm_act(~responded, :) * self.weights(self.wm_ids, self.wm_ids) ...
                         + self.biases(~responded, self.wm_ids);
                         %+ repmat(self.bias(self.wm_ids), sum(~responded), 1);
-                    % unless we're fitting (i.e. when doing regular
-                    % simulations), add noise to the net inputs
-                    %
-                    if ~self.fitting_mode
-                        self.net_input(~responded, self.ffwd_and_em_ids) = self.net_input(~responded, self.ffwd_and_em_ids) + normrnd(0, self.NOISE_SIGMA_FFWD, size(self.net_input(~responded, self.ffwd_and_em_ids)));
-                        self.net_input(~responded, self.wm_ids) = self.net_input(~responded, self.wm_ids) + normrnd(0, self.NOISE_SIGMA_WM, size(self.net_input(~responded, self.wm_ids)));
-                    end
+                    self.net_input(~responded, self.ffwd_and_em_ids) = self.net_input(~responded, self.ffwd_and_em_ids) + normrnd(0, self.NOISE_SIGMA_FFWD, size(self.net_input(~responded, self.ffwd_and_em_ids)));
+                    self.net_input(~responded, self.wm_ids) = self.net_input(~responded, self.wm_ids) + normrnd(0, self.NOISE_SIGMA_WM, size(self.net_input(~responded, self.wm_ids)));
                                         
                     % update activation levels for feedforward part of the network
                     % only update activations of those who haven't responded yet

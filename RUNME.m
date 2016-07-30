@@ -149,7 +149,7 @@ elseif experiment == 4
                 0.0004, ...  % gamma
                 0.1 0.01, ... % ffwd noise, wm noise sigma
                 0.1, ...     % wm bias noise sigma
-                0.0, ...      % OG weights noise
+                0.4, ...      % OG weights noise
                 NaN NaN NaN]; % low WM bias => not applicable here
 
    % startpar([2 4 20 21]) = [0    0.1368    0.7049    0.5319];            

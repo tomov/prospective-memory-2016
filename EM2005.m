@@ -306,7 +306,7 @@ assert(length(is_target{1}) == length(stimuli{1}));
 % just add the conditions several times
 %
 % PARFOR
-parfor cond_id = 1:size(conditions, 1)
+for cond_id = 1:size(conditions, 1)
     condition = conditions(cond_id, :);
     run = condition(1);
     FOCAL = condition(2);
@@ -371,8 +371,10 @@ parfor cond_id = 1:size(conditions, 1)
     % there are no priming effects and, more importantly, no PM targets in the control havles
     % => there can be no aftereffects of intention
     %
-    for OG_ONLY = [0 1]:
+    for OG_ONLY = [0 1]
 
+        % Readjust initial WM based on which half of the experiment we're in
+        %
         if OG_ONLY
             model_params(1:4) = [1 0 1 0];
         else       
@@ -390,7 +392,9 @@ parfor cond_id = 1:size(conditions, 1)
                 end
             end
         end
-        
+       
+        % Replicate parameters across the subjects and add cross-subject variability
+        %
         subject_params = repmat(model_params(which_params_we_vary_across_subjects), subjects_per_condition, 1);
 
         if ~debug_mode % no cross-subject noise in debug mode
@@ -408,7 +412,7 @@ parfor cond_id = 1:size(conditions, 1)
             subject_params(:, [3 4 5]) = subject_params(:, [3 4 5]) + subject_params_noise(:, [3 4 5]);
         end
 
-        % initialize simulator (for multiple subjects)
+        % initialize simulator (for all subjects in the given condition)
         %
         sim = Simulator(FOCAL, model_params, subjects_per_condition, subject_params);
 
@@ -510,7 +514,7 @@ parfor cond_id = 1:size(conditions, 1)
                 block_end = block_id * trials_per_block;                    
                 [OG_RT, ~, OG_Hit, PM_RT, ~, PM_Hit, PM_miss_OG_RT, PM_miss_OG_hit, first_PM_RT] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, ...
                     responses(:, block_start:block_end), RTs(:, block_start:block_end), [], [], [], [], [], ...
-                    is_target{}(block_start:block_end), ...
+                    is_target{OG_ONLY + 1}(block_start:block_end), ...
                     correct{OG_ONLY + 1}(block_start:block_end), ...
                     og_correct{OG_ONLY + 1}(block_start:block_end), ...
                     [], ...

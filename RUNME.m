@@ -23,12 +23,12 @@ where
   ];
 %}
 
-debug_mode = false; % only run 1 subject per condition and show progress ; !!!!!IMPORTANT!!!!!!!!! must change parfor to for in EM2005
+debug_mode = true; % only run 1 subject per condition and show progress ; !!!!!IMPORTANT!!!!!!!!! must change parfor to for in EM2005
 
 
 
 
-experiment = 3; % <------------------------------- HERE --------------------------------------
+experiment = 1; % <------------------------------- HERE --------------------------------------
 
 
 
@@ -48,7 +48,8 @@ if experiment == 1
                 0.0004,  ... % gamma
                 0.1 0.01, ...% ffwd noise, wm noise sigma
                 0.1, ...     % wm bias noise sigma
-                0.0];        % OG weights noise
+                0.0, ...     % OG weights noise
+                NaN NaN NaN]; % low WM bias => not applicable here
             
   %   startpar([2 4 6 8 10 12 14 16 22])  =  [0.3425    0.2937    0.5865    0.4131    0.7830  0.7332    0.9019 0.8114    0.4131 / 1000];
   %   startpar([2 4 6 8 10 12 14 16 20 21 22])  =  [0.3027    0.2594    0.5188    0.3459    0.6918    0.6486    0.7783 0.7177    0.2121    0.1297    0.3459 / 1000] % M * 2 + SD + F / 1000
@@ -81,7 +82,8 @@ elseif experiment == 2
                 0.0004,  ... % gamma
                 0.1 0.01, ...% ffwd noise, wm noise sigma
                 0.1, ...     % wm bias noise sigma
-                0.0];        % OG weights noise
+                0.0, ...      % OG weights noise
+                NaN NaN NaN]; % low WM bias => not applicable here            
             
   %   startpar([2 4 6 8 10 12 14 16 22])  =  [0.3425    0.2937    0.5865    0.4131    0.7830  0.7332    0.9019 0.8114    0.4131 / 1000];
 %    startpar([2 4 6 8 10 12 14 16 22])  =  [ 0.3728    0.2708    0.5854    0.4157    0.7403    0.7339    0.8124    0.8061    0.4180 / 1000];
@@ -126,7 +128,9 @@ elseif experiment == 3
                 0.0004, ...  % gamma
                 0.1 0.01, ...   % ffwd noise, wm noise sigma
                 0.1, ...    % wm bias noise sigma
-                0.4];       % OG weights noise (e.g. 0.4)
+                0.4, ...    % OG weights noise (e.g. 0.4)
+                NaN NaN NaN]; % low WM bias => not applicable here
+            
             
    % startpar([2 4 20 21]) = [0    0.1368    0.7049    0.5319];
      % startpar([2 4 20 21 22]) = [ 0.0155         0    1.0000         0         0 / 1000 ]; % probabilistic -- sometimes work sometimes not so well (b/c of the randomness in monitoring)
@@ -146,7 +150,8 @@ elseif experiment == 4
                 0.0004, ...  % gamma
                 0.1 0.01, ... % ffwd noise, wm noise sigma
                 0.1, ...     % wm bias noise sigma
-                0.0];        % OG weights noise
+                0.0, ...      % OG weights noise
+                NaN NaN NaN]; % low WM bias => not applicable here
 
    % startpar([2 4 20 21]) = [0    0.1368    0.7049    0.5319];            
 %    startpar([2 4 20 21 22]) = [ 0.0155         0    1.0000         0         0 / 1000 ];
@@ -168,7 +173,8 @@ elseif experiment == 5
                 0.0004, ...% gamma
                 0.1 0.01, ... % ffwd noise, wm noise sigma
                 0.0, ...   % wm bias noise sigma
-                0.0];      % OG weights noise 
+                0.0, ...    % OG weights noise 
+                NaN NaN NaN]; % low WM bias => not applicable here
             
             
      startpar([2 4 6 8 10 12 14 16 22])  =  [0.3425    0.2937    0.5865    0.4131    0.7830  0.7332    0.9019 0.8114    0.4131 / 1000]; % from experiment 1

@@ -46,7 +46,7 @@ assert(exp_id == 1 || exp_id == 2 || exp_id == 3 || exp_id == 4 || exp_id == 5 |
 if do_print, fprintf('\n\n--------========= RUNNING E&M EXPERIMENT %d ======-------\n\n', exp_id); end
 
 % from E&M Experiment 1 & 2 methods
-subjects_per_condition = [24 24 32 104 1000 30]; % experiment 5 is 72 subjects but that's not significant...
+subjects_per_condition = [24 24 32 104 272 30]; % experiment 5 is 72 subjects but that's not significant...
 blocks_per_condition = [8 4 1 1 10 1];
 trials_per_block = [24 40 110 110 18 110];
 pm_blocks_exp1 = [1 3 6 7];
@@ -69,6 +69,7 @@ run_ids = [];
 focal_range = 1:-1:0;
 emphasis_range = 0:1;
 target_range = [1, 6];
+og_range = 0:1;
 
 if exp_id == 1
     target_range = 1;
@@ -83,7 +84,7 @@ elseif exp_id == 4
     target_range = 1;
     emphasis_range = 0;
 elseif exp_id == 5
-    %UNDONE og_range = 0; % TODO it's hardcoded -- there must be a PM task
+    og_range = 0; % TODO it's hardcoded -- there must be a PM task
     focal_range = 1; % TODO hardcoded too
     emphasis_range = 0;
     target_range = 1;
@@ -94,14 +95,15 @@ end
 
 
 if debug_mode
-    % we show ~16 figures per subject. You don't want more than one subject
+    % we show 1 figure per subject per condition. Don't go overboard
     %
     subjects_per_condition = 1;
+    og_range = 0;
     focal_range = 0;
     emphasis_range = 0;
     target_range = [1];
-    trials_per_block = 16;
-    blocks_per_condition = 10;
+    trials_per_block = 19;
+    blocks_per_condition = 1;
 end
 
 % List out all PM conditions
@@ -131,7 +133,7 @@ og_stimuli_pattern = [
     {'math,an animal'}, 1;
     {'math,a subject'}, 1;
 ];
-og_correct_pattern = {'Yes'; 'No'; 'No'; 'Yes'; 'No'; 'Yes'};
+og_correct_pattern = {'Yes'; 'No'; 'No'; 'Yes'; 'No'; 'Yes'}; % TODO rename 'correct' to 'expected' or something
 
 % init PM trial pool
 pm_targets_pattern = [
@@ -227,6 +229,7 @@ if exp_id == 5
     % actually just the OG task without the PM
     % instruction. This is fine b/c there's no priming
     % in our model.
+    % TODO make num of targets same as in E&M (only 4 of the 10 blocks had targets)
     %
     stimuli_pattern = [
         {'switch back to OG and PM'}, 1; % task switch
@@ -349,7 +352,6 @@ parfor cond_id = 1:size(conditions, 1)
     model_params(12) = noise_sigma_wm;
     model_params(13) = og_weights_noise_factor;
 
-    assert(exp_id ~= 5); % TODO WTF FIXME make 5 work (split 1k in buckets), also fix it in the Simulator (see switch_to_Inter_task stuff -- BIG TODO)
     % personalize perception & response monitoring for each subject, optionally
     % adding cross-subject variability
     %
@@ -366,12 +368,12 @@ parfor cond_id = 1:size(conditions, 1)
         repmat(normrnd(0, wm_bias_noise_sigma, subjects_per_condition, 1), 1, 3) ... % WM bias noise IMPORTANT -- make sure noise term is the same for all 3 WM biases for a given subject
     ];
 
-    % Run the PM half and control (OG only) half of the experiment for each subject.
+    % Run the PM half (OG_ONLY = 0) and control half (OG_ONLY = 1) of the experiment for each subject.
     % Note that, unlike E&M, we don't need to counterbalance the order here since
     % there are no priming effects and, more importantly, no PM targets in the control havles
     % => there can be no aftereffects of intention
     %
-    for OG_ONLY = [0 1]
+    for OG_ONLY = og_range
 
         % Readjust initial WM based on which half of the experiment we're in
         %
@@ -458,41 +460,55 @@ parfor cond_id = 1:size(conditions, 1)
         % collect the relevant data
         %
         if exp_id == 1 || exp_id == 3 || exp_id == 4 || exp_id == 5 || exp_id == 6
-            % for experiment 1, each subject = 1 sample
+            % for all experiments except for exp. 2, there are two samples per subject --
+            % one for the control half (OG_ONLY = 1) and one for the PM half (OG_ONLY = 0) of the experiment.
             %
             [OG_RT, ~, OG_Hit, PM_RT, ~, PM_Hit, PM_miss_OG_RT, PM_miss_OG_hit, first_PM_RT] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, ...
                 responses, RTs, act, acc, onsets, offsets, nets, ...
                 is_target{OG_ONLY + 1}, correct{OG_ONLY + 1}, og_correct{OG_ONLY + 1}, is_inter_task{OG_ONLY + 1}, ...
                 false, do_print);
-            if exp_id == 5
-                % extra analysis for experiment 5
-                %
-                assert(OG_ONLY == 0);
-                it_targets = logical(is_or_was_target) & logical(is_inter_task{1});
-                IT_TAR_RT = mean(RTs(it_targets));
-                IT_TAR_SEM = std(RTs(it_targets)) / sqrt(length(RTs(it_targets)));
-                it_non_targets = logical(~is_or_was_target) & logical(is_inter_task{1});
-                IT_NONTAR_RT = mean(RTs(it_non_targets));
-                IT_NONTAR_SEM = std(RTs(it_non_targets)) / sqrt(length(it_non_targets));
-                if do_print, fprintf(' bonus Exp 5: target RT = %.2f (%.2f), nontarget RT = %.2f (%.2f)\n', ...
-                    IT_TAR_RT, IT_TAR_SEM, IT_NONTAR_RT, IT_NONTAR_SEM); end
 
-                it_tar_resp = responses(it_targets);
-                it_tar_correct = correct{1}(it_targets);
-                IT_TAR_HIT = sum(strcmp(it_tar_resp, it_tar_correct)) / length(it_tar_correct) * 100;
-                if do_print, fprintf('            : accuracy on targets = %.2f\n', IT_TAR_HIT); end
-
-                it_nontar_resp = responses(it_non_targets);
-                it_nontar_correct = correct{1}(it_non_targets);
-                IT_NONTAR_HIT = sum(strcmp(it_nontar_resp, it_nontar_correct)) / length(it_nontar_correct) * 100;
-                if do_print, fprintf('            : accuracy on non-targets = %.2f\n', IT_NONTAR_HIT); end
-            end
-
+            
+            % add each sample separately
+            %
             for s = 1:subjects_per_condition
+                % IMPORTANT -- ordering here is critical. If you change stuff, you need to also change EM2005_with_stats*.m and B2010_with_stats.m
+                %
                 subject = [OG_ONLY, FOCAL, EMPHASIS, OG_RT(s,:)', OG_Hit(s,:)', PM_RT(s,:)', PM_Hit(s,:)', PM_miss_OG_hit(s,:)', TARGETS, first_PM_RT(s), PM_miss_OG_RT(s,:)'];
+
                 if exp_id == 5
-                    subject = [subject, IT_TAR_RT, IT_NONTAR_RT, IT_TAR_HIT, IT_NONTAR_HIT];
+                    % extra analysis for experiment 5
+                    %
+                    assert(OG_ONLY == 0);
+                    it_targets = logical(is_or_was_target) & logical(is_inter_task{1});
+                    it_target_RTs = RTs(s, it_targets)'; % RT for (ex-)target items in the Inter task TODO only take the correct ones!
+                    IT_TAR_RT = mean(it_target_RTs); 
+                    IT_TAR_SEM = std(it_target_RTs) / sqrt(length(it_target_RTs));
+                    
+                    it_nontargets = logical(~is_or_was_target) & logical(is_inter_task{1});
+                    it_nontarget_RTs = RTs(s, it_nontargets)';  % RT for (ex-)nontarget items in the Inter task TODO normalize! 'neural' items and 'targets' should be same # (for SD's)
+                    IT_NONTAR_RT = mean(it_nontarget_RTs);
+                    IT_NONTAR_SEM = std(it_nontarget_RTs) / sqrt(length(it_nontarget_RTs));
+                    if do_print, fprintf(' bonus Exp 5: target RT = %.2f (%.2f), nontarget RT = %.2f (%.2f)\n', ...
+                        IT_TAR_RT, IT_TAR_SEM, IT_NONTAR_RT, IT_NONTAR_SEM); end
+
+                    it_tar_resp = responses(s, it_targets)';
+                    it_tar_correct = correct{1}(it_targets); % TODO rename to it_tar_expected or something
+                    num_correct_IT_responses_on_targets = sum(strcmp(it_tar_resp, it_tar_correct));
+                    IT_TAR_HIT = num_correct_IT_responses_on_targets / length(it_tar_correct) * 100; % accuracy on (ex-)target items in the Inter task
+                    if do_print, fprintf('            : accuracy on targets = %.2f\n', IT_TAR_HIT); end
+
+                    IT_TAR_PM_HIT = sum(strcmp(it_tar_resp, 'PM')) / (length(it_tar_correct) - num_correct_IT_responses_on_targets) * 100; % how many of the wrong answers on the (ex-)targets were PM responses
+                    if do_print, fprintf('            : PM hits on wrong-answer targets = %.2f\n', IT_TAR_PM_HIT); end
+
+                    it_nontar_resp = responses(s, it_nontargets)';
+                    it_nontar_correct = correct{1}(it_nontargets);
+                    IT_NONTAR_HIT = sum(strcmp(it_nontar_resp, it_nontar_correct)) / length(it_nontar_correct) * 100; % accuracy on (ex-)nontarget items in the Inter task
+                    if do_print, fprintf('            : accuracy on non-targets = %.2f\n', IT_NONTAR_HIT); end
+
+                    subject = [subject, IT_TAR_RT, IT_TAR_HIT, IT_NONTAR_RT, IT_NONTAR_HIT, IT_TAR_PM_HIT];
                 end
+
                 data = [data; subject];
                 run_ids = [run_ids; run];
 
@@ -506,8 +522,8 @@ parfor cond_id = 1:size(conditions, 1)
                 end
             end
         elseif exp_id == 2
-            % for experiment 2, each block = 1 sample (i.e. 4
-            % samples per subject)
+            % for experiment 2, there are 8 (= 2 x 4) samples per subject -- one sample for each of the four blocks, and
+            % the two halves of the experiment -- the control half (OG_ONLY = 1) and PM half (OG_ONLY = 0)
             %
             for block_id = 1:blocks_per_condition
                 block_start = (block_id - 1) * trials_per_block + 1;
@@ -548,37 +564,50 @@ parfor cond_id = 1:size(conditions, 1)
                 temp_params = model_params;
                 temp_params(which_params_we_vary_across_subjects) = subject_params(s,:);
                 fprintf('   curpar(1:4) = %.3f %.3f %.3f %.3f\n', temp_params(1), temp_params(2), temp_params(3), temp_params(4));
-                %if ~OG_ONLY
-                    getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, ...
-                        responses, RTs, act, acc, onsets, offsets, nets, ...
-                        is_target{OG_ONLY + 1}, correct{OG_ONLY + 1}, og_correct{OG_ONLY + 1}, is_inter_task{OG_ONLY + 1}, ...
-                        true, true);
-                %end
             end
+            getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, ...
+                responses, RTs, act, acc, onsets, offsets, nets, ...
+                is_target{OG_ONLY + 1}, correct{OG_ONLY + 1}, og_correct{OG_ONLY + 1}, is_inter_task{OG_ONLY + 1}, ...
+                true, true);
         end
 
     end % for OG_ONLY = [0 1]
 
 end % for condition = conditions
 
+
+% -----------------------------------------------------------------------------------------%
+% -----------------------------------------------------------------------------------------%
+% -----------------------------------------------------------------------------------------%
+% -----------------------------------------------------------------------------------------%
+% -----------------------------------------------------------------------------------------%
+% -----------------------------------------------------------------------------------------%
+% -----------------------------------------------------------------------------------------%
+
+%
+% Post-simulation stuffs
+%
+
 % sanity check -- because of the way we do things, for each condition,
 % the OG_ONLY = 0 and OG_ONLY = 1 entries should correspond to the two
 % experiment halves for same sequences of subjects.
-% check this by checking things that vary across subjects always (even in
+% ensure the ordering by checking things that vary across subjects always (even in
 % the OG_ONLY half), e.g. the WM bias
 % ...mostly relevant for experiment 4
 %
-for cond_id = 1:size(conditions, 1)
-    condition = conditions(cond_id, :);
-    run = condition(1);
-    FOCAL = condition(2);
-    EMPHASIS = condition(3);
-    TARGETS = condition(4);
-    
-    wm_bias_params = [5 6 9];
-    og_wm_biases = extra(run_ids(:) == run & data(:, 1) == 1 & data(:, 2) == FOCAL & data(:, 3) == EMPHASIS & data(:, 9) == TARGETS, wm_bias_params);
-    pm_wm_biases = extra(run_ids(:) == run & data(:, 1) == 0 & data(:, 2) == FOCAL & data(:, 3) == EMPHASIS & data(:, 9) == TARGETS, wm_bias_params);
-    assert(sum(sum(og_wm_biases - pm_wm_biases)) == 0);
+if exp_id ~= 5 % no OG_ONLY half in experiment 5
+    for cond_id = 1:size(conditions, 1)
+        condition = conditions(cond_id, :);
+        run = condition(1);
+        FOCAL = condition(2);
+        EMPHASIS = condition(3);
+        TARGETS = condition(4);
+        
+        wm_bias_params = [5 6 9];
+        og_wm_biases = extra(run_ids(:) == run & data(:, 1) == 1 & data(:, 2) == FOCAL & data(:, 3) == EMPHASIS & data(:, 9) == TARGETS, wm_bias_params);
+        pm_wm_biases = extra(run_ids(:) == run & data(:, 1) == 0 & data(:, 2) == FOCAL & data(:, 3) == EMPHASIS & data(:, 9) == TARGETS, wm_bias_params);
+        assert(sum(sum(og_wm_biases - pm_wm_biases)) == 0);
+    end
 end
 
 % reshape the data so its a cell array, one cell for each run (only relevant when fitting)

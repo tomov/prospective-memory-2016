@@ -116,10 +116,10 @@ classdef Simulator < Model
                 % input units
                 %
                 stimulus = stimuli{ord, 1};
-                if strcmp(stimulus, 'switch to Inter Task')
+                if strcmp(stimulus, 'switch to Inter Task') % #hacksauce for exp. 5
                     active_ids = [];
                     switched_to_Inter_task(:) = true;
-                elseif strcmp(stimulus, 'switch back to OG and PM')
+                elseif strcmp(stimulus, 'switch back to OG and PM') % more hacksauce for exp. 5
                     active_ids = [];
                     switched_to_OG_and_PM_from_Inter_task(:) = true;
                     for target = {'tortoise'} % TODO dedupe with instruction() % TODO pass target as param
@@ -132,7 +132,7 @@ classdef Simulator < Model
                         self.init_wm(:, self.wm_ids == target_monitor_id) = self.target_init;
                     end
                 else
-                    active_ids = self.string_to_ids(stimulus);
+                    active_ids = self.string_to_ids(stimulus); % all other experiments
                 end
                 timeout = stimuli{ord, 2} * self.CYCLES_PER_SEC;
                 
@@ -163,56 +163,47 @@ classdef Simulator < Model
                     % hack for testing different activations
                     %self.wm_act = self.init_wm;
                     %self.activation(self.wm_ids) = (self.wm_act + 5) / 10;%self.logistic(self.wm_act);
-                   
-                    % initialize WM at beginning of block (i.e. first
-                    % trial),
-                    % or after a PM switch
+                    
+                    % Optionally set the WM activations at the start of the trial.
+                    % We do this in a few cases.
+                    %
                     if cycle < self.INSTRUCTION_CYLCES
-                        % initial WM
+                        % Case #1: reset the WM units to their initial values on the first trial,
+                        % or if the subject just switched back to the OG and PM task from the Inter Task (only for Experiment 5)
+                        %
                         who_needs_wm_init = ord == 1 | switched_to_OG_and_PM_from_Inter_task;
                         self.wm_act(who_needs_wm_init, :) = self.init_wm(who_needs_wm_init, :);
 
-                        % switch to inter task
-                        % BIG TODO WTF -- see below
-
-                        % switched to PM task
-                        self.wm_act(switched_to_PM_task, self.wm_ids == self.unit_id('OG Task')) = self.last_trial_wm(switched_to_PM_task, self.wm_ids == self.unit_id('OG Task'));
-                        self.wm_act(switched_to_PM_task, self.wm_ids == self.unit_id('PM Task')) = self.last_trial_wm(switched_to_PM_task, self.wm_ids == self.unit_id('PM Task'));
-
-                        self.adapt_wm_act_to_ffwd_act();
-                    end
-
-                    %{
-                    if cycle < self.INSTRUCTION_CYLCES && (ord == 1 || switched_to_PM_task || switched_to_Inter_task || switched_to_OG_and_PM_from_Inter_task)
-                        if ord == 1 || switched_to_OG_and_PM_from_Inter_task
-                            self.wm_act = self.init_wm;
-                        elseif switched_to_Inter_task
-                            % reset all
-                            % TODO parametrize
-                            for target = {'tortoise'} % TODO dedupe with instruction() % TODO pass target as param
-                                target_monitor_unit = strcat('Monitor ', {' '}, target);
-                                target_monitor_id = self.unit_id(target_monitor_unit{1});
-                                % make WM unit available
-                                self.bias(target_monitor_id) = self.BIAS_FOR_ATTENTION;
-                                % and give it some initial activation (according to params)
-                                self.init_wm(self.wm_ids == target_monitor_id) = 0;
-                            end
-                            self.wm_act(self.wm_ids == self.unit_id('OG features')) = self.init_wm(self.wm_ids == self.unit_id('OG features'));
-                            self.wm_act(self.wm_ids == self.unit_id('OG Task')) = 1;
-                            self.wm_act(self.wm_ids == self.unit_id('PM Task')) = 0;
-                            self.wm_act(self.wm_ids == self.unit_id('PM Context')) = 0.2;
-                            self.wm_act(self.wm_ids == self.unit_id('Other Context')) = 1;
-                        else
-                            assert(switched_to_PM_task);
-                            % only reset tasks
-                            self.wm_act(self.wm_ids == self.unit_id('OG Task')) = self.init_wm(self.wm_ids == self.unit_id('OG Task'));
-                            self.wm_act(self.wm_ids == self.unit_id('PM Task')) = self.init_wm(self.wm_ids == self.unit_id('PM Task'));
+                        % Case #2: if the subject just switched to the Inter Task (Experiment 5), suspend the PM WM units 
+                        % but keep some activation in the PM Context unit
+                        %
+                        assert(sum(who_needs_wm_init & switched_to_Inter_task) == 0); % these should not overlap. Note this means first task cannot be the Inter Task
+                        for target = {'tortoise'} % TODO dedupe with instruction() % TODO pass target as param
+                            target_monitor_unit = strcat('Monitor ', {' '}, target);
+                            target_monitor_id = self.unit_id(target_monitor_unit{1});
+                            % make WM unit available
+                            self.bias(switched_to_Inter_task, target_monitor_id) = self.BIAS_FOR_ATTENTION;
+                            % and give it some initial activation (according to params)
+                            self.init_wm(switched_to_Inter_task, self.wm_ids == target_monitor_id) = 0;
                         end
+                        % TODO parametrize
+                        self.wm_act(switched_to_Inter_task, self.wm_ids == self.unit_id('OG features')) = self.init_wm(self.wm_ids == self.unit_id('OG features'));
+                        self.wm_act(switched_to_Inter_task, self.wm_ids == self.unit_id('OG Task')) = 1;
+                        self.wm_act(switched_to_Inter_task, self.wm_ids == self.unit_id('PM Task')) = 0;
+                        self.wm_act(switched_to_Inter_task, self.wm_ids == self.unit_id('PM Context')) = 0.2;
+                        self.wm_act(switched_to_Inter_task, self.wm_ids == self.unit_id('Other Context')) = 1;
+
+                        % Case #3: after a PM switch, reset the task units to their values at the last trial
+                        %
+                        who_needs_task_reset = switched_to_PM_task & ~switched_to_Inter_task; % could happen if the previous trial was a PM trial and we just switched to the Inter Task. We already took care of that in Case 2
+                        who_needs_task_reset = who_needs_task_reset & ~who_needs_wm_init; % could happen if we just switched from the Inter Task but got a commission error on the previous trial. We already took care of that in Case 1 
+                        self.wm_act(who_needs_task_reset, self.wm_ids == self.unit_id('OG Task')) = self.last_trial_wm(who_needs_task_reset, self.wm_ids == self.unit_id('OG Task'));
+                        self.wm_act(who_needs_task_reset, self.wm_ids == self.unit_id('PM Task')) = self.last_trial_wm(who_needs_task_reset, self.wm_ids == self.unit_id('PM Task'));
+
                         self.adapt_wm_act_to_ffwd_act();
                     end
-                    %}
 
-                    % log activation for plotting
+                    % log activation for plotting TODO debug_mode only?
                     %
                     activation_log(:, cycles + cycle, :) = self.activation;
                     accumulators_log(:, cycles + cycle, :) = self.accumulators;
@@ -336,7 +327,8 @@ classdef Simulator < Model
                 
                 %switched_to_PM_task = (self.wm_act(2) > self.wm_act(1) -
                 %0.1); <--- DOESN'T quite work (partial switch)
-                switched_to_PM_task = (self.wm_act(:, 2) > self.resting_wm(:, 2) + 0.01);
+                switched_to_PM_task = (self.wm_act(:, 2) > self.resting_wm(:, 2) + 0.01); % TODO param
+                %fprintf('ord %d, stim %s, switched_to_PM = %d\n', ord, stimulus, switched_to_PM_task(1)); 
                 switched_to_Inter_task(:) = false;
                 switched_to_OG_and_PM_from_Inter_task(:) = false;
             end

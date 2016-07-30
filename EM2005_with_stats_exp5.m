@@ -45,7 +45,7 @@ subjects = data;
 %}
 
 SD_cols = [5,7,9,11]; % SDs. we convert those to SEM by dividing by subjects_per_condition
-subjects_per_condition = 24;
+subjects_per_condition = 72;
 
 % most table 4 from E&M
 %
@@ -129,7 +129,7 @@ SSresid = sum(yresid.^2);
 SStotal = (length(empirical_RTs)-1) * var(empirical_RTs);
 rsq = 1 - SSresid/SStotal;
 
-OG_RT_label_cycles_to_msec = sprintf('OG RT (msec) = cycles * %.1f + %.1f', RT_slope, RT_intercept);
+OG_RT_label_cycles_to_msec = sprintf('OG RT (msec) = cycles * %.1f + %.1f', RT_slope, RT_intercept)
 
 
 % lksadjflaksdfjalsk;dfjlask dfj;lsadkjf l;asdjkfla;sdj

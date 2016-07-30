@@ -66,11 +66,12 @@ empirical_stats(:, SD_cols) = empirical_stats(:, SD_cols) / sqrt(subjects_per_co
 assert(sum(isnan(subjects(:, 4))) <= 13); % don't want too many nan's
 subjects = subjects(~isnan(subjects(:, 4)), :);
 
-for OG_ONLY = 1:-1:0
-    which = subjects(:, 1) == OG_ONLY & ~isnan(subjects(:, 4));
-    m = median(subjects(which, 4));
-    subjects(which, 3) = (subjects(which, 4) > m);
-end
+assert(size(unique(subjects(:, [2 3 9]), 'rows'), 1) == 1); % this approach only works if we have a single condition; for reference, see sanity check at the end of EM2005.m
+RT_costs = subjects(subjects(:, 1) == 0, 4) - subjects(subjects(:, 1) == 1, 4);
+
+m = nanmedian(RT_costs);
+subjects(subjects(:, 1) == 0, 3) = (RT_costs > m);
+subjects(subjects(:, 1) == 1, 3) = (RT_costs > m);
 
 % ------------- calculate simulation stats
 

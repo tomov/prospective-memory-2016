@@ -566,6 +566,7 @@ end % for condition = conditions
 % experiment halves for same sequences of subjects.
 % check this by checking things that vary across subjects always (even in
 % the OG_ONLY half), e.g. the WM bias
+% ...mostly relevant for experiment 4
 %
 for cond_id = 1:size(conditions, 1)
     condition = conditions(cond_id, :);

@@ -23,7 +23,7 @@ where
   ];
 %}
 
-debug_mode = true; % only run 1 subject per condition and show progress ; !!!!!IMPORTANT!!!!!!!!! must change parfor to for in EM2005
+debug_mode = false; % only run 1 subject per condition and show progress ; !!!!!IMPORTANT!!!!!!!!! must change parfor to for in EM2005
 
 
 

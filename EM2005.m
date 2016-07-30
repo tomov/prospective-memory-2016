@@ -306,7 +306,7 @@ assert(length(is_target{1}) == length(stimuli{1}));
 % just add the conditions several times
 %
 % PARFOR
-for cond_id = 1:size(conditions, 1)
+parfor cond_id = 1:size(conditions, 1)
     condition = conditions(cond_id, :);
     run = condition(1);
     FOCAL = condition(2);

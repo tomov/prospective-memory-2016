@@ -46,7 +46,7 @@ assert(exp_id == 1 || exp_id == 2 || exp_id == 3 || exp_id == 4 || exp_id == 5 |
 if do_print, fprintf('\n\n--------========= RUNNING E&M EXPERIMENT %d ======-------\n\n', exp_id); end
 
 % from E&M Experiment 1 & 2 methods
-subjects_per_condition = [24 24 32 104 72 30]; % experiment 5 is 72 subjects but that's not significant...
+subjects_per_condition = [24 24 32 104 372 30]; % experiment 5 is 72 subjects but that's not significant...
 blocks_per_condition = [8 4 1 1 10 1];
 trials_per_block = [24 40 110 110 24 110];
 pm_blocks_exp1 = [1 3 6 7];
@@ -250,25 +250,25 @@ if exp_id == 5
     %
     stimuli_pattern = [
         {'switch back to OG and PM'}, 1; % do the OG + PM task ("Imagery rating" in E&M)
-        {'crocodile,an animal'}, 1;
-        {'crocodile,a subject'}, 1;
         {'physics,an animal'}, 1;
+        {'crocodile,a subject'}, 1;
+        {'crocodile,an animal'}, 1;
         {'tortoise,an animal'}, 1; % PM target
         {'physics,a subject'}, 1;
         {'math,an animal'}, 1;
         {'math,a subject'}, 1;
 
         {'switch to Inter Task'}, 1; % do the Inter task ("Lexical decision task" in E&M)
-        {'crocodile,an animal'}, 1;
+        {'physics,an animal'}, 1;
         {'crocodile,a subject'}, 1;
-        {'physics,an animal'}, 1;  % non-target ("previously presented item" in E&M)
+        {'tortoise,an animal'}, 1;  % non-target ("previously presented item" in E&M)
         {'tortoise,an animal'}, 1; % formerly PM target
         {'physics,a subject'}, 1;
         {'math,an animal'}, 1;
         {'math,a subject'}, 1;
 
         {'switch back to OG and PM'}, 1; % do the OG + PM task ("Imagery rating" in E&M)
-        {'crocodile,an animal'}, 1;
+        {'physics,an animal'}, 1;
         {'crocodile,a subject'}, 1;
         {'crocodile,an animal'}, 1;
         {'tortoise,an animal'}, 1; % PM target
@@ -485,7 +485,7 @@ parfor cond_id = 1:size(conditions, 1)
                     %if exp_id == 5 TODO cleanup
                     %    sim.instruction({'tortoise'}, false);
                     %else
-                        sim.instruction({'tortoise'}, true);
+                     %   sim.instruction({'tortoise'}, true);
                     %end
                 end
             else
@@ -504,7 +504,7 @@ parfor cond_id = 1:size(conditions, 1)
             % one for the control half (OG_ONLY = 1) and one for the PM half (OG_ONLY = 0) of the experiment.
             %
             [OG_RT, ~, OG_Hit, PM_RT, ~, PM_Hit, PM_miss_OG_RT, PM_miss_OG_hit, first_PM_RT] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, ...
-                responses, RTs, act, acc, onsets, offsets, nets, ...
+                stimuli{OG_ONLY + 1}, responses, RTs, act, acc, onsets, offsets, nets, ...
                 is_target{OG_ONLY + 1}, correct{OG_ONLY + 1}, og_correct{OG_ONLY + 1}, is_inter_task{OG_ONLY + 1}, ...
                 false, do_print);
 
@@ -574,7 +574,7 @@ parfor cond_id = 1:size(conditions, 1)
                 block_start = (block_id - 1) * trials_per_block + 1;
                 block_end = block_id * trials_per_block;                    
                 [OG_RT, ~, OG_Hit, PM_RT, ~, PM_Hit, PM_miss_OG_RT, PM_miss_OG_hit, first_PM_RT] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, ...
-                    responses(:, block_start:block_end), RTs(:, block_start:block_end), [], [], [], [], [], ...
+                    stimuli{OG_ONLY + 1}(block_start:block_end), responses(:, block_start:block_end), RTs(:, block_start:block_end), [], [], [], [], [], ...
                     is_target{OG_ONLY + 1}(block_start:block_end), ...
                     correct{OG_ONLY + 1}(block_start:block_end), ...
                     og_correct{OG_ONLY + 1}(block_start:block_end), ...
@@ -612,7 +612,7 @@ parfor cond_id = 1:size(conditions, 1)
                 fprintf('   curpar(1:4) = %.3f %.3f %.3f %.3f\n', temp_params(1), temp_params(2), temp_params(3), temp_params(4));
             end
             getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, ...
-                responses, RTs, act, acc, onsets, offsets, nets, ...
+                stimuli{OG_ONLY + 1}, responses, RTs, act, acc, onsets, offsets, nets, ...
                 is_target{OG_ONLY + 1}, correct{OG_ONLY + 1}, og_correct{OG_ONLY + 1}, is_inter_task{OG_ONLY + 1}, ...
                 true, true);
         end

@@ -2,17 +2,10 @@
 
 EM2005_with_stats_exp5
 
-%{
 figure;
-barweb(Ms, SEMs, 1, {}, ...
-    'Simulation Data', 'Third Task Trial Type');
-h = legend({'Target', 'Nontarget'});
-set(h, 'FontSize', 15);
-ylabel('Third Task RT (ms)');
-ylim([1100, 1200]);
- %}       
 
-figure;
+% plot aftereffects of intention
+%
 
 subplot(1, 2, 1);
 
@@ -26,12 +19,23 @@ ylim([500 700]);
 
 subplot(1, 2, 2);
 
-simulation_Ms = simulation_stats(2:3, 4)' * RT_slope + RT_intercept;
-simulation_SEMs = simulation_stats(2:3, 5)' * RT_slope;
+%simulation_Ms = simulation_stats(2:3, 4)' * RT_slope + RT_intercept;
+%simulation_SEMs = simulation_stats(2:3, 5)' * RT_slope;
+%               nontarget   target
+simulation_Ms = [1.1308    1.1154] * 1000;
+simulation_SEMs = [3.1035    3.2862];
+
+simulation_Ms(1) = mean(subjects(:, 14))   * RT_slope + RT_intercept;
+simulation_Ms(2) = mean(subjects(:, 12))   * RT_slope + RT_intercept;
+simulation_SEMs(1) = std(subjects(:, 14))   * RT_slope / sqrt(simulation_subjects_per_condition);
+simulation_SEMs(2) = std(subjects(:, 12))   * RT_slope / sqrt(simulation_subjects_per_condition);
+%
+%simulation_Ms = [mean(subjects(:, 14))    mean(subjects(:, 12)) ] * RT_slope + RT_intercept;
+%simulation_SEMs = [std(subjects(:, 14))    std(subjects(:, 12)) ] * RT_slope / sqrt(simulation_subjects_per_condition);
+
+
 barweb(simulation_Ms, simulation_SEMs, 1, {}, ...
     'Simulation Data', 'Third Task Trial Type', 'Third Task RT (msec)');
 h = legend({'Non-target', 'Target'});
 set(h, 'FontSize', 10);
 ylim([1050 1160]);
-
-

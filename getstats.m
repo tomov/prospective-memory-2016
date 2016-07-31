@@ -1,4 +1,4 @@
-function [OG_RT, OG_RT_SD, OG_Hit, PM_RT, PM_RT_SD, PM_Hit, PM_miss_OG_RT, PM_miss_OG_hit, first_PM_RT] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses, RTs, act, acc, onsets, offsets, nets, is_target, correct, og_correct, is_inter_task, show_pics, do_print)
+function [OG_RT, OG_RT_SD, OG_Hit, PM_RT, PM_RT_SD, PM_Hit, PM_miss_OG_RT, PM_miss_OG_hit, first_PM_RT] = getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, stimuli, responses, RTs, act, acc, onsets, offsets, nets, is_target, correct, og_correct, is_inter_task, show_pics, do_print)
 
 n_subjects = size(responses, 1);
 n_trials = size(responses, 2);

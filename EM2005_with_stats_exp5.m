@@ -46,7 +46,7 @@ subjects = data;
 
 SD_cols = [5,7,9,11]; % SDs. we convert those to SEM by dividing by subjects_per_condition
 empirical_subjects_per_condition = 72;
-simulation_subjects_per_condition = 72;
+simulation_subjects_per_condition = 372;
 
 % most table 4 from E&M
 %
@@ -133,7 +133,7 @@ rsq = 1 - SSresid/SStotal;
 OG_RT_label_cycles_to_msec = sprintf('OG RT (msec) = cycles * %.1f + %.1f', RT_slope, RT_intercept)
 
 
-% lksadjflaksdfjalsk;dfjlask dfj;lsadkjf l;asdjkfla;sdj
+% do some analysis
 
 
 Ms = [];
@@ -165,5 +165,14 @@ groups = [repmat({'1'}, length(GroupA), 1); repmat({'4'}, length(GroupB), 1)];
 
 [p, table] = anova1(all, groups, 'off')
 
+%{
+figure;
+barweb(Ms, SEMs, 1, {}, ...
+    'Simulation Data', 'Third Task Trial Type');
+h = legend({'Target', 'Nontarget'});
+set(h, 'FontSize', 15);
+ylabel('Third Task RT (ms)');
+ylim([1100, 1200]);
+ %}       
 
 

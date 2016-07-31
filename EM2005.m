@@ -100,11 +100,11 @@ if debug_mode
     %
     subjects_per_condition = 1;
     og_range = 0;
-    focal_range = 0;
+    focal_range = 1;
     emphasis_range = 0;
     target_range = [1];
-    trials_per_block = 19;
-    blocks_per_condition = 1;
+    trials_per_block = 24;
+    blocks_per_condition = 10;
 end
 
 % For each condition, split subjects into separate subject pools 
@@ -249,7 +249,7 @@ if exp_id == 5
     % Ref. Table 3 from E&M 2005 (not exactly the same but close enough)
     %
     stimuli_pattern = [
-        {'switch back to OG and PM'}, 1; % do the OG + PM task (Imagery rating in E&M)
+        {'switch back to OG and PM'}, 1; % do the OG + PM task ("Imagery rating" in E&M)
         {'crocodile,an animal'}, 1;
         {'crocodile,a subject'}, 1;
         {'physics,an animal'}, 1;
@@ -258,19 +258,19 @@ if exp_id == 5
         {'math,an animal'}, 1;
         {'math,a subject'}, 1;
 
-        {'switch to Inter Task'}, 1; % do the Inter task (Lexical decision task in E&M)
+        {'switch to Inter Task'}, 1; % do the Inter task ("Lexical decision task" in E&M)
         {'crocodile,an animal'}, 1;
         {'crocodile,a subject'}, 1;
-        {'physics,an animal'}, 1;  % non-target (previously presented item in E&M)
+        {'physics,an animal'}, 1;  % non-target ("previously presented item" in E&M)
         {'tortoise,an animal'}, 1; % formerly PM target
         {'physics,a subject'}, 1;
         {'math,an animal'}, 1;
         {'math,a subject'}, 1;
 
-        {'switch back to OG and PM'}, 1; % do the OG + PM task (Imagery rating in E&M)
+        {'switch back to OG and PM'}, 1; % do the OG + PM task ("Imagery rating" in E&M)
         {'crocodile,an animal'}, 1;
         {'crocodile,a subject'}, 1;
-        {'physics,an animal'}, 1;
+        {'crocodile,an animal'}, 1;
         {'tortoise,an animal'}, 1; % PM target
         {'physics,a subject'}, 1;
         {'math,an animal'}, 1;
@@ -495,7 +495,7 @@ parfor cond_id = 1:size(conditions, 1)
 
         % run the actual simulations for all subjects in the given condition
         %
-        [responses, RTs, act, acc, onsets, offsets, nets] = sim.run(stimuli{OG_ONLY + 1}, false);
+        [responses, RTs, act, acc, onsets, offsets, nets] = sim.run(stimuli{OG_ONLY + 1}, debug_mode);
         
         % collect the relevant data
         %
@@ -534,7 +534,7 @@ parfor cond_id = 1:size(conditions, 1)
                         IT_TAR_RT, IT_TAR_SEM, IT_NONTAR_RT, IT_NONTAR_SEM); end
                 
                     assert(sum(IT_nontargets) == sum(IT_targets));
-                    assert(sum(IT_targets) == 10);
+                    assert(debug_mode || sum(IT_targets) == 10);
 
                     IT_tar_resp = responses(s, IT_targets)';
                     IT_tar_correct = correct{1}(IT_targets); % TODO rename to it_tar_expected or something

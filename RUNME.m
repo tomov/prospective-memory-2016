@@ -176,12 +176,12 @@ elseif experiment == 5
                 0.0, ...     % OG weights noise
                 NaN NaN NaN]; % low WM bias => not applicable here
             
-     startpar([2 4 6 8 10 12 14 16 22])  =  [0.3425    0.2937    0.5865    0.4131    0.7830  0.7332    0.9019 0.8114    0.4131 / 1000]; % from experiment 1
+    % startpar([2 4 6 8 10 12 14 16 22])  =  [0.3425    0.2937    0.5865    0.4131    0.7830  0.7332    0.9019 0.8114    0.4131 / 1000]; % from experiment 1
 
 end
 
 tic
-[data, extra] = EM2005(startpar, experiment, debug_mode, true, 1, 500);
+[data, extra] = EM2005(startpar, experiment, debug_mode, true, 1, 150);
 data = data{1};
 toc
 

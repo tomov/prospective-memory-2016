@@ -253,28 +253,33 @@ if exp_id == 5
 
         {'crocodile,an animal'}, 1;
         {'crocodile,a subject'}, 1;
-        {'physics,an animal'}, 1;
+        {'physics,an animal'}, 1;  % non-target (i.e. "previously presented" in E&M)
         {'tortoise,an animal'}, 1; % PM target
         {'physics,a subject'}, 1;
         {'math,an animal'}, 1;
-        {'math,a subject'}, 1;
+        {'math,a subject'}, 1;     % non-target
         {'tortoise,a subject'}, 1; % PM target
 
         {'switch to Inter Task'}, 1; % task switch
 
         {'crocodile,an animal'}, 1;
         {'crocodile,a subject'}, 1;
-        {'physics,an animal'}, 1;
+        {'physics,an animal'}, 1;  % non-target
         {'tortoise,an animal'}, 1; % formerly PM target
         {'physics,a subject'}, 1;
         {'math,an animal'}, 1;
-        {'math,a subject'}, 1;
+        {'math,a subject'}, 1;     % non-target
         {'tortoise,a subject'}, 1; % formerly PM target
     ];
     is_target_pattern = zeros(length(stimuli_pattern), 1);
     is_target_pattern([5 9]) = 1;
     is_or_was_target_pattern = zeros(length(stimuli_pattern), 1);
     is_or_was_target_pattern([5 9 14 18]) = 1;
+    % pick the same number of non-target items for the analysis (in this
+    % case, the trials right before the PM trials).
+    % since we don't have priming, the concept of "previously presented items" (as in E&M) is irrelevant here
+    is_nontarget_pattern = zeros(length(stimuli_pattern), 1);
+    is_nontarget_pattern([4 8 13 18]) = 1; 
     is_inter_task_pattern = [zeros(10, 1); ones(8, 1)]; % count switches as part of inter task
     og_correct_pattern = {'Switch'; 'Yes'; 'No'; 'No'; 'Yes'; 'Yes'; 'No'; 'Yes'; 'No'; 'Switch'; 'Yes'; 'No'; 'No'; 'Yes'; 'Yes'; 'No'; 'Yes'; 'No'};
     correct_pattern = og_correct_pattern;
@@ -285,6 +290,7 @@ if exp_id == 5
     assert(length(stimuli_pattern) == length(og_correct_pattern));
     assert(length(stimuli_pattern) == length(is_target_pattern));
     assert(length(stimuli_pattern) == length(is_or_was_target_pattern));
+    assert(length(stimuli_pattern) == length(is_nontarget_pattern));
     assert(length(stimuli_pattern) == length(is_inter_task_pattern));
 
     % copy & trim 'em
@@ -295,6 +301,7 @@ if exp_id == 5
     og_correct{1} = repmat(og_correct_pattern, reps, 1);
     is_target{1} = repmat(is_target_pattern, reps, 1);
     is_or_was_target = repmat(is_or_was_target_pattern, reps, 1);
+    is_nontarget = repmat(is_nontarget_pattern, reps, 1);
     is_inter_task{1} = repmat(is_inter_task_pattern, reps, 1);
 
     % truncate
@@ -303,9 +310,11 @@ if exp_id == 5
     og_correct{1} = og_correct{1}(1:reps, :);
     is_target{1} = is_target{1}(1:reps, :);
     is_or_was_target = is_or_was_target(1:reps, :);
+    is_nontarget = is_nontarget(1:reps, :);
     is_inter_task{1} = is_inter_task{1}(1:reps, :);
 else
     is_or_was_target = zeros(); % hacks to make parfor work
+    is_nontarget = zeros(); % hack to make parfor work
 end % if exp_id == 5
 assert(length(correct{1}) == length(stimuli{1}));
 assert(length(is_target{1}) == length(stimuli{1}));
@@ -508,11 +517,8 @@ parfor cond_id = 1:size(conditions, 1)
                     IT_TAR_RT = mean(IT_target_RTs); 
                     IT_TAR_SEM = std(IT_target_RTs) / sqrt(length(IT_target_RTs));
                     
-                    IT_nontargets = logical(~is_or_was_target) & logical(is_inter_task{1});
-                    IT_nontarget_RTs = RTs(s, IT_nontargets)';  % RT for (ex-)nontarget items in the Inter task
-                    % normalize the number of nontargets by picking a random sample of the same size as the number of targets
-                    % E&M have the same number of "previously presented" and "target" items; need to do the same to have a comparable variance w/ the target items
-                    %
+                    IT_nontargets = logical(is_nontarget) & logical(is_inter_task{1});
+                    IT_nontarget_RTs = RTs(s, IT_nontargets)';  % RT for non-(ex-)target items in the Inter task
                     IT_nontarget_RTs = randsample(IT_nontarget_RTs, length(IT_target_RTs));
                     IT_NONTAR_RT = mean(IT_nontarget_RTs);
                     IT_NONTAR_SEM = std(IT_nontarget_RTs) / sqrt(length(IT_nontarget_RTs));

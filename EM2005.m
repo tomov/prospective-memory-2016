@@ -503,30 +503,34 @@ parfor cond_id = 1:size(conditions, 1)
                     % extra analysis for experiment 5
                     %
                     assert(OG_ONLY == 0);
-                    it_targets = logical(is_or_was_target) & logical(is_inter_task{1});
-                    it_target_RTs = RTs(s, it_targets)'; % RT for (ex-)target items in the Inter task TODO only take the correct ones!
-                    IT_TAR_RT = mean(it_target_RTs); 
-                    IT_TAR_SEM = std(it_target_RTs) / sqrt(length(it_target_RTs));
+                    IT_targets = logical(is_or_was_target) & logical(is_inter_task{1});
+                    IT_target_RTs = RTs(s, IT_targets)'; % RT for (ex-)target items in the Inter task TODO only take the correct ones!
+                    IT_TAR_RT = mean(IT_target_RTs); 
+                    IT_TAR_SEM = std(IT_target_RTs) / sqrt(length(IT_target_RTs));
                     
-                    it_nontargets = logical(~is_or_was_target) & logical(is_inter_task{1});
-                    it_nontarget_RTs = RTs(s, it_nontargets)';  % RT for (ex-)nontarget items in the Inter task TODO normalize! 'neural' items and 'targets' should be same # (for SD's)
-                    IT_NONTAR_RT = mean(it_nontarget_RTs);
-                    IT_NONTAR_SEM = std(it_nontarget_RTs) / sqrt(length(it_nontarget_RTs));
+                    IT_nontargets = logical(~is_or_was_target) & logical(is_inter_task{1});
+                    IT_nontarget_RTs = RTs(s, IT_nontargets)';  % RT for (ex-)nontarget items in the Inter task
+                    % normalize the number of nontargets by picking a random sample of the same size as the number of targets
+                    % E&M have the same number of "previously presented" and "target" items; need to do the same to have a comparable variance w/ the target items
+                    %
+                    IT_nontarget_RTs = randsample(IT_nontarget_RTs, length(IT_target_RTs));
+                    IT_NONTAR_RT = mean(IT_nontarget_RTs);
+                    IT_NONTAR_SEM = std(IT_nontarget_RTs) / sqrt(length(IT_nontarget_RTs));
                     if do_print, fprintf(' bonus Exp 5: target RT = %.2f (%.2f), nontarget RT = %.2f (%.2f)\n', ...
                         IT_TAR_RT, IT_TAR_SEM, IT_NONTAR_RT, IT_NONTAR_SEM); end
 
-                    it_tar_resp = responses(s, it_targets)';
-                    it_tar_correct = correct{1}(it_targets); % TODO rename to it_tar_expected or something
-                    num_correct_IT_responses_on_targets = sum(strcmp(it_tar_resp, it_tar_correct));
-                    IT_TAR_HIT = num_correct_IT_responses_on_targets / length(it_tar_correct) * 100; % accuracy on (ex-)target items in the Inter task
+                    IT_tar_resp = responses(s, IT_targets)';
+                    IT_tar_correct = correct{1}(IT_targets); % TODO rename to it_tar_expected or something
+                    num_correct_IT_responses_on_targets = sum(strcmp(IT_tar_resp, IT_tar_correct));
+                    IT_TAR_HIT = num_correct_IT_responses_on_targets / length(IT_tar_correct) * 100; % accuracy on (ex-)target items in the Inter task
                     if do_print, fprintf('            : accuracy on targets = %.2f\n', IT_TAR_HIT); end
 
-                    IT_TAR_PM_HIT = sum(strcmp(it_tar_resp, 'PM')) / (length(it_tar_correct) - num_correct_IT_responses_on_targets) * 100; % how many of the wrong answers on the (ex-)targets were PM responses
+                    IT_TAR_PM_HIT = sum(strcmp(IT_tar_resp, 'PM')) / (length(IT_tar_correct) - num_correct_IT_responses_on_targets) * 100; % how many of the wrong answers on the (ex-)targets were PM responses
                     if do_print, fprintf('            : PM hits on wrong-answer targets = %.2f\n', IT_TAR_PM_HIT); end
 
-                    it_nontar_resp = responses(s, it_nontargets)';
-                    it_nontar_correct = correct{1}(it_nontargets);
-                    IT_NONTAR_HIT = sum(strcmp(it_nontar_resp, it_nontar_correct)) / length(it_nontar_correct) * 100; % accuracy on (ex-)nontarget items in the Inter task
+                    IT_nontar_resp = responses(s, IT_nontargets)';
+                    IT_nontar_correct = correct{1}(IT_nontargets);
+                    IT_NONTAR_HIT = sum(strcmp(IT_nontar_resp, IT_nontar_correct)) / length(IT_nontar_correct) * 100; % accuracy on (ex-)nontarget items in the Inter task
                     if do_print, fprintf('            : accuracy on non-targets = %.2f\n', IT_NONTAR_HIT); end
 
                     subject = [subject, IT_TAR_RT, IT_TAR_HIT, IT_NONTAR_RT, IT_NONTAR_HIT, IT_TAR_PM_HIT];

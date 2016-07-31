@@ -51,7 +51,7 @@ subjects_per_condition = 72;
 %
 empirical_stats = [
     0 1 0,   NaN,   NaN, NaN, NaN, NaN, NaN,  76,  26, NaN;  % not much info on the OG + PM task (word rating in E&M)
-    1 1 0,  603.94,  92.02, 96, 2, NaN, NaN, NaN, NaN, 0;  % inter task, non-targets (i.e. "neutral" items in E&M)
+    1 1 0,  576.50,  87.43, 96, 2, NaN, NaN, NaN, NaN, 0;  % inter task, non-targets (i.e. "previously presented" items in E&M)
     1 1 0,  631.13, 133.19, 96, 2, NaN, NaN, NaN, NaN, 1;  % inter task (lexical decision task in E&M), target items
 ];
 

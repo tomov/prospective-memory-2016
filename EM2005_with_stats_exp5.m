@@ -45,7 +45,8 @@ subjects = data;
 %}
 
 SD_cols = [5,7,9,11]; % SDs. we convert those to SEM by dividing by subjects_per_condition
-subjects_per_condition = 72;
+empirical_subjects_per_condition = 72;
+simulation_subjects_per_condition = 72;
 
 % most table 4 from E&M
 %
@@ -56,7 +57,7 @@ empirical_stats = [
 ];
 
 % convert SD's to SEM's in empirical data
-empirical_stats(:, SD_cols) = empirical_stats(:, SD_cols) / sqrt(subjects_per_condition);
+empirical_stats(:, SD_cols) = empirical_stats(:, SD_cols) / sqrt(empirical_subjects_per_condition);
 
 
 % ------------- calculate simulation stats (Table 1 from E&M 2005)
@@ -107,7 +108,7 @@ end
 
 
 % convert SD's to SEM's in simulation data
-simulation_stats(:, SD_cols) = simulation_stats(:, SD_cols) / sqrt(subjects_per_condition);
+simulation_stats(:, SD_cols) = simulation_stats(:, SD_cols) / sqrt(simulation_subjects_per_condition);
 
 
 

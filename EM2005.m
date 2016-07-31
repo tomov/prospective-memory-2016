@@ -48,7 +48,7 @@ if do_print, fprintf('\n\n--------========= RUNNING E&M EXPERIMENT %d ======----
 % from E&M Experiment 1 & 2 methods
 subjects_per_condition = [24 24 32 104 72 30]; % experiment 5 is 72 subjects but that's not significant...
 blocks_per_condition = [8 4 1 1 10 1];
-trials_per_block = [24 40 110 110 18 110];
+trials_per_block = [24 40 110 110 24 110];
 pm_blocks_exp1 = [1 3 6 7];
 pm_trials_exp2 = [40 80 120 160];
 pm_trials_exp3 = [26 52 78 104];
@@ -246,44 +246,52 @@ if exp_id == 5
     % actually just the OG task without the PM
     % instruction. This is fine b/c there's no priming
     % in our model.
-    % TODO make num of targets same as in E&M (only 4 of the 10 blocks had targets)
+    % Ref. Table 3 from E&M 2005 (not exactly the same but close enough)
     %
     stimuli_pattern = [
-        {'switch back to OG and PM'}, 1; % task switch
-
+        {'switch back to OG and PM'}, 1; % do the OG + PM task (Imagery rating in E&M)
         {'crocodile,an animal'}, 1;
         {'crocodile,a subject'}, 1;
-        {'physics,an animal'}, 1;  % non-target (i.e. "previously presented" in E&M)
+        {'physics,an animal'}, 1;
         {'tortoise,an animal'}, 1; % PM target
         {'physics,a subject'}, 1;
         {'math,an animal'}, 1;
-        {'math,a subject'}, 1;     % non-target
-        {'tortoise,a subject'}, 1; % PM target
+        {'math,a subject'}, 1;
 
-        {'switch to Inter Task'}, 1; % task switch
-
+        {'switch to Inter Task'}, 1; % do the Inter task (Lexical decision task in E&M)
         {'crocodile,an animal'}, 1;
         {'crocodile,a subject'}, 1;
-        {'physics,an animal'}, 1;  % non-target
+        {'physics,an animal'}, 1;  % non-target (previously presented item in E&M)
         {'tortoise,an animal'}, 1; % formerly PM target
         {'physics,a subject'}, 1;
         {'math,an animal'}, 1;
-        {'math,a subject'}, 1;     % non-target
-        {'tortoise,a subject'}, 1; % formerly PM target
+        {'math,a subject'}, 1;
+
+        {'switch back to OG and PM'}, 1; % do the OG + PM task (Imagery rating in E&M)
+        {'crocodile,an animal'}, 1;
+        {'crocodile,a subject'}, 1;
+        {'physics,an animal'}, 1;
+        {'tortoise,an animal'}, 1; % PM target
+        {'physics,a subject'}, 1;
+        {'math,an animal'}, 1;
+        {'math,a subject'}, 1;
     ];
     is_target_pattern = zeros(length(stimuli_pattern), 1);
-    is_target_pattern([5 9]) = 1;
+    is_target_pattern([5 21]) = 1;
     is_or_was_target_pattern = zeros(length(stimuli_pattern), 1);
-    is_or_was_target_pattern([5 9 14 18]) = 1;
+    is_or_was_target_pattern([5 13 21]) = 1;
     % pick the same number of non-target items for the analysis (in this
-    % case, the trials right before the PM trials).
+    % case, the trials right before the target trial in the inter task).
     % since we don't have priming, the concept of "previously presented items" (as in E&M) is irrelevant here
     is_nontarget_pattern = zeros(length(stimuli_pattern), 1);
-    is_nontarget_pattern([4 8 13 18]) = 1; 
-    is_inter_task_pattern = [zeros(10, 1); ones(8, 1)]; % count switches as part of inter task
-    og_correct_pattern = {'Switch'; 'Yes'; 'No'; 'No'; 'Yes'; 'Yes'; 'No'; 'Yes'; 'No'; 'Switch'; 'Yes'; 'No'; 'No'; 'Yes'; 'Yes'; 'No'; 'Yes'; 'No'};
+    is_nontarget_pattern(12) = 1; 
+    is_inter_task_pattern = [zeros(8, 1); ones(8, 1); zeros(8, 1)]; % count switches as part of inter task
+    og_correct_pattern = { ...
+        'Switch'; 'Yes'; 'No'; 'No'; 'Yes'; 'Yes'; 'No'; 'Yes'; ...
+        'Switch'; 'Yes'; 'No'; 'No'; 'Yes'; 'Yes'; 'No'; 'Yes'; ...
+        'Switch'; 'Yes'; 'No'; 'No'; 'Yes'; 'Yes'; 'No'; 'Yes'; };
     correct_pattern = og_correct_pattern;
-    correct_pattern([5 9]) = {'PM'};
+    correct_pattern([5 21]) = {'PM'};
 
     assert(length(stimuli_pattern) == length(og_correct_pattern));
     assert(length(stimuli_pattern) == length(correct_pattern));
@@ -524,6 +532,9 @@ parfor cond_id = 1:size(conditions, 1)
                     IT_NONTAR_SEM = std(IT_nontarget_RTs) / sqrt(length(IT_nontarget_RTs));
                     if do_print, fprintf(' bonus Exp 5: target RT = %.2f (%.2f), nontarget RT = %.2f (%.2f)\n', ...
                         IT_TAR_RT, IT_TAR_SEM, IT_NONTAR_RT, IT_NONTAR_SEM); end
+                
+                    assert(sum(IT_nontargets) == sum(IT_targets));
+                    assert(sum(IT_targets) == 10);
 
                     IT_tar_resp = responses(s, IT_targets)';
                     IT_tar_correct = correct{1}(IT_targets); % TODO rename to it_tar_expected or something

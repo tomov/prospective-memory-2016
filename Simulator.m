@@ -191,7 +191,7 @@ classdef Simulator < Model
                         self.wm_act(switched_to_Inter_task, self.wm_ids == self.unit_id('OG features')) = self.init_wm(self.wm_ids == self.unit_id('OG features'));
                         self.wm_act(switched_to_Inter_task, self.wm_ids == self.unit_id('OG Task')) = 1;
                         self.wm_act(switched_to_Inter_task, self.wm_ids == self.unit_id('PM Task')) = 0;
-                        self.wm_act(switched_to_Inter_task, self.wm_ids == self.unit_id('PM Context')) = 0.7;
+                        self.wm_act(switched_to_Inter_task, self.wm_ids == self.unit_id('PM Context')) = 0.5;
                         self.wm_act(switched_to_Inter_task, self.wm_ids == self.unit_id('Other Context')) = 1;
 
                         % Case #3: after a PM switch, reset the task units to their values at the last trial

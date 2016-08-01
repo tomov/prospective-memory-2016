@@ -79,7 +79,7 @@ classdef Model < handle
         
         ATTENTION_TO_TASK = -1;
         
-        HIPPO_TO_TASK = 10; % + 50 for Brewer EM compensates low WM
+        HIPPO_TO_TASK = 10 + 15; % + 50 for Brewer EM compensates low WM ; + 10 for Exp. 7 predictions
         %PERCEPTION_TO_TASK = 1.2;  % EM = speed of task switch --
         %DEPRECATEd; see hippo
         
@@ -107,7 +107,7 @@ classdef Model < handle
         BIAS_FOR_HIPPO = -23; %-32;  % must be < -10, o/w tasks drift b/c of (super small) input current from hippo
         
         % FUTURE 20, 12
-        STIMULUS_TO_HIPPO = 16; % + 10 for Brewer EM compensates low WM
+        STIMULUS_TO_HIPPO = 16; % + 10 for Brewer EM compensates low WM;
         CONTEXT_TO_HIPPO = 16;
         
         %OUTPUT_TO_SELF = 0; % makes response->output more like copying rather than integration

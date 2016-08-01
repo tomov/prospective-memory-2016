@@ -32,7 +32,7 @@ barweb(simulation_Ms, simulation_SEMs, 1, {}, ...
     'Simulation Data', 'Third Task Trial Type', 'Third Task RT (msec)');
 h = legend({'Non-target', 'Target'});
 set(h, 'FontSize', 10);
-ylim([1095 1170]);
+ylim([1095 1370]);
 
 
 
@@ -45,7 +45,7 @@ subplot(2, 2, 3);
 empirical_Ms = [96 96]; % don't think E&M report a difference here
 empirical_SEMs = [3 3] / sqrt(empirical_subjects_per_condition);
 barweb(empirical_Ms, empirical_SEMs, 1, {}, ...
-    'Empirical Data', 'Third Task Trial Type', 'Third Task Accuracy (%)');
+    '', 'Third Task Trial Type', 'Third Task Accuracy (%)');
 h = legend({'Non-target', 'Target'});
 set(h, 'FontSize', 10);
 ylim([0 100]);
@@ -57,7 +57,7 @@ subplot(2, 2, 4);
 simulation_Ms = [mean(subjects(:, 15)) mean(subjects(:, 13))];
 simulation_SEMs = [std(subjects(:, 15)) std(subjects(:, 13))] / sqrt(simulation_subjects_per_condition);
 barweb(simulation_Ms, simulation_SEMs, 1, {}, ...
-    'Simulation Data', 'Third Task Trial Type', 'Third Task Accuracy (%)');
+    '', 'Third Task Trial Type', 'Third Task Accuracy (%)');
 h = legend({'Non-target', 'Target'});
 set(h, 'FontSize', 10);
 ylim([0 100]);

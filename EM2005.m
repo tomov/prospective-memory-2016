@@ -46,9 +46,9 @@ assert(exp_id == 1 || exp_id == 2 || exp_id == 3 || exp_id == 4 || exp_id == 5 |
 if do_print, fprintf('\n\n--------========= RUNNING E&M EXPERIMENT %d ======-------\n\n', exp_id); end
 
 % from E&M Experiment 1 & 2 methods
-subjects_per_condition = [24 24 32 104 372 30]; % experiment 5 is 72 subjects but that's not significant...
+subjects_per_condition = [24 24 32 104 1072 30]; % experiment 5 is 72 subjects but that's not significant...
 blocks_per_condition = [8 4 1 1 10 1];
-trials_per_block = [24 40 110 110 24 110];
+trials_per_block = [24 40 110 110 24 + 7 110];
 pm_blocks_exp1 = [1 3 6 7];
 pm_trials_exp2 = [40 80 120 160];
 pm_trials_exp3 = [26 52 78 104];
@@ -259,14 +259,22 @@ if exp_id == 5
         {'math,a subject'}, 1;
 
         {'switch to Inter Task'}, 1; % do the Inter task ("Lexical decision task" in E&M)
-        {'physics,an animal'}, 1;
-        {'crocodile,a subject'}, 1;
-        {'tortoise,an animal'}, 1;  % non-target ("previously presented item" in E&M)
-        {'tortoise,an animal'}, 1; % formerly PM target
-        {'physics,a subject'}, 1;
-        {'math,an animal'}, 1;
-        {'math,a subject'}, 1;
+        {'physics,an animal'}, 1;          % high 
+        {'crocodile,a subject'}, 1;         % low 
+        {'crocodile,an animal'}, 1;         % high
+        {'crocodile,an animal'}, 1; % ARGH  % low 
+        {'physics,a subject'}, 1;           % low
+        {'math,an animal'}, 1;              % high
+        {'math,a subject'}, 1;               % high
 
+        {'physics,an animal'}, 1;           % high
+        {'crocodile,a subject'}, 1;         % low
+        {'crocodile,an animal'}, 1;         % high
+        {'tortoise,an animal'}, 1; % PM target  % low
+        {'physics,a subject'}, 1;               % low
+        {'math,an animal'}, 1;               % high
+        {'math,a subject'}, 1;               % high
+        
         {'switch back to OG and PM'}, 1; % do the OG + PM task ("Imagery rating" in E&M)
         {'physics,an animal'}, 1;
         {'crocodile,a subject'}, 1;
@@ -277,21 +285,22 @@ if exp_id == 5
         {'math,a subject'}, 1;
     ];
     is_target_pattern = zeros(length(stimuli_pattern), 1);
-    is_target_pattern([5 21]) = 1;
+    is_target_pattern([5 28]) = 1;
     is_or_was_target_pattern = zeros(length(stimuli_pattern), 1);
-    is_or_was_target_pattern([5 13 21]) = 1;
+    is_or_was_target_pattern([5 20 28]) = 1;
     % pick the same number of non-target items for the analysis (in this
     % case, the trials right before the target trial in the inter task).
     % since we don't have priming, the concept of "previously presented items" (as in E&M) is irrelevant here
     is_nontarget_pattern = zeros(length(stimuli_pattern), 1);
-    is_nontarget_pattern(12) = 1; 
-    is_inter_task_pattern = [zeros(8, 1); ones(8, 1); zeros(8, 1)]; % count switches as part of inter task
+    is_nontarget_pattern([13]) = 1; 
+    is_inter_task_pattern = [zeros(8, 1); ones(8 + 7, 1); zeros(8, 1)]; % count switches as part of inter task
     og_correct_pattern = { ...
         'Switch'; 'Yes'; 'No'; 'No'; 'Yes'; 'Yes'; 'No'; 'Yes'; ...
         'Switch'; 'Yes'; 'No'; 'No'; 'Yes'; 'Yes'; 'No'; 'Yes'; ...
+                  'Yes'; 'No'; 'No'; 'Yes'; 'Yes'; 'No'; 'Yes'; ...
         'Switch'; 'Yes'; 'No'; 'No'; 'Yes'; 'Yes'; 'No'; 'Yes'; };
     correct_pattern = og_correct_pattern;
-    correct_pattern([5 21]) = {'PM'};
+    correct_pattern([5 28]) = {'PM'};
 
     assert(length(stimuli_pattern) == length(og_correct_pattern));
     assert(length(stimuli_pattern) == length(correct_pattern));
@@ -485,11 +494,11 @@ parfor cond_id = 1:size(conditions, 1)
                     %if exp_id == 5 TODO cleanup
                     %    sim.instruction({'tortoise'}, false);
                     %else
-                     %   sim.instruction({'tortoise'}, true);
+                        sim.instruction({'tortoise'}, true);
                     %end
                 end
             else
-                sim.instruction({'tor'}, true);
+               % sim.instruction({'tor'}, true);
             end
         end
 
@@ -527,7 +536,6 @@ parfor cond_id = 1:size(conditions, 1)
                     
                     IT_nontargets = logical(is_nontarget) & logical(is_inter_task{1});
                     IT_nontarget_RTs = RTs(s, IT_nontargets)';  % RT for non-(ex-)target items in the Inter task
-                    IT_nontarget_RTs = randsample(IT_nontarget_RTs, length(IT_target_RTs));
                     IT_NONTAR_RT = mean(IT_nontarget_RTs);
                     IT_NONTAR_SEM = std(IT_nontarget_RTs) / sqrt(length(IT_nontarget_RTs));
                     if do_print, fprintf(' bonus Exp 5: target RT = %.2f (%.2f), nontarget RT = %.2f (%.2f)\n', ...
@@ -551,6 +559,14 @@ parfor cond_id = 1:size(conditions, 1)
                     if do_print, fprintf('            : accuracy on non-targets = %.2f\n', IT_NONTAR_HIT); end
 
                     subject = [subject, IT_TAR_RT, IT_TAR_HIT, IT_NONTAR_RT, IT_NONTAR_HIT, IT_TAR_PM_HIT];
+
+                    IT_wtfs = IT_nontargets(4:end);
+                    for wtf = 1:7+7
+                        wtf_RTs = RTs(s, IT_wtfs)';
+                        wtf_RT = mean(wtf_RTs);
+                        subject = [subject, wtf_RT];
+                        IT_wtfs = logical([0; IT_wtfs]);
+                    end
                 end
 
                 data = [data; subject];

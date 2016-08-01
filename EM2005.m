@@ -103,8 +103,8 @@ if debug_mode
     focal_range = 1;
     emphasis_range = 0;
     target_range = [1];
-    trials_per_block = 24;
-    blocks_per_condition = 10;
+    trials_per_block = 24 + 7;
+    blocks_per_condition = 1;
 end
 
 % For each condition, split subjects into separate subject pools 

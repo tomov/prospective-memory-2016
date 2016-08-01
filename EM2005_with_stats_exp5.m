@@ -46,7 +46,7 @@ subjects = data;
 
 SD_cols = [5,7,9,11]; % SDs. we convert those to SEM by dividing by subjects_per_condition
 empirical_subjects_per_condition = 72;
-simulation_subjects_per_condition = 1072;
+simulation_subjects_per_condition = 72;
 
 % most table 4 from E&M
 %

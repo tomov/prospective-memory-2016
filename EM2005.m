@@ -41,14 +41,14 @@ bias_for_task_low_wm = params(27);
 bias_for_attention_low_wm = params(28);
 bias_for_context_low_wm = params(29);
 
-assert(exp_id == 1 || exp_id == 2 || exp_id == 3 || exp_id == 4 || exp_id == 5 || exp_id == 6);
+assert(exp_id == 1 || exp_id == 2 || exp_id == 3 || exp_id == 4 || exp_id == 5 || exp_id == 6 || exp_id == 7);
 
 if do_print, fprintf('\n\n--------========= RUNNING E&M EXPERIMENT %d ======-------\n\n', exp_id); end
 
 % from E&M Experiment 1 & 2 methods
-subjects_per_condition = [24 24 32 104 72 30]; % experiment 5 is 72 subjects but that's not significant...
-blocks_per_condition = [8 4 1 1 10 1];
-trials_per_block = [24 40 110 110 31 110];
+subjects_per_condition = [24 24 32 104 72 30 100]; % experiment 5 is 72 subjects but that's not significant...
+blocks_per_condition = [8 4 1 1 10 1 1];
+trials_per_block = [24 40 110 110 31 110 9 + 14 * 20]; % for exp. 5 and 7 must also change get_stimuli.m
 pm_blocks_exp1 = [1 3 6 7];
 pm_trials_exp2 = [40 80 120 160];
 pm_trials_exp3 = [26 52 78 104];
@@ -84,7 +84,7 @@ elseif exp_id == 4
     focal_range = 1;
     target_range = 1;
     emphasis_range = 0;
-elseif exp_id == 5
+elseif exp_id == 5 || exp_id == 7
     og_range = 0; % TODO it's hardcoded -- there must be a PM task
     focal_range = 1; % TODO hardcoded too
     emphasis_range = 0;
@@ -103,7 +103,7 @@ if debug_mode
     focal_range = 1;
     emphasis_range = 0;
     target_range = [1];
-    trials_per_block = 31;
+    trials_per_block = 100;
     blocks_per_condition = 1;
 end
 
@@ -136,205 +136,10 @@ for run = 1:experiment_runs
     end
 end
 
+% Get the sequence of stimuli and correct responses for the trials
 %
-% Set up the sequence of stimuli and correct responses
-% based on which experiment we're doing and other params
-%
-
-% init OG trial pool -- the 1 is the timeout in seconds
-og_stimuli_pattern = [
-    {'crocodile,an animal'}, 1;
-    {'crocodile,a subject'}, 1;
-    {'physics,an animal'}, 1;
-    {'physics,a subject'}, 1;
-    {'math,an animal'}, 1;
-    {'math,a subject'}, 1;
-];
-og_correct_pattern = {'Yes'; 'No'; 'No'; 'Yes'; 'No'; 'Yes'}; % TODO rename 'correct' to 'expected' or something
-
-% init PM trial pool
-pm_targets_pattern = [
-    {'tortoise,an animal'}, 1;
-    {'tortoise,a subject'}, 1;
-];
-pm_og_correct_pattern = {'Yes'; 'No'};
-pm_correct_pattern = {'PM'; 'PM'};
-
-% generate OG block
-og_block = repmat(og_stimuli_pattern, trials_per_block, 1);
-og_block_correct = repmat(og_correct_pattern, trials_per_block, 1);
-og_block = og_block(1:trials_per_block,:); % truncate
-og_block_correct = og_block_correct(1:trials_per_block,:); % truncate
-
-% generate trial sequence (all blocks concatenated) for both halves of the experiment
-% cell index = OG_ONLY + 1
-% note that initially, both halves look like the control half. We add the PM targets next
-%
-% PM half
-stimuli = {repmat(og_block, blocks_per_condition, 1)};
-correct = {repmat(og_block_correct, blocks_per_condition, 1)};
-og_correct = correct;
-is_target = {zeros(blocks_per_condition * trials_per_block, 1)};
-is_inter_task = {[]};
-% control (OG only) half
-stimuli{2} = stimuli{1};
-correct{2} = correct{1};
-og_correct{2} = og_correct{1};
-is_target{2} = is_target{1};
-is_inter_task{2} = is_inter_task{1};
-
-% insert the PM targets in the PM half of the experiment (note the OG half has 0 targets)
-%
-if debug_mode                        
-    % in debug mode, PM trials are more frequent. This is only for
-    % testing; not used in any of E&M's experiments
-    %
-    for i = 1:length(stimuli{1})
-        if mod(i,5) == 0
-            target_id = mod(i, size(pm_targets_pattern, 1)) + 1;
-            middle = i;
-            stimuli{1}(middle,:) = pm_targets_pattern(target_id, :);
-            correct{1}(middle) = pm_correct_pattern(target_id);
-            og_correct{1}(middle) = pm_og_correct_pattern(target_id);
-            is_target{1}(middle) = 1;
-        end
-    end
-else % these are based on E&M 2005
-    if exp_id == 1
-        % insert one PM target in each of the PM blocks
-        % in experiment 1, there is a target in blocks 1, 3, 6, 7
-        for i = 1:length(pm_blocks_exp1)
-            b = pm_blocks_exp1(i);
-            block_start = (b - 1) * trials_per_block + 1;
-            block_end = b * trials_per_block;
-            middle = int32((block_start + block_end) / 2);
-            target_id = mod(i, size(pm_targets_pattern, 1)) + 1;
-
-            stimuli{1}(middle,:) = pm_targets_pattern(target_id, :);
-            correct{1}(middle) = pm_correct_pattern(target_id);
-            og_correct{1}(middle) = pm_og_correct_pattern(target_id);
-            is_target{1}(middle) = 1;
-        end
-    elseif exp_id == 2 || exp_id == 3 || exp_id == 4 || exp_id == 6
-        % in experiment 2, trials 40, 80, 120, and 160 are
-        % targets
-        % experiment 3 also has 4 target trials
-        if exp_id == 2
-            pm_trials = pm_trials_exp2;
-        elseif exp_id == 6
-            pm_trials = pm_trials_exp6;
-        else
-            assert(exp_id == 3 || exp_id == 4)
-            pm_trials = pm_trials_exp3;
-        end
-        for i = 1:length(pm_trials)
-            target_id = mod(i, size(pm_targets_pattern, 1)) + 1;
-            trial = pm_trials(i);
-            stimuli{1}(trial,:) = pm_targets_pattern(target_id, :);
-            correct{1}(trial) = pm_correct_pattern(target_id);
-            og_correct{1}(trial) = pm_og_correct_pattern(target_id);
-            is_target{1}(trial) = 1;                        
-        end
-    end
-end % end inserting PM targets for exp. 1,2,3,4 and 6
-
-% insert PM targets for exp. 5
-%
-if exp_id == 5
-    % experiment 5 is special altogether
-    % Note that the "inter task" is fake -- it's
-    % actually just the OG task without the PM
-    % instruction. This is fine b/c there's no priming
-    % in our model.
-    % Ref. Table 3 from E&M 2005 (not exactly the same but close enough)
-    %
-    stimuli_pattern = [
-        {'switch back to OG and PM'}, 1; % do the OG + PM task ("Imagery rating" in E&M)
-        {'physics,an animal'}, 1;
-        {'crocodile,a subject'}, 1;
-        {'crocodile,an animal'}, 1;
-        {'tortoise,an animal'}, 1; % PM target
-        {'physics,a subject'}, 1;
-        {'math,an animal'}, 1;
-        {'math,a subject'}, 1;
-
-        {'switch to Inter Task'}, 1; % do the Inter task ("Lexical decision task" in E&M)
-        {'physics,an animal'}, 1;          % high 
-        {'crocodile,a subject'}, 1;         % low 
-        {'crocodile,an animal'}, 1;         % high
-        {'crocodile,an animal'}, 1; % ARGH  % low 
-        {'physics,a subject'}, 1;           % low
-        {'math,an animal'}, 1;              % high
-        {'math,a subject'}, 1;               % high
-
-        {'physics,an animal'}, 1;           % high
-        {'crocodile,a subject'}, 1;         % low
-        {'crocodile,an animal'}, 1;         % high
-        {'tortoise,an animal'}, 1; % PM target  % low
-        {'physics,a subject'}, 1;               % low
-        {'math,an animal'}, 1;               % high
-        {'math,a subject'}, 1;               % high
-        
-        {'switch back to OG and PM'}, 1; % do the OG + PM task ("Imagery rating" in E&M)
-        {'physics,an animal'}, 1;
-        {'crocodile,a subject'}, 1;
-        {'crocodile,an animal'}, 1;
-        {'tortoise,an animal'}, 1; % PM target
-        {'physics,a subject'}, 1;
-        {'math,an animal'}, 1;
-        {'math,a subject'}, 1;
-    ];
-    is_target_pattern = zeros(length(stimuli_pattern), 1);
-    is_target_pattern([5 28]) = 1;
-    is_or_was_target_pattern = zeros(length(stimuli_pattern), 1);
-    is_or_was_target_pattern([5 20 28]) = 1;
-    % pick the same number of non-target items for the analysis (in this
-    % case, the trials right before the target trial in the inter task).
-    % since we don't have priming, the concept of "previously presented items" (as in E&M) is irrelevant here
-    is_nontarget_pattern = zeros(length(stimuli_pattern), 1);
-    is_nontarget_pattern([13]) = 1; 
-    is_inter_task_pattern = [zeros(1 + 7, 1); ones(1 + 7 + 7, 1); zeros(1 + 7, 1)]; % count switches as part of inter task
-    og_correct_pattern = { ...
-        'Switch'; 'Yes'; 'No'; 'No'; 'Yes'; 'Yes'; 'No'; 'Yes'; ...
-        'Switch'; 'Yes'; 'No'; 'No'; 'Yes'; 'Yes'; 'No'; 'Yes'; ...
-                  'Yes'; 'No'; 'No'; 'Yes'; 'Yes'; 'No'; 'Yes'; ...
-        'Switch'; 'Yes'; 'No'; 'No'; 'Yes'; 'Yes'; 'No'; 'Yes'; };
-    correct_pattern = og_correct_pattern;
-    correct_pattern([5 28]) = {'PM'};
-
-    assert(length(stimuli_pattern) == length(og_correct_pattern));
-    assert(length(stimuli_pattern) == length(correct_pattern));
-    assert(length(stimuli_pattern) == length(og_correct_pattern));
-    assert(length(stimuli_pattern) == length(is_target_pattern));
-    assert(length(stimuli_pattern) == length(is_or_was_target_pattern));
-    assert(length(stimuli_pattern) == length(is_nontarget_pattern));
-    assert(length(stimuli_pattern) == length(is_inter_task_pattern));
-
-    % copy & trim 'em
-    reps = blocks_per_condition * trials_per_block;
-
-    stimuli{1} = repmat(stimuli_pattern, reps, 1);
-    correct{1} = repmat(correct_pattern, reps, 1);
-    og_correct{1} = repmat(og_correct_pattern, reps, 1);
-    is_target{1} = repmat(is_target_pattern, reps, 1);
-    is_or_was_target = repmat(is_or_was_target_pattern, reps, 1);
-    is_nontarget = repmat(is_nontarget_pattern, reps, 1);
-    is_inter_task{1} = repmat(is_inter_task_pattern, reps, 1);
-
-    % truncate
-    stimuli{1} = stimuli{1}(1:reps, :);
-    correct{1} = correct{1}(1:reps, :);
-    og_correct{1} = og_correct{1}(1:reps, :);
-    is_target{1} = is_target{1}(1:reps, :);
-    is_or_was_target = is_or_was_target(1:reps, :);
-    is_nontarget = is_nontarget(1:reps, :);
-    is_inter_task{1} = is_inter_task{1}(1:reps, :);
-else
-    is_or_was_target = zeros(); % hacks to make parfor work
-    is_nontarget = zeros(); % hack to make parfor work
-end % if exp_id == 5
-assert(length(correct{1}) == length(stimuli{1}));
-assert(length(is_target{1}) == length(stimuli{1}));
+[stimuli, correct, og_correct, is_target, is_or_was_target, is_nontarget, is_inter_task] = ...
+    get_stimuli(exp_id, trials_per_block, blocks_per_condition, debug_mode);
 
 
 % -----------------------------------------------------------------------------------------%
@@ -491,14 +296,10 @@ parfor cond_id = 1:size(conditions, 1)
                     %sim.instruction({'tortoise'}, true);
                 else
                     assert(TARGETS == 1);
-                    %if exp_id == 5 TODO cleanup
-                    %    sim.instruction({'tortoise'}, false);
-                    %else
-                        sim.instruction({'tortoise'}, true);
-                    %end
+                    sim.instruction({'tortoise'}, true);
                 end
             else
-               % sim.instruction({'tor'}, true);
+                sim.instruction({'tor'}, true);
             end
         end
 
@@ -508,7 +309,7 @@ parfor cond_id = 1:size(conditions, 1)
         
         % collect the relevant data
         %
-        if exp_id == 1 || exp_id == 3 || exp_id == 4 || exp_id == 5 || exp_id == 6
+        if exp_id == 1 || exp_id == 3 || exp_id == 4 || exp_id == 5 || exp_id == 6 || exp_id == 7
             % for all experiments except for exp. 2, there are two samples per subject --
             % one for the control half (OG_ONLY = 1) and one for the PM half (OG_ONLY = 0) of the experiment.
             %
@@ -525,7 +326,14 @@ parfor cond_id = 1:size(conditions, 1)
                 %
                 subject = [OG_ONLY, FOCAL, EMPHASIS, OG_RT(s,:)', OG_Hit(s,:)', PM_RT(s,:)', PM_Hit(s,:)', PM_miss_OG_hit(s,:)', TARGETS, first_PM_RT(s), PM_miss_OG_RT(s,:)'];
 
-                if exp_id == 5
+                if debug_mode
+                    subject_extra = {sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses(s,:)', RTs(s,:)', squeeze(act(s,:,:)), squeeze(acc(s,:,:)), onsets(s,:)', offsets(s,:)', squeeze(nets(s,:,:)), temp_params};
+                else
+                    subject_extra = model_params;
+                    subject_extra(which_params_we_vary_across_subjects) = subject_params(s,:);
+                end
+
+                if exp_id == 5 || exp_id == 7
                     % extra analysis for experiment 5
                     %
                     assert(OG_ONLY == 0);
@@ -540,47 +348,50 @@ parfor cond_id = 1:size(conditions, 1)
                     IT_NONTAR_SEM = std(IT_nontarget_RTs) / sqrt(length(IT_nontarget_RTs));
                     if do_print, fprintf(' bonus Exp 5: target RT = %.2f (%.2f), nontarget RT = %.2f (%.2f)\n', ...
                         IT_TAR_RT, IT_TAR_SEM, IT_NONTAR_RT, IT_NONTAR_SEM); end
-                
-                    assert(sum(IT_nontargets) == sum(IT_targets));
-                    assert(debug_mode || sum(IT_targets) == 10);
+               
+                    assert(debug_mode || sum(IT_nontargets) == sum(IT_targets));
+                    assert(debug_mode || exp_id ~= 5 || sum(IT_targets) == 10);
+                    assert(debug_mode || exp_id ~= 7 || sum(IT_targets) == 20);
 
                     IT_tar_resp = responses(s, IT_targets)';
                     IT_tar_correct = correct{1}(IT_targets); % TODO rename to it_tar_expected or something
-                    num_correct_IT_responses_on_targets = sum(strcmp(IT_tar_resp, IT_tar_correct));
+                    IT_tar_hits = strcmp(IT_tar_resp, IT_tar_correct);
+                    num_correct_IT_responses_on_targets = sum(IT_tar_hits);
                     IT_TAR_HIT = num_correct_IT_responses_on_targets / length(IT_tar_correct) * 100; % accuracy on (ex-)target items in the Inter task
                     if do_print, fprintf('            : accuracy on targets = %.2f\n', IT_TAR_HIT); end
 
-                    IT_TAR_PM_HIT = sum(strcmp(IT_tar_resp, 'PM')) / (length(IT_tar_correct) - num_correct_IT_responses_on_targets) * 100; % how many of the wrong answers on the (ex-)targets were PM responses
+                    IT_tar_pm_hits = strcmp(IT_tar_resp, 'PM');
+                    IT_TAR_PM_HIT = sum(IT_tar_pm_hits) / (length(IT_tar_correct) - num_correct_IT_responses_on_targets) * 100; % how many of the wrong answers on the (ex-)targets were PM responses
                     if do_print, fprintf('            : PM hits on wrong-answer targets = %.2f\n', IT_TAR_PM_HIT); end
 
                     IT_nontar_resp = responses(s, IT_nontargets)';
                     IT_nontar_correct = correct{1}(IT_nontargets);
-                    IT_NONTAR_HIT = sum(strcmp(IT_nontar_resp, IT_nontar_correct)) / length(IT_nontar_correct) * 100; % accuracy on (ex-)nontarget items in the Inter task
+                    IT_nontar_hits = strcmp(IT_nontar_resp, IT_nontar_correct);
+                    IT_NONTAR_HIT = sum(IT_nontar_hits) / length(IT_nontar_correct) * 100; % accuracy on (ex-)nontarget items in the Inter task
                     if do_print, fprintf('            : accuracy on non-targets = %.2f\n', IT_NONTAR_HIT); end
 
                     subject = [subject, IT_TAR_RT, IT_TAR_HIT, IT_NONTAR_RT, IT_NONTAR_HIT, IT_TAR_PM_HIT];
 
-                    IT_wtfs = IT_nontargets(4:end); % for debugging
-                    for wtf = 1:7+7
-                        wtf_RTs = RTs(s, IT_wtfs)';
-                        wtf_RT = mean(wtf_RTs);
-                        subject = [subject, wtf_RT];
-                        IT_wtfs = logical([0; IT_wtfs]);
+                    if exp_id == 5
+                        % for debugging
+                        IT_wtfs = IT_nontargets(4:end);
+                        for wtf = 1:7+7
+                            wtf_RTs = RTs(s, IT_wtfs)';
+                            wtf_RT = mean(wtf_RTs);
+                            subject = [subject, wtf_RT];
+                            IT_wtfs = logical([0; IT_wtfs]);
+                        end
+                    end
+
+                    if exp_id == 7 && ~debug_mode
+                        subject_extra = [subject_extra, IT_target_RTs', IT_nontarget_RTs', IT_tar_hits', IT_tar_pm_hits', IT_nontar_hits'];
                     end
                 end
 
                 data = [data; subject];
+                extra = [extra; subject_extra];
                 run_ids = [run_ids; run];
                 subject_pool_ids = [subject_pool_ids; subject_pool_id];
-
-                temp_params = model_params;
-                temp_params(which_params_we_vary_across_subjects) = subject_params(s,:);
-                if debug_mode
-                    subject_extra = {sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, responses(s,:)', RTs(s,:)', squeeze(act(s,:,:)), squeeze(acc(s,:,:)), onsets(s,:)', offsets(s,:)', squeeze(nets(s,:,:)), temp_params};
-                    extra = [extra; subject_extra];
-                else
-                    extra = [extra; temp_params];
-                end
             end
         elseif exp_id == 2
             % for experiment 2, there are 8 (= 2 x 4) samples per subject -- one sample for each of the four blocks, and
@@ -676,7 +487,7 @@ end
 % the OG_ONLY half), e.g. the WM bias
 % ...mostly relevant for experiment 4
 %
-if exp_id ~= 5 % no OG_ONLY half in experiment 5
+if exp_id ~= 5 && exp_id ~= 7 % no OG_ONLY half in experiment 5
     for cond_id = 1:size(conditions, 1)
         condition = conditions(cond_id, :);
         run = condition(1);

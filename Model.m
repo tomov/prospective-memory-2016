@@ -79,7 +79,7 @@ classdef Model < handle
         
         ATTENTION_TO_TASK = -1;
         
-        HIPPO_TO_TASK = 10 + 15; % + 50 for Brewer EM compensates low WM ; + 10 for Exp. 7 predictions
+        HIPPO_TO_TASK = 10; % + 50 for Brewer EM compensates low WM ; + 15 for Exp. 7 predictions
         %PERCEPTION_TO_TASK = 1.2;  % EM = speed of task switch --
         %DEPRECATEd; see hippo
         

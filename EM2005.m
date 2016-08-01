@@ -48,7 +48,7 @@ if do_print, fprintf('\n\n--------========= RUNNING E&M EXPERIMENT %d ======----
 % from E&M Experiment 1 & 2 methods
 subjects_per_condition = [24 24 32 104 72 30]; % experiment 5 is 72 subjects but that's not significant...
 blocks_per_condition = [8 4 1 1 10 1];
-trials_per_block = [24 40 110 110 24 + 7 110];
+trials_per_block = [24 40 110 110 31 110];
 pm_blocks_exp1 = [1 3 6 7];
 pm_trials_exp2 = [40 80 120 160];
 pm_trials_exp3 = [26 52 78 104];
@@ -103,7 +103,7 @@ if debug_mode
     focal_range = 1;
     emphasis_range = 0;
     target_range = [1];
-    trials_per_block = 24 + 7;
+    trials_per_block = 31;
     blocks_per_condition = 1;
 end
 
@@ -293,7 +293,7 @@ if exp_id == 5
     % since we don't have priming, the concept of "previously presented items" (as in E&M) is irrelevant here
     is_nontarget_pattern = zeros(length(stimuli_pattern), 1);
     is_nontarget_pattern([13]) = 1; 
-    is_inter_task_pattern = [zeros(8, 1); ones(8 + 7, 1); zeros(8, 1)]; % count switches as part of inter task
+    is_inter_task_pattern = [zeros(1 + 7, 1); ones(1 + 7 + 7, 1); zeros(1 + 7, 1)]; % count switches as part of inter task
     og_correct_pattern = { ...
         'Switch'; 'Yes'; 'No'; 'No'; 'Yes'; 'Yes'; 'No'; 'Yes'; ...
         'Switch'; 'Yes'; 'No'; 'No'; 'Yes'; 'Yes'; 'No'; 'Yes'; ...
@@ -560,7 +560,7 @@ parfor cond_id = 1:size(conditions, 1)
 
                     subject = [subject, IT_TAR_RT, IT_TAR_HIT, IT_NONTAR_RT, IT_NONTAR_HIT, IT_TAR_PM_HIT];
 
-                    IT_wtfs = IT_nontargets(4:end);
+                    IT_wtfs = IT_nontargets(4:end); % for debugging
                     for wtf = 1:7+7
                         wtf_RTs = RTs(s, IT_wtfs)';
                         wtf_RT = mean(wtf_RTs);

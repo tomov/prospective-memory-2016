@@ -48,14 +48,11 @@ assert(exp_id == 1 || exp_id == 2 || exp_id == 3 || exp_id == 4 || exp_id == 5 |
 
 if do_print, fprintf('\n\n--------========= RUNNING E&M EXPERIMENT %d ======-------\n\n', exp_id); end
 
+% TODO move to constants file
 % from E&M Experiment 1 & 2 methods
 subjects_per_condition = [24 24 32 104 72 30 100]; % experiment 5 is 72 subjects but that's not significant...
 blocks_per_condition = [8 4 1 1 10 1 1];
 trials_per_block = [24 40 110 110 31 110 9 + 14 * 20]; % for exp. 5 and 7 must also change get_stimuli.m
-pm_blocks_exp1 = [1 3 6 7];
-pm_trials_exp2 = [40 80 120 160];
-pm_trials_exp3 = [26 52 78 104];
-pm_trials_exp6 = [25 50 75 100];
 
 % since we're doing only 1 experiment at a time
 blocks_per_condition = blocks_per_condition(exp_id);

@@ -32,7 +32,7 @@ barweb(simulation_Ms, simulation_SEMs, 1, {}, ...
     'Simulation Data', 'Third Task Trial Type', 'Third Task RT (msec)');
 h = legend({'Non-target', 'Target'});
 set(h, 'FontSize', 10);
-ylim([1095 1370]);
+ylim([1070 1170]);
 
 
 

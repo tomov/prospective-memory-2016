@@ -2,6 +2,12 @@ function [stimuli, correct, og_correct, is_target, is_or_was_target, is_nontarge
 % Return the trial sequence as a list of stimuli and responses + appropriate flags for each trial
 %
 
+% TODO move to constants file
+pm_blocks_exp1 = [1 3 6 7];
+pm_trials_exp2 = [40 80 120 160];
+pm_trials_exp3 = [26 52 78 104];
+pm_trials_exp6 = [25 50 75 100];
+
 %
 % Set up the sequence of stimuli and correct responses
 % based on which experiment we're doing and other params

@@ -147,7 +147,7 @@ elseif experiment == 6
                 0.0, ...    % OG weights noise
                 3.8 3.8 3.8, ...       % biases, low wm capacity
                 NaN, ... % PM Context during the third task => not applicable here
-                20 10]; % extra weight to add to EM connections => set to 20, 10 for EM strength effect
+                0 0]; % extra weight to add to EM connections => set to 20, 10 for EM strength effect
             
      % !!!!!IMPORTANT!!!!!!
      startpar([5 6 7 8]) = startpar([1 2 3 4]); % high emphasis = low emphasis (b/c we use it to mean "wm capacity" #hacksauce)
@@ -172,7 +172,7 @@ elseif experiment == 7
                 0.0, ...     % OG weights noise
                 NaN NaN NaN, ... % low WM bias => not applicable here
                 0.5, ... % PM Context during the third task (try 0.5, 0.6, 0.65, 0.7)
-                15 0]; % extra weight to add to EM connections => for strong EM effect, set to 15 0 with PM Context = 0.5
+                0 0]; % extra weight to add to EM connections => for strong EM effect, set to 15 0 with PM Context = 0.5
             
 end
 

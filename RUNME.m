@@ -46,7 +46,9 @@ if experiment == 1
                 0.1 0.01, ...% ffwd noise, wm noise sigma
                 0.1, ...     % wm bias noise sigma
                 0.0, ...     % OG weights noise
-                NaN NaN NaN]; % low WM bias => not applicable here
+                NaN NaN NaN, ... % low WM bias => not applicable here
+                NaN, ... % PM Context during the third task => not applicable here
+                0 0]; % extra weight to add to EM connections => not applicable here (leave as zero)
             
 elseif experiment == 2
     % decay of monitoring => PM hit rate lowers over time in nonfocal
@@ -64,7 +66,9 @@ elseif experiment == 2
                 0.1 0.01, ...% ffwd noise, wm noise sigma
                 0.1, ...     % wm bias noise sigma
                 0.0, ...      % OG weights noise
-                NaN NaN NaN]; % low WM bias => not applicable here            
+                NaN NaN NaN, ... % low WM bias => not applicable here            
+                NaN, ... % PM Context during the third task => not applicable here
+                0 0]; % extra weight to add to EM connections => not applicable here (leave as zero)
             
 elseif experiment == 3 
     % 6 targets => slower OG in 6 vs. 1 target
@@ -80,7 +84,9 @@ elseif experiment == 3
                 0.1 0.01, ...   % ffwd noise, wm noise sigma
                 0.1, ...    % wm bias noise sigma
                 0.4, ...    % OG weights noise (e.g. 0.4)
-                NaN NaN NaN]; % low WM bias => not applicable here
+                NaN NaN NaN, ... % low WM bias => not applicable here
+                NaN, ... % PM Context during the third task => not applicable here
+                0 0]; % extra weight to add to EM connections => not applicable here (leave as zero)
                         
 elseif experiment == 4  
     % cross-subject monitoring strategies => half of subjects slower OG than
@@ -98,9 +104,11 @@ elseif experiment == 4
                 0.1 0.01, ... % ffwd noise, wm noise sigma
                 0.1, ...     % wm bias noise sigma
                 0.4, ...      % OG weights noise
-                NaN NaN NaN]; % low WM bias => not applicable here
+                NaN NaN NaN, ... % low WM bias => not applicable here
+                NaN, ... % PM Context during the third task => not applicable here
+                0 0]; % extra weight to add to EM connections => not applicable here (leave as zero)
 
-elseif experiment == 5 || experiment == 7
+elseif experiment == 5
     % interleave third task, see aftereffects of intention
     % free params = pm context turned off ?
     % same as experiment 1, low emphasis, focal
@@ -117,7 +125,9 @@ elseif experiment == 5 || experiment == 7
                 0.1 0.01, ...% ffwd noise, wm noise sigma
                 0.1, ...     % wm bias noise sigma
                 0.0, ...     % OG weights noise
-                NaN NaN NaN]; % low WM bias => not applicable here
+                NaN NaN NaN, ... % low WM bias => not applicable here
+                0.5, ... % PM Context during the third task
+                0 0]; % extra weight to add to EM connections => not applicable here (leave as zero)
             
 elseif experiment == 6
     % Brewer et al. 2010 -- low vs. high wm capacity
@@ -135,11 +145,35 @@ elseif experiment == 6
                 0.1 0.01, ... % ffwd noise, wm noise sigma
                 0.1, ...    % wm bias noise sigma
                 0.0, ...    % OG weights noise
-                3.8 3.8 3.8];       % biases, low wm capacity
+                3.8 3.8 3.8, ...       % biases, low wm capacity
+                NaN, ... % PM Context during the third task => not applicable here
+                0 0]; % extra weight to add to EM connections => set to 50, 10 for EM strength effect
             
      % !!!!!IMPORTANT!!!!!!
      startpar([5 6 7 8]) = startpar([1 2 3 4]); % high emphasis = low emphasis (b/c we use it to mean "wm capacity" #hacksauce)
      startpar([13 14 15 16]) = startpar([9 10 11 12]); % high emphasis = low emphasis (b/c we use it to mean "wm capacity" #hacksauce)
+elseif experiment == 7
+    % explore aftereffects of intention with third task only (not interleaved)
+    % very similar to experiment 5
+    % free params = pm context turned off ?
+    % same params as experiment 1, low emphasis, focal
+    %
+    % OG task, PM task, OG features, target(s)
+    
+    startpar = [1  0.35   1    0.3, ...     % focal, low emph
+                1  0.6    1    0.6, ...     % focal, high emph
+                1  0.8    1    0.7, ...    % nonfocal, low emph
+                1  0.9    1    0.9, ...    % nonfocal, high emph
+                4 4 4, ...   % biases -- tasks, attention, context
+		        0.2 0.2, ... % cross-subject init wm noise sigma -- PM task, target
+                0.0004,  ... % gamma
+                0.1 0.01, ...% ffwd noise, wm noise sigma
+                0.1, ...     % wm bias noise sigma
+                0.0, ...     % OG weights noise
+                NaN NaN NaN, ... % low WM bias => not applicable here
+                0.5, ... % PM Context during the third task
+                0 0]; % extra weight to add to EM connections => for strong EM effect, set to 15 0 with PM Context = 0.5
+            
 end
 
 tic

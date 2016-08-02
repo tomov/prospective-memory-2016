@@ -40,6 +40,9 @@ og_weights_noise_factor = params(26);
 bias_for_task_low_wm = params(27);
 bias_for_attention_low_wm = params(28);
 bias_for_context_low_wm = params(29);
+pm_context_suspended = params(30);
+hippo_to_task_extra_weight = params(31);
+stimulus_to_hippo_extra_weight = params(32);
 
 assert(exp_id == 1 || exp_id == 2 || exp_id == 3 || exp_id == 4 || exp_id == 5 || exp_id == 6 || exp_id == 7);
 
@@ -205,6 +208,9 @@ parfor cond_id = 1:size(conditions, 1)
     model_params(11) = noise_sigma_ffwd;
     model_params(12) = noise_sigma_wm;
     model_params(13) = og_weights_noise_factor;
+    model_params(14) = pm_context_suspended;
+    model_params(15) = hippo_to_task_extra_weight;
+    model_params(16) = stimulus_to_hippo_extra_weight;
 
     % personalize perception & response monitoring for each subject, optionally
     % adding cross-subject variability

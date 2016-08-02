@@ -166,6 +166,7 @@ classdef Model < handle
         subject_bias_for_context
         OG_weights_noise_factor
         OG_weights_noise_factor_2
+        PM_Context_suspended
         
         n_subjects
     end
@@ -331,6 +332,9 @@ classdef Model < handle
             self.NOISE_SIGMA_WM = model_params(12);
             self.OG_weights_noise_factor = 0;
             self.OG_weights_noise_factor_2 = model_params(13);
+            self.PM_Context_suspended = model_params(14);
+            self.HIPPO_TO_TASK = self.HIPPO_TO_TASK + model_params(15);
+            self.STIMULUS_TO_HIPPO = self.STIMULUS_TO_HIPPO + model_params(16);
 
             % ---==== specify connections between units ====---
 

@@ -1,4 +1,4 @@
-function [data, extra] = EM2005( params, exp_id, debug_mode, do_print, experiment_runs, max_subjects_per_pool)
+function [data, extra, all_the_things] = EM2005( params, exp_id, debug_mode, do_print, experiment_runs, max_subjects_per_pool)
 % run a simulation of the E&M with certain parameters and spit out the data
 % for all subjects
 
@@ -100,7 +100,7 @@ if debug_mode
     %
     subjects_per_condition = 1;
     og_range = 0;
-    focal_range = 1;
+    focal_range = 1:-1:0;
     emphasis_range = 0;
     target_range = [1];
     trials_per_block = 100;
@@ -141,6 +141,7 @@ end
 [stimuli, correct, og_correct, is_target, is_or_was_target, is_nontarget, is_inter_task] = ...
     get_stimuli(exp_id, trials_per_block, blocks_per_condition, debug_mode);
 
+all_the_things = [];
 
 % -----------------------------------------------------------------------------------------%
 % -----------------------------------------------------------------------------------------%
@@ -157,7 +158,7 @@ end
 % just add the conditions several times
 %
 % PARFOR
-parfor cond_id = 1:size(conditions, 1)
+for cond_id = 1:size(conditions, 1)
     condition = conditions(cond_id, :);
     run = condition(1);
     FOCAL = condition(2);
@@ -309,6 +310,10 @@ parfor cond_id = 1:size(conditions, 1)
         % run the actual simulations for all subjects in the given condition
         %
         [responses, RTs, act, acc, onsets, offsets, nets] = sim.run(stimuli{OG_ONLY + 1}, debug_mode);
+
+        if debug_mode
+            all_the_things{cond_id} = {condition; sim; act; onsets; offsets; stimuli{OG_ONLY + 1}; responses{OG_ONLY + 1}; correct{OG_ONLY + 1}; og_correct{OG_ONLY + 1}; is_target{OG_ONLY + 1}};
+        end
         
         % collect the relevant data
         %
@@ -490,17 +495,17 @@ end
 % the OG_ONLY half), e.g. the WM bias
 % ...mostly relevant for experiment 4
 %
-if exp_id ~= 5 && exp_id ~= 7 % no OG_ONLY half in experiment 5
-    for cond_id = 1:size(conditions, 1)
-        condition = conditions(cond_id, :);
-        run = condition(1);
-        FOCAL = condition(2);
-        EMPHASIS = condition(3);
-        TARGETS = condition(4);
-        
-        wm_bias_params = [5 6 9];
-        og_wm_biases = extra(run_ids(:) == run & data(:, 1) == 1 & data(:, 2) == FOCAL & data(:, 3) == EMPHASIS & data(:, 9) == TARGETS, wm_bias_params);
-        pm_wm_biases = extra(run_ids(:) == run & data(:, 1) == 0 & data(:, 2) == FOCAL & data(:, 3) == EMPHASIS & data(:, 9) == TARGETS, wm_bias_params);
+for cond_id = 1:size(conditions, 1)
+    condition = conditions(cond_id, :);
+    run = condition(1);
+    FOCAL = condition(2);
+    EMPHASIS = condition(3);
+    TARGETS = condition(4);
+    
+    wm_bias_params = [5 6 9];
+    og_wm_biases = extra(run_ids(:) == run & data(:, 1) == 1 & data(:, 2) == FOCAL & data(:, 3) == EMPHASIS & data(:, 9) == TARGETS, wm_bias_params);
+    pm_wm_biases = extra(run_ids(:) == run & data(:, 1) == 0 & data(:, 2) == FOCAL & data(:, 3) == EMPHASIS & data(:, 9) == TARGETS, wm_bias_params);
+    if ~isempty(og_wm_biases) && ~isempty(pm_wm_biases)
         assert(sum(sum(og_wm_biases - pm_wm_biases)) == 0);
     end
 end

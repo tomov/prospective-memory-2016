@@ -23,11 +23,11 @@ where
   ];
 %}
 
-debug_mode = false; % only run 1 subject per condition and show progress ; !!!!!IMPORTANT!!!!!!!!! must change parfor to for in EM2005
+debug_mode = true; % only run 1 subject per condition and show progress ; !!!!!IMPORTANT!!!!!!!!! must change parfor to for in EM2005
 
 
 
-experiment = 7; % <------------------------------- HERE --------------------------------------
+experiment = 1; % <------------------------------- HERE --------------------------------------
 
 
 
@@ -177,7 +177,7 @@ elseif experiment == 7
 end
 
 tic
-[data, extra] = EM2005(startpar, experiment, debug_mode, true, 1, 150);
+[data, extra, all_the_things] = EM2005(startpar, experiment, debug_mode, true, 1, 150);
 data = data{1};
 extra = extra{1};
 toc

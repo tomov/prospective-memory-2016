@@ -49,6 +49,8 @@ h = legend(sim.units);
 set(h, 'FontSize', 10);
 
 
+%{
+
 [X,Y] = meshgrid(-8:.5:8);
 R = sqrt(X.^2 + Y.^2) + eps;
 Z = sin(R)./R;
@@ -86,3 +88,5 @@ h = colorbar(___)example
 colorbar('off')example
 colorbar(h,'off')
 colorbar(ax,'off')
+
+%}

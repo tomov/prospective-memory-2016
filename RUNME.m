@@ -80,7 +80,7 @@ elseif experiment == 3
                 NaN NaN   NaN  NaN, ...    % INVALID nonfocal, high emph
                 4 4 4, ...   % biases -- tasks, attention, context
          		0.2 0.2, ...     % cross-subject init wm noise sigma -- PM task, target
-                0.0004, ...  %xssssssssssssssssaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa  gamma
+                0.0004, ...  %  gamma
                 0.1 0.01, ...   % ffwd noise, wm noise sigma
                 0.1, ...    % wm bias noise sigma
                 0.4, ...    % OG weights noise (e.g. 0.4)

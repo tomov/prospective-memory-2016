@@ -176,11 +176,102 @@ Cross-subject variance is the result of noise added to the initial WM activation
 
 3. Simulations
 
+We utilized our model to simulate the results from five PM experiments reported by Einstein, McDaniel et al. (2005) ~\cite{EM2005} and an experiment by Brewer et al. (2010) ~\cite{Brewer2010} which support the multiprocess theory of PM by demonstrating that subjects rely on a combination of bottom-up spontaneous retrieval and top-down monitoring to store and retrieve PM actions. We simulated the influence of different conditions on mean RT's and accuracies on the ongoing task and the PM task. In particular, we explore the effects of focal vs. nonfocal targets (Simulation 1), high vs. low emphasis on the PM task (Simulation 1), single vs. multiple targets (Simulation 3), of presence vs. absence of the PM task (Simulation 1), declining monitoring over time (Simulation 2), different combinations of top-down and bottom-up retrieval strategies (Simulation 4), different WM capacities (Simulation 6), aftereffects of intention when the PM instruction is suspended (Simulation 5), and EM-WM interaction with aftereffects of intention (Simulation 7). Comparing performance on the PM task and the cost it imposes on the ongoing task RT’s across the different conditions allowed us to investigate the relationship between top-down monitoring and bottom-up retrieval processes in prospective remembering and precisely how the interaction between EM and WM gives rise to these effects.
+
+
+3.1. Simulation 1: Target Focality and PM Importance
+
 Our first simulation was of Experiment 1 in Einstein, McDaniel et al. (2005) ~\cite{EM2005}. In Experiment 1, they examined the effects of manipulating three different variables: the focality of the target event, the emphasis on the PM task, and the presence or absence of the PM task. A target is considered to be focal if there is a significant overlap between the target features and the stimulus features relevant for performing the ongoing task. When the target is focal, performing the ongoing task simultaneously allocates attention to the features of the target stimulus and thus its processing ~\cite{Maylor1996, Maylor2002}. A real world example of a focal target is remembering to give a message to a colleague when you see them at work. According to the multiprocess theory of PM, spontaneous retrieval is more likely in this case since processing the target (your colleague) occurs as part of your routine ongoing activity (work). An example of a nonfocal target would be remembering to call and give a message to a colleague while you’re on vacation. In this scenario, the target (your colleague) is not processed as part of your ongoing activity (vacationing). In that case, according to the multiprocess theory, spontaneous retrieval is less likely and successful performance of the PM task would require top-down monitoring.
 
-TODO figure
+TODO figure exp1-paradigm
 
+An example of the PM paradigm in Experiment 1 using a nonfocal PM target and a high emphasis on the PM task is shown in Figure \ref{fig:exp1-paradigm}. The ongoing task was a semantic categorization task: on each trial, the subject is presented with a word and a category and must decide as quickly as possible whether the word belongs to the given category or not. The PM task in the focal condition involved pressing a third PM button whenever a particular word (e.g. “tortoise”) occurred. In contrast, the nonfocal condition involved pressing the PM button whenever a particular syllable occurred (e.g. “tor”). Explicitly processing the syllables in a word is not required for performing the ongoing task and is therefore a nonfocal feature of the stimulus. The importance of the PM task was also varied. In the high emphasis condition, subjects were told that they should aim to find every occurrence of the PM target in addition to performing the ongoing task as quickly and accurately as possible. In the low emphasis condition, subjects were told that their ability to remember to perform an action in the future is of secondary importance. The target focality and the importance of the PM task were varied across subjects. In addition, the presence of the PM task was varied within subjects: for each subject, the experiment was split in two halves: in one half they performed the PM task and in the other half they did not.
 
+Our main goal in simulating Experiment 1 was to replicate the results of varying the three variables (target focality, importance of PM task, and presence of PM task) by manipulating the WM activations and the EM association. This initial simulation also allowed us to validate our model design by showing that it is capable of reproducing the effects typically associated with PM experiments, and in particular the intention superiority effect captured by the PM model of Gilbert et al. (2013) ~\cite{Gilbert2013}.
 
-Sources of variance
+3.1.1. Parametrization
 
+Here we present how we parametrized the model for each PM condition based on the three variables: focality, importance of PM task, and presence of PM task. First we consider all four combinations of the first two variables given that there is a PM task: focal vs. nonfocal target with high vs. low emphasis on the PM task. Then we consider the ongoing-task-only condition in which there is no PM task.
+
+3.1.1.1. Condition #1: Focal, Low Emphasis
+
+TODO figure fig:focallow
+TODO JDC's comments there
+
+A detailed model architecture for the focal, low emphasis condition with a target word "tortoise" is shown in Figure {fig:focallow}. We used a simplified version of the ongoing task with four words (“tortoise”, “crocodile”, “dormitory”, and “mansion”) and two categories (“animal” and “building”). We used the same target event ("tortoise") for all simulations in this condition. Since the weights in the model are stationary, it does not exhibit priming effects and thus a small set of possible input stimuli is sufficient.
+
+Consistent with the assumption of prior semantic knowledge for the ongoing task, the wiring of the network and the weights of the connections were pre-set in order to produce correct performance on the ongoing task (although in principle they could be acquired via a learning algorithm similarly to the Stroop model ~\cite{Cohen1990}, see General Discussion). The weights of the connections in the stimulus-response layers and the EM store are shown in Figure {fig:focallow} and Table {table:weights}. The weights of the connections within the WM module are as discussed in The Model section.
+
+TODO table table:weights (include everything)
+
+Ongoing Pathway
+
+The input layer contains six nodes, two nodes for the categories and four nodes for the words, corresponding to to a total of eight possible different input stimuli. For example, the input stimulus “ANIMAL crocodile” corresponds to activating the second and the sixth node in the input layer. The feature perception layer contains six nodes corresponding to the perceived semantic meaning of the words at the input layer. The associative  layer has five units, four supporting the stimulus-response mappings of the ongoing task and one for the PM task. Finally, the output layer aggregates the information from the associative layer and produces the appropriate response for each task. In addition to the connections shown in Figure \ref{fig:focallow}, there is lateral inhibition between the units in the associative layer and between the units in the output layer, as well as an additional bias term for each unit.
+
+To illustrate how the model performs the ongoing task, imagine that the “animal” and the “crocodile” units in the feature perception layer are activated, this will result in very strong activation in the third associative unit (left to right) and partial activation in the second and fourth associative units. Due to the lateral inhibition, the third unit will suppress the other two. Similarly, in the output layer, the “Match” unit will suppress the partial activation of the "No Match" unit and will have a greater influence on the evidence accumulator corresponding to the “Match” response. A similar mechanism will cause the “No Match” unit to take over via a the second or the fourth associative unit if the two inputs are not matching (e.g. “ANIMAL dormitory”). 
+
+PM Pathway
+
+In addition to the connections shown in Figure {fig:focallow}, there is a projection from every unit in the feature perception layer to the fifth associative unit leading to the PM output. In this experiment, the PM task is simple, requiring only that the third button is pressed when the target appears. Since no selective computation is performed with the input along the PM pathway, we designed it so that it responds to any input stimulus. Because the same weights are used for both the PM and the ongoing task, and because of the competition in the associative and the output layers, which task gets executed ultimately depends on attentional modulation from the task representation units. Furthermore, the weights and biases of the stimulus-response layers were set so that in the complete absence of top-down attention, almost no activation makes it to the output layer, and responses are governed mostly by chance. Increasing the level of attentional modulation on a pathway gradually makes the units along that pathway more sensitive, leading to more accurate and faster responding. We assume the associations in the pathways are learned through experience, and that attention acts to select pathways for execution. Hence we chose the weights such that when a given task pathway receives maximum input from both the task representation units and the feature attention units, the model achieves near-perfect accuracy on that task.
+
+EM Store and Task Switching
+
+Since each subject receives a single PM instruction, there is a single EM unit that connects the target word ("tortoise") in the feature perception layer to the PM task unit in WM. We preset the negative bias in the EM units such that an excitatory signal from the target unit alone is not enough to excite the PM task unit strongly enough to produce a switch. In order for a task switch to occur, the PM context unit must also be active. This drives the EM unit to its responsive range which gradually increases the likelihood that excitation from the target unit will lead to a task switch and thus to a successful PM response. In this simulation, we kept the PM context fully active in all trials.
+
+Target Monitoring
+
+There is a single PM feature attention unit that corresponds to monitoring for the target word. This way we implement the idea that a subject can specifically monitor for the stimulus features corresponding to the target word "tortoise". Since this unit is in direct competition with the ongoing attention unit, greater monitoring for the target increases the sensitivity of the "tortoise" feature perception unit at the expense of all other feature perception units in the ongoing task pathway, thus impeding ongoing task responding. Note that both the ongoing attention unit and the target monitoring unit send projections to the same "tortoise" unit. For focal targets, the features of the target event overlap strongly with the stimulus features relevant for the ongoing task. In this experiment, the subject must explicitly perceive the word "tortoise" both for ongoing responding and for task switching, which is why it receives excitatory input from both feature attention units.
+
+3.1.1.1.1. Free Parameters
+
+The only free parameters that were varied across the different PM conditions in Experiment 1 were the initial PM feature attention activation and the initial PM task representation activation. We ran a number of simulations to determine the parameters of the model that produce adequate responding in all conditions of Experiment 1, including the free parameters as well as the fixed parameters in Table {table:weights}. A specific set of WM activations was used in each condition in order to fine-tune the model and obtain RT's and accuracy rates that fit the behavioral data as close as possible. We observed a number of trade-offs between the different parameters and selected the ones that achieve the best fit partially by hand and partially using an automated fitting algorithm TODO {look it up}. The activations used to initialize the WM units in the focal, low emphasis condition are shown in Table {table:focallowparams}.
+
+TODO table:focallowparams
+
+Note that, as discussed in the Working Memory Dynamics section, the absolute values of the initial activations of the WM units are irrelevant. It is the difference between the values within each WM submodule that determine the activation levels at which the WM module settles. We kept the initial activations of the ongoing units equal to 1 for all simulations and only varied the PM units. 
+
+3.1.1.2. Condition #2: Focal, High Emphasis
+
+We used the same architecture and connection weights as the focal, low emphasis condition (Figure {fig:focallow}, Table {table:weights}) hence the same mechanisms applied. The only difference were the values of the free parameters.
+
+3.1.1.2.1. Free Parameters
+
+The activations used to initialize the WM units in the focal, high emphasis condition are shown in Table {table:focalhighparams}. Due to the higher emphasis in this condition, the initial activations of the PM task unit and the PM feature attention unit are higher compared to the previous condition. This reflects the subjects' interpretation of the PM instruction that they would need more top-down monitoring for PM targets and a greater preparedness to switch to the PM task in order to meet the higher PM demand.
+
+TODO table:focalhighparams
+
+3.1.1.3. Condition #3: Nonfocal, Low Emphasis
+
+TODO figure fig:nonfocallow
+
+A detailed model architecture for the nonfocal, low emphasis condition with a target syllable "tor" is shown in Figure {fig:nonfocallow}. We used the same architecture to the focal, low emphasis condition (Figure {fig:focallow}). The only difference is that, due to the PM instruction, the relevant PM feature attention unit which gets activated is the one monitoring for the syllable "tor" and that the EM association is formed with the feature perception unit for "tor" (the "tor" unit is part of all previous simulations as well but since there is no top-down monitoring nor a EM association involving it, we omitted it for clarity). This unit corresponds to syllabic processing of the input (as opposed to semantic processing as in the other feature perception units). This results in the crucial difference between this condition and the previously discussed focal conditions: the OG feature attention unit no longer monitors the PM target and thus a greater amount of activation in the PM feature attention unit is required to achieve adequate PM responding. The connections weights were the same as in the other conditions (Table {table:weights}). 
+
+3.1.1.3.1. Free Parameters
+
+The activations used to initialize the WM units in the nonfocal, low emphasis condition are shown in Table {table:nonfocallowparams}. Note that both PM units have a greater initial activation compared to the focal conditions. This reflects the greater cognitive demand necessary to monitor for a nonfocal target. Since now the OG task and the PM task require paying attention to different dimensions of the stimulus input, the feature attention units project to different units in the feature perception layer. As a result, the PM target which previously received excitation from both feature attention units now receives less than half of that (due to the competition in WM), which will invariably impede PM responding. Due to the higher PM activations in WM, the OG WM units will have lower values which in turn will hamper processing along the OG pathway.
+
+TODO table:nonfocallowparams
+
+3.1.1.4. Condition #4: Nonfocal, High Emphasis
+
+We used the same architecture and connection weights as the nonfocal, low emphasis condition (Figure {fig:nonfocallow}, Table {table:weights}) hence the same mechanisms applied. The only difference were the values of the free parameters.
+
+3.1.1.4.1. Free Parameters
+
+The activations used to initialize the WM units in the nonfocal, high emphasis condition are shown in Table {table:nonfocalhighparams}. Note that the combination of a nonfocal target and a high emphasis on the PM task place require the highest levels of monitoring which is reflected in the higher values of the PM task unit and the PM feature preception unit.
+
+TODO table:nonfocalhighparams
+
+3.1.1.5. Condition #5: No PM Task
+
+TODO figure fig:nopm TODO no figure? JDC comment
+
+In the no-PM condition, we used the same architecture but with the PM units in WM initialized to 0 (Figure {fig:nopm}). We also used the same connection weights (Table {table:weights}). In particular, in contrast with the previous conditions, there were no PM associative and output units, there was no EM association, and there were no PM units in the WM module. In theory, when there is no PM task, there is no sense in which there can be a focal/nonfocal target or a high/low emphasis PM instruction, or a sense in which the subject even is aware of a PM task, and therefore the PM units and conditions become irrelevant. However, in the original experiment, there was a subtle difference in ongoing task performance across the different conditions. We hypothesize that the reason for this lies in the fact that the presence of a PM task was a within-subject variable and half of the subjects performed the no-PM condition after the PM condition -- that is, in the first half of the experiment, they received a PM instruction, and in the second half they were told to suspend the PM instruction and perform the ongoing task only. The differences reported in the no-PM half of the experiments could be taken to reflect the after-effects of intention: that is, when the subject first performed the PM task together with the ongoing task, they were subsequently slower to perform the ongoing task alone. Since this difference was not significant in the empirical analysis of Experiment 1, we will ignore it in our simulation of Experiment 1 and return to it when we reexamine the after-effects of PM intentions in our simulation of Experiment 5 (see Simulation 5). For the current simulation, we will assume that the no-PM condition simply constitutes performing the ongoing task with no confound of PM intentions.
+
+3.1.1.5.1. Free Parameters
+
+The activations used to initialize the WM units in the no-PM condition are shown in Table {table:nopmparams}.
+
+TODO table:nopmparams
+
+Since in the original study, this condition was in fact split into four different conditions along the dimensions of focality and PM emphasis, for the purposes of comparison we will also consider it as four different conditions, although in reality we used the same set of parameters if there was no PM task, regardless of focality or emphasis.

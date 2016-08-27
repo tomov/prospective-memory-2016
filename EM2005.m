@@ -101,10 +101,10 @@ if debug_mode
     subjects_per_condition = 1;
     og_range = 0;
     focal_range = 1:-1:0;
-    emphasis_range = 0;
+    emphasis_range = 0:1;
     target_range = [1];
-    trials_per_block = 100;
-    blocks_per_condition = 1;
+    trials_per_block = 24;
+    blocks_per_condition = 8;
 end
 
 % For each condition, split subjects into separate subject pools 

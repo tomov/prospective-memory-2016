@@ -13,17 +13,21 @@ trials = logical(~is_target);
 % TODO FIXME -- "compress" the nonfocal sequences instead
 %
 durations = {};
-for cond = [1 2]
+for cond = 1:4
     A = all_the_things{cond};
     onsets = A{4}(trials);
     offsets = A{5}(trials);
     durations{cond} = offsets - onsets;
 end
-durations = min(durations{1}, durations{2});
+x = durations{1};
+for cond = 3
+    x = min(x, durations{cond});
+end
+durations = x;
 
 % get the WM activation sequences in the two conditions
 wm_act = {};
-for cond = [1 2]
+for cond = 1:4
     A = all_the_things{cond};
     act = A{3};
     onsets = A{4}(trials);
@@ -38,15 +42,21 @@ for cond = [1 2]
     end
 end
 
-% a bit of cleanup -- get rid of 0's (they produce NaN's)
-wm_act_focal = wm_act{1};
-%wm_act_focal(:,5) = 1e-10; % Monitor tor
-wm_act_nonfocal = wm_act{2};
-%wm_act_nonfocal(:,4) = 1e-10; % Monitor tortoise
+% get the wm activations in the different conditions
+% order is determined in EM2005.m -- make sure to use for, not parfor for
+% looping over the conditions there
+assert(all_the_things{1}{1}(2) == 1 && all_the_things{1}{1}(3) == 0);
+assert(all_the_things{2}{1}(2) == 1 && all_the_things{2}{1}(3) == 1);
+assert(all_the_things{3}{1}(2) == 0 && all_the_things{3}{1}(3) == 0);
+assert(all_the_things{4}{1}(2) == 0 && all_the_things{4}{1}(3) == 1);
+wm_act_focal_low_emph = wm_act{1};
+wm_act_focal_high_emph = wm_act{2};
+wm_act_nonfocal_low_emph = wm_act{3};
+wm_act_nonfocal_high_emph = wm_act{4};
 
 % get correlation matrix
-n = size(wm_act_focal, 2);
-M = corr(wm_act_focal, wm_act_nonfocal);
+n = size(wm_act_focal_low_emph, 2);
+M = corr(wm_act_focal_low_emph, wm_act_nonfocal_low_emph);
 L = sim.units(wm_ids);
 
 % plot correlation matrix

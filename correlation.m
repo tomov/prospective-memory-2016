@@ -15,8 +15,8 @@ trials = logical(~is_target);
 durations = {};
 for cond = 1:4
     A = all_the_things{cond};
-    onsets = A{4}(trials);
-    offsets = A{5}(trials);
+    onsets = A{4}(1,trials);
+    offsets = A{5}(1,trials);
     durations{cond} = offsets - onsets;
 end
 x = durations{1};
@@ -30,8 +30,8 @@ wm_act = {};
 for cond = 1:4
     A = all_the_things{cond};
     act = A{3};
-    onsets = A{4}(trials);
-    offsets = A{5}(trials);
+    onsets = A{4}(1,trials);
+    offsets = A{5}(1,trials);
     
     wm_act{cond} = [];
     for i = 1:size(onsets, 2)

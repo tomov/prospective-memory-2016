@@ -98,7 +98,8 @@ end
 if debug_mode
     % we show 1 figure per subject per condition. Don't go overboard
     %
-    subjects_per_condition = 1;
+    subjects_per_condition = 24;
+    show_pics = false;
     og_range = 0;
     focal_range = 1:-1:0;
     emphasis_range = 0:1;
@@ -449,7 +450,7 @@ for cond_id = 1:size(conditions, 1)
             getstats(sim, OG_ONLY, FOCAL, EMPHASIS, TARGETS, ...
                 stimuli{OG_ONLY + 1}, responses, RTs, act, acc, onsets, offsets, nets, ...
                 is_target{OG_ONLY + 1}, correct{OG_ONLY + 1}, og_correct{OG_ONLY + 1}, is_inter_task{OG_ONLY + 1}, ...
-                true, true);
+                show_pics, true);
         end
 
     end % for OG_ONLY = [0 1]

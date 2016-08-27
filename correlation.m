@@ -67,20 +67,35 @@ wm_act_focal_high_emph = wm_act{2};
 wm_act_nonfocal_low_emph = wm_act{3};
 wm_act_nonfocal_high_emph = wm_act{4};
 
-% get correlation matrix
-n = size(wm_act_focal_low_emph, 2);
-M = corr(wm_act_focal_low_emph, wm_act_nonfocal_low_emph);
-L = sim.units(wm_ids);
+% get correlation matrix for condition x vs. condition y
+corr_conds = {};
+corr_conds{1} = {wm_act_focal_low_emph, wm_act_nonfocal_low_emph, 'Focal vs. Nonfocal, Low Emph', 'Focal', 'Nonfocal'};
+corr_conds{2} = {wm_act_focal_high_emph, wm_act_nonfocal_high_emph, 'Focal vs. Nonfocal, High Emph', 'Focal', 'Nonfocal'};
+corr_conds{3} = {wm_act_focal_low_emph, wm_act_focal_high_emph, 'Low Emph vs. High Emph, Focal', 'Low Emph', 'High Emph'};
+corr_conds{4} = {wm_act_nonfocal_low_emph, wm_act_nonfocal_high_emph, 'Low Emph vs. High Emph, Nonfocal', 'Low Emph', 'High Emph'};
 
-% plot correlation matrix
-figure;
-imagesc(M); % plot the matrix
-set(gca, 'XTick', 1:n); % center x-axis ticks on bins
-set(gca, 'YTick', 1:n); % center y-axis ticks on bins
-set(gca, 'XTickLabel', L); % set x-axis labels
-set(gca, 'YTickLabel', L); % set y-axis labels
-xlabel('Nonfocal', 'FontSize', 14);
-ylabel('Focal', 'FontSize', 14);
-title('Focal vs. Nonfocal', 'FontSize', 15); % set title
-colormap('jet'); % set the colorscheme
-colorbar; % enable colorbar
+% plot them
+for corr_cond = 1:4
+    rows = corr_conds{corr_cond}{1};
+    cols = corr_conds{corr_cond}{2};
+    fig_title = corr_conds{corr_cond}{3};
+    rows_title = corr_conds{corr_cond}{4};
+    cols_title = corr_conds{corr_cond}{5};
+    
+    n = size(rows, 2);
+    M = corr(rows, cols);
+    L = sim.units(wm_ids);
+
+    % plot correlation matrix
+    figure;
+    imagesc(M); % plot the matrix
+    set(gca, 'XTick', 1:n); % center x-axis ticks on bins
+    set(gca, 'YTick', 1:n); % center y-axis ticks on bins
+    set(gca, 'XTickLabel', L); % set x-axis labels
+    set(gca, 'YTickLabel', L); % set y-axis labels
+    xlabel(cols_title, 'FontSize', 14); % note these are flipped
+    ylabel(rows_title, 'FontSize', 14); % note these are flipped
+    title(fig_title, 'FontSize', 15); % set title
+    colormap('jet'); % set the colorscheme
+    colorbar; % enable colorbar
+end

@@ -318,6 +318,7 @@ classdef Simulator < Model
               
                 % whoever didn't respond is a timeout
                 responses(~responded, ord) = {'timeout'};
+                offsets(~responded, ord) = cycles + timeout;
                 RTs(~responded, ord) = timeout;
 
                 %{

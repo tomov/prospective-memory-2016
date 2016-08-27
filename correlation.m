@@ -15,9 +15,10 @@ trials = logical(~is_target);
 durations = {};
 for cond = 1:4
     A = all_the_things{cond};
-    onsets = A{4}(1,trials);
-    offsets = A{5}(1,trials);
-    durations{cond} = offsets - onsets;
+    onsets = A{4}(:,trials);
+    offsets = A{5}(:,trials);
+    durations{cond} = min(offsets - onsets);
+    assert(sum(durations{cond} < 0) == 0); % no negative durations allowed
 end
 x = durations{1};
 for cond = 3
@@ -30,14 +31,26 @@ wm_act = {};
 for cond = 1:4
     A = all_the_things{cond};
     act = A{3};
-    onsets = A{4}(1,trials);
-    offsets = A{5}(1,trials);
+    onsets = A{4}(:,trials);
+    offsets = A{5}(:,trials);
     
     wm_act{cond} = [];
-    for i = 1:size(onsets, 2)
-        onset = onsets(i);
+    n_subjects = size(act, 1);
+    n_trials = size(onsets, 2);
+    assert(size(onsets, 1) == n_subjects);
+    for i = 1:n_trials % for each trial we're interested in
         duration = durations(i);
-        wm_act_trial = squeeze(act(1, onset:onset+duration-1, wm_ids));
+        wm_act_trial = zeros(n_subjects, duration, length(wm_ids));
+        for subj_id = 1:n_subjects % for each subject
+            onset = onsets(subj_id, i);
+            offset = offsets(subj_id, i);
+            % get that subject's WM activations on the trial
+            wm_act_trial(subj_id,:,:) = squeeze(act(subj_id, onset:onset + duration - 1, wm_ids));
+            %wm_act_trial(subj_id,:,:) = squeeze(act(subj_id, offset - duration + 1:offset, wm_ids));
+        end
+        % then average the trial WM activations across all subjects
+        wm_act_trial = squeeze(mean(wm_act_trial, 1));
+        % and append them to the time series
         wm_act{cond} = [wm_act{cond}; wm_act_trial];
     end
 end

@@ -62,7 +62,7 @@ if debug_mode
     % testing; not used in any of E&M's experiments
     %
     for i = 1:length(stimuli{1})
-        if mod(i,5) == 0
+        if mod(i,50) == 0
             target_id = mod(i, size(pm_targets_pattern, 1)) + 1;
             middle = i;
             stimuli{1}(middle,:) = pm_targets_pattern(target_id, :);

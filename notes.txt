@@ -1,0 +1,3 @@
+1) correlation matrix - why correlation between Context & other Context is bad in Focal vs. nonfocal
+
+b/c of the "jolt" that the PM target produces in WM -- for focal, the "jolt" is bigger (not just for the task units); for nonfocal, it's smaller ; see nonfocal-why-context-corr-is-bad.fig and focal-why-context-corr-is-bad.fig

@@ -28,6 +28,8 @@ durations = x;
 
 % get the WM activation sequences in the two conditions
 wm_act = {};
+block_duration = -1;
+last_block_start = -1;
 for cond = 1:4
     A = all_the_things{cond};
     act = A{3};
@@ -37,6 +39,7 @@ for cond = 1:4
     wm_act{cond} = [];
     n_subjects = size(act, 1);
     n_trials = size(onsets, 2);
+    n_block_trials = n_trials / 4;
     assert(size(onsets, 1) == n_subjects);
     for i = 1:n_trials % for each trial we're interested in
         duration = durations(i);
@@ -50,10 +53,24 @@ for cond = 1:4
         end
         % then average the trial WM activations across all subjects
         wm_act_trial = squeeze(mean(wm_act_trial, 1));
-        % and append them to the time series
+        % and append them to the WM time series
         wm_act{cond} = [wm_act{cond}; wm_act_trial];
+        % mark the boundaries of the first and last blocks
+        if i == n_block_trials
+            block_duration = size(wm_act{cond}, 1);
+        end
+        if i + n_block_trials == n_trials
+            last_block_start = size(wm_act{cond}, 1) + 1;
+        end
     end
 end
+
+% get the block duration as the min of the first block and the last block
+% durations
+%
+assert(block_duration ~= -1);
+assert(last_block_start ~= -1);
+block_duration = min(size(wm_act{cond}, 1) - last_block_start + 1, block_duration);
 
 % get the wm activations in the different conditions
 % order is determined in EM2005.m -- make sure to use for, not parfor for
@@ -73,9 +90,13 @@ corr_conds{1} = {wm_act_focal_low_emph, wm_act_nonfocal_low_emph, 'Focal vs. Non
 corr_conds{2} = {wm_act_focal_high_emph, wm_act_nonfocal_high_emph, 'Focal vs. Nonfocal, High Emph', 'Focal', 'Nonfocal'};
 corr_conds{3} = {wm_act_focal_low_emph, wm_act_focal_high_emph, 'Low Emph vs. High Emph, Focal', 'Low Emph', 'High Emph'};
 corr_conds{4} = {wm_act_nonfocal_low_emph, wm_act_nonfocal_high_emph, 'Low Emph vs. High Emph, Nonfocal', 'Low Emph', 'High Emph'};
+corr_conds{5} = {wm_act_focal_low_emph(1:block_duration, :), wm_act_focal_low_emph(end-block_duration+1:end, :), 'Block #1 vs. Block #4, Focal, Low Emph', 'Block #1', 'Block #4'};
+corr_conds{6} = {wm_act_focal_high_emph(1:block_duration, :), wm_act_focal_high_emph(end-block_duration+1:end, :), 'Block #1 vs. Block #4, Focal, High Emph', 'Block #1', 'Block #4'};
+corr_conds{7} = {wm_act_nonfocal_low_emph(1:block_duration, :), wm_act_nonfocal_low_emph(end-block_duration+1:end, :), 'Block #1 vs. Block #4, Nonfocal, Low Emph', 'Block #1', 'Block #4'};
+corr_conds{8} = {wm_act_nonfocal_high_emph(1:block_duration, :), wm_act_nonfocal_high_emph(end-block_duration+1:end, :), 'Block #1 vs. Block #4, Nonfocal, High Emph', 'Block #1', 'Block #4'};
 
 % plot them
-for corr_cond = 1:4
+for corr_cond = 5:8
     rows = corr_conds{corr_cond}{1};
     cols = corr_conds{corr_cond}{2};
     fig_title = corr_conds{corr_cond}{3};
@@ -98,4 +119,5 @@ for corr_cond = 1:4
     title(fig_title, 'FontSize', 15); % set title
     colormap('jet'); % set the colorscheme
     colorbar; % enable colorbar
+    rotateXLabels(gca, 45);
 end

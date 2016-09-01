@@ -1,3 +1,8 @@
+% some knobs
+%
+save_figures_as_png = true;
+save_figures_as_fig = true;
+
 % correlation matrix
 %
 sim = all_the_things{1}{2};
@@ -6,8 +11,10 @@ is_target = all_the_things{1}{10};
 % only the "interesting" WM units
 wm_ids = [sim.wm_ids(1:4) sim.wm_ids(13:15)];
 
-trial_types = {'OG trials; Low WM', 'PM trials; WM bias = 4 (med)'};
 % pick which trials to analyze
+wm_capacity_label = {'WM bias = 4 (med)'};
+trial_types = {strcat('OG trials;', {' '}, wm_capacity_label), ...
+    strcat('PM trials;', {' '}, wm_capacity_label)};
 for PM_trials_or_OG_trials = 0:1 % 1 = PM trials; 0 = OG trials
 
     trial_type = trial_types{PM_trials_or_OG_trials + 1};
@@ -116,7 +123,7 @@ for PM_trials_or_OG_trials = 0:1 % 1 = PM trials; 0 = OG trials
         'Block #1', 'Block #4'};
 
     % plot them
-    for corr_cond = 1:1
+    for corr_cond = 1:8
         rows = corr_conds{corr_cond}{1};
         cols = corr_conds{corr_cond}{2};
         fig_title = corr_conds{corr_cond}{3};
@@ -140,6 +147,13 @@ for PM_trials_or_OG_trials = 0:1 % 1 = PM trials; 0 = OG trials
         colormap('jet'); % set the colorscheme
         colorbar; % enable colorbar
         rotateXLabels(gca, 45);
+        
+        if save_figures_as_png
+            saveas(gcf, strcat('figures/', fig_title{1}, '.png'), 'png');
+        end
+        if save_figures_as_fig
+            saveas(gcf, strcat('figures/', fig_title{1}, '.fig'), 'fig');
+        end
     end
     
 end % for each trial type (PM / OG)

@@ -10,7 +10,7 @@ xlabel('Simulation RTs (cycles)');
 ylabel('Empirical RTs (msec)');
 lsline
 text(86, 1550, OG_RT_label_cycles_to_msec, 'fontsize', 12);
-title(sprintf('R^2 = %.4f', rsq));
+title(sprintf('R^2 = %.4gf', rsq));
 
 h = get(gca, 'xlabel');
 set(h, 'FontSize', 15);

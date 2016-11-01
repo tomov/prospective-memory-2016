@@ -105,6 +105,12 @@ rsq = 1 - SSresid/SStotal;
 
 OG_RT_label_cycles_to_msec = sprintf('OG RT (msec) = cycles * %.1f + %.1f', RT_slope, RT_intercept);
 
+% from simulation 4
+% TODO is this okay? assert(size(unique(subjects(:, [2 3 9]), 'rows'), 1) == 1); % this approach only works if we have a single condition; for reference, see sanity check at the end of EM2005.m
+RT_costs = subjects(subjects(:, 1) == 0, 4) - subjects(subjects(:, 1) == 1, 4);
+
+
+
 if DO_PLOT
     figure;
     scatter(simulation_cycles, empirical_RTs, 'fill');
@@ -131,6 +137,59 @@ end
 % ----------------------------- COMPARE EMPIRICAL AND SIMULATION DATA ----
 % ------------------------------------------------------------------------
 % ------------------------------------------------------------------------
+
+
+% ---------- OG accuracy -- PM vs No-PM task
+
+[p, table] = anovan(subjects(:, 5), {subjects(:,1)}, 'model','full', 'display', 'off');
+fprintf('\n\n----- OG accuracy -- PM vs. No-PM; non-significant in E&M 2005 -----\n');
+fprintf('                 F = %.4f, p = %f ; %.4f vs. %.4f\n', table{2,6}, p(1), mean(subjects(subjects(:, 1) == 1, 5)), mean(subjects(subjects(:, 1) == 0, 5)));
+
+% ---------- OG accuracy -- Focality
+
+fprintf('\n\n----- OG accuracy -- Focality; non-significant in E&M 2005 -----\n');
+[p, table] = anovan(subjects(:, 5), {subjects(:,2)}, 'model','full', 'display', 'off');
+fprintf('                 F = %.4f, p = %f ; %.4f vs. %.4f\n', table{2,6}, p(1), mean(subjects(subjects(:, 2) == 1, 5)), mean(subjects(subjects(:, 2) == 0, 5)));
+
+
+% ---------- OG accuracy -- Emphasis
+
+fprintf('\n\n----- OG accuracy -- Emphasis; non-significant in E&M 2005? -----\n');
+[p, table] = anovan(subjects(:, 5), {subjects(:,3)}, 'model','full', 'display', 'off');
+fprintf('                 F = %.4f, p = %f; %.4f vs. %.4f\n', table{2,6}, p(1), mean(subjects(subjects(:, 3) == 0, 5)), mean(subjects(subjects(:, 3) == 1, 5)));
+
+% ---------- OG accuracy -- PM vs No-PM task x Focality interaction
+
+% TODO am I doing this right? why are these different than the ones above?
+fprintf('\n\n----- OG accuracy -- PM vs. No-PM x Focality interaction; non-significant in E&M 2005 -----\n');
+[p, table] = anovan(subjects(:, 5), {subjects(:,1) subjects(:,2)}, 'model','full', 'display', 'off');
+fprintf('                 F = %.4f, p = %f\n', table{4,6}, p(3));
+
+fprintf('\n\n----- OG accuracy -- Focality insignificant in OG-only -----\n');
+[p, table] = anovan(subjects(subjects(:, 1) == 1, 5), {subjects(subjects(:, 1) == 1, 2)}, 'model','full', 'display', 'off');
+fprintf('                 F = %.4f, p = %f\n', table{2,6}, p(1));
+
+
+% ---------- OG accuracy -- PM vs No-PM task x Emphasis interaction
+
+fprintf('\n\n----- OG accuracy -- PM vs. No-PM x Emphasis interaction; non-significant in E&M 2005 -----\n');
+[p, table] = anovan(subjects(:, 5), {subjects(:,1) subjects(:,3)}, 'model','full', 'display', 'off');
+fprintf('                 F = %.4f, p = %f\n', table{4,6}, p(3));
+
+fprintf('\n\n----- OG accuracy -- Emphasis insignificant in OG-only -----\n');
+[p, table] = anovan(subjects(subjects(:, 1) == 1, 5), {subjects(subjects(:, 1) == 1, 3)}, 'model','full', 'display', 'off');
+fprintf('                 F = %.4f, p = %f\n', table{2,6}, p(1));
+
+
+% ---------- OG accuracy -- PM vs No-PM task x Focality x Emphasis interaction
+
+fprintf('\n\n----- OG accuracy -- PM vs. No-PM x Focality x Emphasis interaction; non-significant in E&M 2005 -----\n');
+[p, table] = anovan(subjects(:, 5), {subjects(:,1) subjects(:,2) subjects(:,3)}, 'model','full', 'display', 'off');
+fprintf('                 F = %.4f, p = %f\n', table{8,6}, p(7));
+fprintf('nonfocal, high emph %.4f vs. focal, low emph %.4f vs. no-PM %.4f\n', ...
+    mean(subjects(subjects(:, 1) == 0 & subjects(:, 2) == 0 & subjects(:, 3) == 1, 5)), ...
+    mean(subjects(subjects(:, 1) == 0 & subjects(:, 2) == 1 & subjects(:, 3) == 0, 5)), ...
+    mean(subjects(subjects(:, 1) == 1, 5)));
 
 
 
@@ -228,7 +287,7 @@ end
 
 % -------------- PM hit rate in high emph vs. low emph. for different focalities 
 
-[p, table] = anovan(PM_hit, {subjects(:, 2) subjects(:, 3)}, 'model','interaction', 'display', 'off');
+[p, table] = anovan(PM_hit, {subjects(:, 2) subjects(:, 3)}, 'model','full', 'display', 'off');
 
 fprintf('\n\n----- PM Performance: Interaction between Focality and Emphasis ------\n');
 fprintf('\n  Empirical Data -------\n');
@@ -285,7 +344,7 @@ end
 
 PM_RTs = subjects(:, 6);
 
-[p, table] = anovan(PM_RTs, {subjects(:, 2) subjects(:, 3)}, 'model','interaction', 'display', 'off');
+[p, table] = anovan(PM_RTs, {subjects(:, 2) subjects(:, 3)}, 'model','full', 'display', 'off');
 
 fprintf('\n\n----- PM RTs NEW: Interaction between Focality and Emphasis ------\n');
 fprintf('\n  Simulation Data -------\n');
@@ -365,6 +424,13 @@ fprintf('                 F = 22.87\n');
 fprintf('\n  Simulation Data -------\n');
 fprintf('                 F = %.4f, p = %f\n', table{2,6}, p(1));
 
+fprintf('  ====>  %.4f +- %.4f vs. %.4f +- %.4f\n', ...
+    mean(subjects(subjects(:, 2) == 1, 4)) * RT_slope + RT_intercept, ...
+    std(subjects(subjects(:, 2) == 1, 4)) * RT_slope / sqrt(subjects_per_condition), ...
+    mean(subjects(subjects(:, 2) == 0, 4)) * RT_slope + RT_intercept, ...
+    std(subjects(subjects(:, 2) == 0, 4)) * RT_slope / sqrt(subjects_per_condition) ...
+    );
+
 if DO_PLOT
     Ms = zeros(1, 2);
     SEMs = zeros(1, 2);
@@ -405,6 +471,13 @@ fprintf('\n  Empirical Data -------\n');
 fprintf('                 F = 6.47\n');
 fprintf('\n  Simulation Data -------\n');
 fprintf('                 F = %.4f, p = %f\n', table{2,6}, p(1));
+
+fprintf('  ====>  %.4f +- %.4f vs. %.4f +- %.4f\n', ...
+    mean(subjects(subjects(:, 3) == 1, 4)) * RT_slope + RT_intercept, ...
+    std(subjects(subjects(:, 3) == 1, 4)) * RT_slope  / sqrt(subjects_per_condition), ...
+    mean(subjects(subjects(:, 3) == 0, 4)) * RT_slope + RT_intercept, ...
+    std(subjects(subjects(:, 3) == 0, 4)) * RT_slope  / sqrt(subjects_per_condition) ...
+    );
 
 if DO_PLOT
     Ms = zeros(1, 2);
@@ -447,6 +520,12 @@ fprintf('                 F = 131.66\n');
 fprintf('\n  Simulation Data -------\n');
 fprintf('                 F = %.4f, p = %f\n', table{2,6}, p(1));
 
+fprintf('  ====>  %.4f +- %.4f vs. %.4f +- %.4f\n', ...
+    mean(subjects(subjects(:, 1) == 0, 4)) * RT_slope + RT_intercept, ...
+    std(subjects(subjects(:, 1) == 0, 4)) * RT_slope  / sqrt(subjects_per_condition), ...
+    mean(subjects(subjects(:, 1) == 1, 4)) * RT_slope + RT_intercept, ...
+    std(subjects(subjects(:, 1) == 1, 4)) * RT_slope  / sqrt(subjects_per_condition) ...
+    );
 
 for OG_ONLY = 0:1
     samples = subjects(subjects(:, 1) == OG_ONLY, 4);
@@ -539,6 +618,133 @@ if DO_PLOT
         ylim([1000 1700]);
     end
 end
+
+
+fprintf('\n\n');
+fprintf('OG accuracy in ALL = %.4f +- %.4f\n', ...
+    mean(subjects(:, 5)), ...
+    std(subjects(:, 5)) / sqrt(subjects_per_condition));
+
+fprintf('\n\n');
+fprintf('OG RT cost in Focal, low emphasis = %.4f\n', mean(RT_costs(subjects(:, 2) == 1 & subjects(:, 3) == 0 & subjects(:, 1) == 0)) * RT_slope);
+fprintf('OG RT cost in Focal, high emphasis = %.4f\n', mean(RT_costs(subjects(:, 2) == 1 & subjects(:, 3) == 1 & subjects(:, 1) == 0)) * RT_slope);
+fprintf('OG RT cost in Nonfocal, low emphasis = %.4f\n', mean(RT_costs(subjects(:, 2) == 0 & subjects(:, 3) == 0 & subjects(:, 1) == 0)) * RT_slope);
+fprintf('OG RT cost in Nonfocal, high emphasis = %.4f\n', mean(RT_costs(subjects(:, 2) == 0 & subjects(:, 3) == 1 & subjects(:, 1) == 0)) * RT_slope);
+
+
+fprintf('\n\n');
+fprintf('PM hit rate in Focal = %.4f +- %.4f\n', ...
+    mean(subjects(subjects(:, 1) == 0 & subjects(:, 2) == 1, 7)), ...
+    std(subjects(subjects(:, 1) == 0 & subjects(:, 2) == 1, 7)) / sqrt(subjects_per_condition));
+fprintf('PM hit rate in Nonocal = %.4f +- %.4f\n', ...
+    mean(subjects(subjects(:, 1) == 0 & subjects(:, 2) == 0, 7)), ...
+    std(subjects(subjects(:, 1) == 0 & subjects(:, 2) == 0, 7)) / sqrt(subjects_per_condition));
+fprintf('PM hit rate in High Emph = %.4f +- %.4f\n', ...
+    mean(subjects(subjects(:, 1) == 0 & subjects(:, 3) == 1, 7)), ...
+    std(subjects(subjects(:, 1) == 0 & subjects(:, 3) == 1, 7)) / sqrt(subjects_per_condition));
+fprintf('PM hit rate in Low Emph = %.4f +- %.4f\n', ...
+    mean(subjects(subjects(:, 1) == 0 & subjects(:, 3) == 0, 7)), ...
+    std(subjects(subjects(:, 1) == 0 & subjects(:, 3) == 0, 7)) / sqrt(subjects_per_condition));
+
+fprintf('\n\n');
+fprintf('PM hit rate in Focal, Low Emph = %.4f +- %.4f\n', ...
+    mean(subjects(subjects(:, 1) == 0 & subjects(:, 2) == 1 & subjects(:, 3) == 0, 7)), ...
+    std(subjects(subjects(:, 1) == 0 & subjects(:, 2) == 1 & subjects(:, 3) == 0, 7)) / sqrt(subjects_per_condition));
+fprintf('PM hit rate in Focal, High Emph = %.4f +- %.4f\n', ...
+    mean(subjects(subjects(:, 1) == 0 & subjects(:, 2) == 1 & subjects(:, 3) == 1, 7)), ...
+    std(subjects(subjects(:, 1) == 0 & subjects(:, 2) == 1 & subjects(:, 3) == 1, 7)) / sqrt(subjects_per_condition));
+fprintf('PM hit rate in Nonfocal, Low Emph = %.4f +- %.4f\n', ...
+    mean(subjects(subjects(:, 1) == 0 & subjects(:, 2) == 0 & subjects(:, 3) == 0, 7)), ...
+    std(subjects(subjects(:, 1) == 0 & subjects(:, 2) == 0 & subjects(:, 3) == 0, 7)) / sqrt(subjects_per_condition));
+fprintf('PM hit rate in Nonfocal, High Emph = %.4f +- %.4f\n', ...
+    mean(subjects(subjects(:, 1) == 0 & subjects(:, 2) == 0 & subjects(:, 3) == 1, 7)), ...
+    std(subjects(subjects(:, 1) == 0 & subjects(:, 2) == 0 & subjects(:, 3) == 1, 7)) / sqrt(subjects_per_condition));
+
+
+fprintf('\n\n');
+fprintf('OG RT in ALL = %.4f +- %.4f\n', ...
+    nanmean(subjects(:, 4)) * RT_slope + RT_intercept, ...
+    nanstd(subjects(:, 4)) * RT_slope / sqrt(subjects_per_condition));
+
+
+fprintf('\n\n');
+fprintf('PM RT in ALL = %.4f +- %.4f\n', ...
+    nanmean(subjects(:, 6)) * RT_slope + RT_intercept, ...
+    nanstd(subjects(:, 6)) * RT_slope / sqrt(subjects_per_condition));
+
+% ------------- PM RT vs. OG RT
+PM_RT = subjects(~isnan(subjects(:, 6)), 6);
+OG_RT = subjects(:, 4);
+%[p, table] = anova1([PM_RT OG_RT], {'PM RT', 'OG RT'}, 'off');
+[p, table] = anovan([PM_RT; OG_RT], {[ones(length(PM_RT), 1); zeros(length(OG_RT), 1)]}, 'model','full', 'display', 'off');
+fprintf('\n\n----- PM RT vs. OG OT ------\n');
+fprintf('\n  Simulation Data -------\n');
+fprintf('                 F = %.4f, p = %f\n', table{2,6}, p(1));
+
+
+fprintf('\n\n');
+fprintf('PM RT in Focal = %.4f +- %.4f\n', ...
+    nanmean(RT_intercept + RT_slope * subjects(subjects(:, 1) == 0 & subjects(:, 2) == 1, 6)), ...
+    nanstd(RT_slope * subjects(subjects(:, 1) == 0 & subjects(:, 2) == 1, 6)) / sqrt(subjects_per_condition));
+fprintf('PM RT in Nonocal = %.4f +- %.4f\n', ...
+    nanmean(RT_intercept + RT_slope * subjects(subjects(:, 1) == 0 & subjects(:, 2) == 0, 6)), ...
+    nanstd(RT_slope * subjects(subjects(:, 1) == 0 & subjects(:, 2) == 0, 6)) / sqrt(subjects_per_condition));
+fprintf('PM RT in High Emph = %.4f +- %.4f\n', ...
+    nanmean(RT_intercept + RT_slope * subjects(subjects(:, 1) == 0 & subjects(:, 3) == 1, 6)), ...
+    nanstd(RT_slope * subjects(subjects(:, 1) == 0 & subjects(:, 3) == 1, 6)) / sqrt(subjects_per_condition));
+fprintf('PM RT in Low Emph = %.4f +- %.4f\n', ...
+    nanmean(RT_intercept + RT_slope * subjects(subjects(:, 1) == 0 & subjects(:, 3) == 0, 6)), ...
+    nanstd(RT_slope * subjects(subjects(:, 1) == 0 & subjects(:, 3) == 0, 6)) / sqrt(subjects_per_condition));
+
+fprintf('\n\n');
+fprintf('PM RT in Focal, Low Emph = %.4f +- %.4f\n', ...
+    nanmean(RT_intercept + RT_slope * subjects(subjects(:, 1) == 0 & subjects(:, 2) == 1 & subjects(:, 3) == 0, 6)), ...
+    nanstd(RT_slope * subjects(subjects(:, 1) == 0 & subjects(:, 2) == 1 & subjects(:, 3) == 0, 6)) / sqrt(subjects_per_condition));
+fprintf('PM RT in Focal, High Emph = %.4f +- %.4f\n', ...
+    nanmean(RT_intercept + RT_slope * subjects(subjects(:, 1) == 0 & subjects(:, 2) == 1 & subjects(:, 3) == 1, 6)), ...
+    nanstd(RT_slope * subjects(subjects(:, 1) == 0 & subjects(:, 2) == 1 & subjects(:, 3) == 1, 6)) / sqrt(subjects_per_condition));
+fprintf('PM RT in Nonfocal, Low Emph = %.4f +- %.4f\n', ...
+    nanmean(RT_intercept + RT_slope * subjects(subjects(:, 1) == 0 & subjects(:, 2) == 0 & subjects(:, 3) == 0, 6)), ...
+    nanstd(RT_slope * subjects(subjects(:, 1) == 0 & subjects(:, 2) == 0 & subjects(:, 3) == 0, 6)) / sqrt(subjects_per_condition));
+fprintf('PM RT in Nonfocal, High Emph = %.4f +- %.4f\n', ...
+    nanmean(RT_intercept + RT_slope * subjects(subjects(:, 1) == 0 & subjects(:, 2) == 0 & subjects(:, 3) == 1, 6)), ...
+    nanstd(RT_slope * subjects(subjects(:, 1) == 0 & subjects(:, 2) == 0 & subjects(:, 3) == 1, 6)) / sqrt(subjects_per_condition));
+
+
+% ------------- PM RT in focal vs. nonfocal
+PM_RT = subjects(~isnan(subjects(:, 6)), 6);
+is_foc = subjects(~isnan(subjects(:, 6)), 2);
+[p, table] = anovan(PM_RT, {is_foc}, 'model','full', 'display', 'off');
+fprintf('\n\n----- PM RT in focal vs. nonfocal. ------\n');
+fprintf('\n  Simulation Data -------\n');
+fprintf('                 F = %.4f, p = %f\n', table{2,6}, p(1));
+
+% ------------- PM RT in high vs. low emphasis
+PM_RT = subjects(~isnan(subjects(:, 6)), 6);
+is_high_emph = subjects(~isnan(subjects(:, 6)), 3);
+[p, table] = anovan(PM_RT, {is_high_emph}, 'model','full', 'display', 'off');
+fprintf('\n\n----- PM RT in high vs. low emphasis. ------\n');
+fprintf('\n  Simulation Data -------\n');
+fprintf('                 F = %.4f, p = %f\n', table{2,6}, p(1));
+
+
+% ------------- PM RT -- interaction
+PM_RT = subjects(~isnan(subjects(:, 6)), 6);
+is_high_emph = subjects(~isnan(subjects(:, 6)), 3);
+is_foc = subjects(~isnan(subjects(:, 6)), 2);
+[p, table] = anovan(PM_RT, {is_high_emph is_foc}, 'model','full', 'display', 'off');
+fprintf('\n\n----- PM RT interaction ------\n');
+fprintf('\n  Simulation Data -------\n');
+fprintf('                 F = %.4f, p = %f\n', table{4,6}, p(3));
+
+
+% ------------- Intention superiority effect
+PM_miss_OG_RT = subjects(~isnan(subjects(:, 11)), 11);
+OG_RT = subjects(:, 4);
+[p, table] = anovan([PM_miss_OG_RT; OG_RT], {[ones(length(PM_miss_OG_RT), 1); zeros(length(OG_RT), 1)]}, 'model','full', 'display', 'off');
+fprintf('\n\n----- Intention superiority effect ------\n');
+fprintf('\n  Simulation Data -------\n');
+fprintf('                 F = %.4f, p = %f\n', table{2,6}, p(1));
 
 
 

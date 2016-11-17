@@ -59,6 +59,7 @@ empirical_stats = [
 empirical_stats(:, SD_cols) = empirical_stats(:, SD_cols) / sqrt(subjects_per_condition);
 
 
+% !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 % -------------- change meaning of third column (formerly EMPHASIS) !!!
 % now it means whether it's "low cost" (0) or "high cost" (1) group
 

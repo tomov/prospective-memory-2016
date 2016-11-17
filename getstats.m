@@ -116,6 +116,7 @@ OG_RT = nanmean(OG_correct_RTs, 2);
 OG_RT_SD = nanstd(OG_correct_RTs, [], 2) ./ sqrt(sum(~isnan(OG_correct_RTs), 2));
 OG_Hit = sum(~isnan(OG_correct_RTs), 2) ./ OG_count * 100;
 
+
 PM_RT = nanmean(PM_hit_RTs, 2);
 for s=1:n_subjects
     for ord=1:n_trials

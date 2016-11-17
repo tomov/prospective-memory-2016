@@ -1,0 +1,39 @@
+EM2005_with_stats_exp5
+
+fprintf('\n\n');
+
+OG_only = logical(subjects(:, 1));
+focality = logical(subjects(:, 2));
+targets = subjects(:, 9);
+
+sem = @(x) std(x) / sqrt(length(x));
+
+% Third task accuracy -- targets vs non-targets
+
+IT_acc_targets = subjects(:, 13);
+IT_acc_nontargets = subjects(:, 15);
+[p, table] = anovan([IT_acc_targets; IT_acc_nontargets], {[ones(length(IT_acc_targets), 1); zeros(length(IT_acc_nontargets), 1)]}, 'model','full', 'display', 'off');
+fprintf(['Accuracy on the third task was near ceiling (M = %.2f +- %.2f %%). ' ...
+    'This was the case both for items that were previously targets during the PM block (M = %.2f +- %.2f %%) ', ...
+    'as well as items that were never targets (%.2f +- %.2f %%). ', ...
+    'However, there was a significant difference between the two (F = %f, p = %f), ', ...
+    'with accuracy being slightly worse for former targets.\n'], ...
+    mean([IT_acc_targets; IT_acc_nontargets]), sem([IT_acc_targets; IT_acc_nontargets]), ...
+    mean(IT_acc_targets), sem(IT_acc_targets), ...
+    mean(IT_acc_nontargets), sem(IT_acc_nontargets), ...
+    table{2,6}, p(1));
+
+fprintf('\n');
+
+% Third task RTs -- targets vs non-targets
+
+IT_RT_targets = subjects(:, 12) * RT_slope + RT_intercept;
+IT_RT_nontargets = subjects(:, 14) * RT_slope + RT_intercept;
+[p, table] = anovan([IT_RT_targets; IT_RT_nontargets], {[ones(length(IT_RT_targets), 1); zeros(length(IT_RT_nontargets), 1)]}, 'model','full', 'display', 'off');
+fprintf(['RTs on the third task were slower for items that were previously targets during the PM block (M = %.2f +- %.2f ms) ', ...
+    'compared to items that were never targets (%.2f +- %.2f ms; F = %f, p = %f).\n'], ...
+    mean(IT_RT_targets), sem(IT_RT_targets), ...
+    mean(IT_RT_nontargets), sem(IT_RT_nontargets), ...
+    table{2,6}, p(1));
+
+fprintf('\n');

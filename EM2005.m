@@ -102,7 +102,7 @@ if debug_mode
     og_range = 0;
     focal_range = 1; %1:-1:0;
     emphasis_range = 0;
-    target_range = [1 6];
+    target_range = [1];
     trials_per_block = 100;
     blocks_per_condition = 1;
 end

@@ -23,11 +23,12 @@ where
   ];
 %}
 
-debug_mode = true; % only run 1 subject per condition and show progress ; !!!!!IMPORTANT!!!!!!!!! must change parfor to for in EM2005
+% !!!!!IMPORTANT!!!!!!!!! must change parfor to for in EM2005
+debug_mode = true; % only run 1 subject per condition and show progress ; 
 
 
 
-experiment = 6; % <------------------------------- HERE --------------------------------------
+experiment = 5; % <------------------------------- HERE --------------------------------------
 
 
 

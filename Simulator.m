@@ -336,7 +336,8 @@ classdef Simulator < Model
                 %switched_to_PM_task = (self.wm_act(2) > self.wm_act(1) -
                 %0.1); <--- DOESN'T quite work (partial switch)
                 switched_to_PM_task = (self.wm_act(:, 2) > self.resting_wm(:, 2) + 0.01); % TODO param
-                %fprintf('ord %d, stim %s, switched_to_PM = %d\n', ord, stimulus, switched_to_PM_task(1)); 
+                %fprintf('ord %d, stim %s, switched_to_PM = %d, end cycle = %d\n', ord, stimulus, switched_to_PM_task(1), cycle); 
+                %disp(responses);
                 switched_to_Inter_task(:) = false;
                 switched_to_OG_and_PM_from_Inter_task(:) = false;
             end

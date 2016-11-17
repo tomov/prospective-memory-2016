@@ -140,7 +140,7 @@ end
 
 PM_hit = subjects(:, 7);
 
-% ----------------------- PM hit rate in focal vs. nonfocal ----
+% ----------------------- PM hit rate in 1 vs. 6 targets ----
 
 [p, table] = anovan(PM_hit, {subjects(:, 9)}, 'model','full', 'display', 'off');
 

@@ -1,5 +1,5 @@
 subjects_per_condition = 100;
-blocks = 20;
+blocks = 20; % a "block" is a few OG + PM trials, followed by a few third task trials (with one target item), followed by a few OG + PM trials
 
 % from experiment 1
 RT_slope = 8.9868;
@@ -8,7 +8,7 @@ RT_intercept = 360;
 IT_target_RTs = extra(:, 17:17 + blocks - 1) * RT_slope + RT_intercept;
 IT_nontarget_RTs = extra(:, 17 + blocks:17 + 2 * blocks - 1) * RT_slope + RT_intercept;
 IT_tar_hits = 100 * extra(:, 17 + 2 * blocks:17 + 3 * blocks - 1);
-IT_tar_pm_hits = 100 * extra(:, 17 + 3 * blocks:17 + 4 * blocks - 1);
+IT_tar_pm_hits = 100 * extra(:, 17 + 3 * blocks:17 + 4 * blocks - 1); % commission errors
 IT_nontar_hits = 100 * extra(:, 17 + 4 * blocks:17 + 5 * blocks - 1);
 
 

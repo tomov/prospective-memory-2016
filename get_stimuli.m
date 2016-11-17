@@ -205,6 +205,8 @@ if exp_id == 5
 elseif exp_id == 7
     % this is only for predictions
     %
+    % each of these things we call a "block" in the analysis
+    %
     stimuli_pattern = [
         {'switch back to OG and PM'}, 1; % do the OG + PM task ("Imagery rating" in E&M)
         {'physics,an animal'}, 1;

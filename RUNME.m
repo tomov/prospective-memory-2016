@@ -27,7 +27,7 @@ debug_mode = true; % only run 1 subject per condition and show progress ; !!!!!I
 
 
 
-experiment = 1; % <------------------------------- HERE --------------------------------------
+experiment = 6; % <------------------------------- HERE --------------------------------------
 
 
 
